@@ -1,0 +1,40 @@
+# Maintainer: Kuan-Yen Chou <kuanyenchou@gmail.com>
+
+pkgname=bap-c
+pkgver=r71.1a89db6
+pkgrel=1
+pkgdesc='BAP C bindings'
+depends=('ocaml')
+makedepends=('gcc' 'make' 'autoconf')
+arch=('x86_64')
+url='https://github.com/BinaryAnalysisPlatform/bap-bindings'
+license=('MIT')
+source=("$pkgname"::'git+https://github.com/BinaryAnalysisPlatform/bap-bindings.git')
+sha512sums=('SKIP')
+
+pkgver() {
+    cd "$srcdir/$pkgname"
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+    cd "$srcdir/$pkgname"
+    sed -i Makefile.in \
+        -e '93,94s|-m644|-Dm644|' \
+        -e '93s|@libdir@|-t @libdir@|' \
+        -e '94s|@includedir@|-t @includedir@|'
+}
+
+build() {
+    cd "$srcdir/$pkgname"
+    autoconf
+    ./configure \
+        --prefix="${pkgdir}/usr" \
+        --sbindir="${pkgdir}/usr/bin"
+    make -j1
+}
+
+package() {
+    cd "$srcdir/$pkgname"
+    make install
+}
