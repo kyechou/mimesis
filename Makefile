@@ -26,7 +26,7 @@ LIBS        =
 
 all: $(TARGETS)
 
-%: %.o
+httpd: httpd.o
 	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 clean:
