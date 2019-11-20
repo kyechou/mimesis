@@ -1,4 +1,5 @@
 #include <RoundRobin.h>
+#include <array>
 
 RoundRobin::RoundRobin()
 {
@@ -6,9 +7,14 @@ RoundRobin::RoundRobin()
 	cur_iter = 0;
 }
 
-struct addrs RoundRobin::select_server()
+struct addrs RoundRobin::select_cli()
 {
-	return cli_addrs[cur_iter++];
+	if cur_iter == cli_addrs.size(){
+		cur_iter = 0;
+		return cli_addrs[0];
+	}
+	else
+		return cli_addrs[cur_iter++];
 }
 
 int RoundRobin::get_cur_iter()

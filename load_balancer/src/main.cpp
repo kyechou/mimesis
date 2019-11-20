@@ -22,15 +22,17 @@
 #include <LB_algo.h>
 #include <RoundRobin.h>
 using namespace std;
+
 #define PORT 8088
-#define STRLen 10000
+#define STRLen 3000
 #define LOCALHOST 2130706433
 
 std::map<std::string, std::string> http_request;
 std::string LB;
-RoundRobin RR();
+LBalgo *lb;
 
 void parse_args(int argc, char **argv);
+void reaper(int sig);
 
 int passiveTCP()
 {
@@ -74,6 +76,7 @@ int main(int argc, char *argv[])
     string file_lines[20];
 
     parse_args(argc, argv);
+    signal(SIGCHLD, reaper);    // signal handler for SIGCHLD
 
     // read server list from config files
     ifstream algofile ("../configs/"+LB);
@@ -88,9 +91,7 @@ int main(int argc, char *argv[])
         cli_list[i].ip = file_lines[i].substr(0, file_lines[i].find(":"));
 	cli_list[i].port = stoi(file_lines[i].substr(1, file_lines[i].find(":")));
     }
-    if(LB == "roundrobin"){
-        RR.set_cli_addrs(cli_list);
-    }
+    lb.set_cli_addrs(cli_list);
 
     // get load balancer fd
     server_fd = passiveTCP();
@@ -109,9 +110,7 @@ int main(int argc, char *argv[])
 
 	// get client address
 	struct addrs cli;
-	if(LB == "roundrobin"){
-            cli = RR.select_server();
-	}
+        cli = lb.select_cli();
 
 	if((childpid=fork())<0){
             perror("Server: fork error");
@@ -144,6 +143,11 @@ int main(int argc, char *argv[])
 	    close(cli_fd);
 	    close(new_socket);
         }
+	else{
+	    if(LB=="leastconn"){
+	        lb.set_cli_conn((int) childpid, cli);
+	    }
+	}
     }
     close(new_socket);
 
@@ -156,6 +160,16 @@ static inline void usage(const std::string& progname)
 		"Usage: " + progname + " [-h] -a <algo>\n"
 		"    -h, --help             print this help message\n"
 		"    -a, --algo <algo>      specify algorithm name\n";
+}
+
+void reaper(int sig)
+{
+	int pid;
+	while ((pid = (int) waitpid(-1, NULL, WNOHANG)) > 0){
+		if(LB == "leastconn")
+			lb.reduce_conn(pid);
+	}
+	signal(sig, reaper);
 }
 
 void parse_args(int argc, char **argv)
@@ -186,4 +200,18 @@ void parse_args(int argc, char **argv)
 		std::cerr << "Try '" << argv[0] << " -h' for more information" << std::endl;
 		exit(EXIT_FAILURE);
 	}
+
+	// load selected algorithm
+	switch(LB){
+		case "roundrobin":
+			lb = new RoundRobin;
+			break;
+		case "leastconn":
+			lb = new LeastConn;
+			break;
+		default:
+			lb = new RoundRobin;
+			break;
+	}
+			
 }

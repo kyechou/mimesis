@@ -7,7 +7,7 @@ private:
 public:
 	RoundRobin();
 
-	struct addrs select_server();
+	Addrs select_cli();
 	int get_cur_iter();
-	void set_cli_addrs(struct addrs* cli_list);
+	void set_cli_addrs(Addrs* cli_list);
 }
