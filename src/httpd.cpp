@@ -126,7 +126,9 @@ int httpd(const std::string& server_name, const struct sockaddr_in& cli_addr)
         "Content-Length: " + std::to_string(payload.size()) + "\n"
         "\n" + payload;
 
-    write(STDOUT_FILENO, output.c_str(), output.size());
+    if (write(STDOUT_FILENO, output.c_str(), output.size()) < 0) {
+        std::cerr << "Error: write failed" << std::endl;
+    }
     return 0;
 }
 
