@@ -14,8 +14,6 @@
 #include <cerrno>
 #include <cctype>
 
-#define MAX_BUF_SIZE 3000
-
 static inline bool arespace (const std::string&);
 static inline std::string ip_to_str(uint32_t);
 
@@ -270,6 +268,13 @@ int passiveTCP(int port)
     /* open a TCP socket */
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "Error: cannot open socket" << std::endl;
+        return -1;
+    }
+
+    /* allow reusing/binding to a port in TIME_WAIT */
+    int enable = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1) {
+        std::cerr << "Error: setsockopt failed" << std::endl;
         return -1;
     }
 
