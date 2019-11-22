@@ -6,8 +6,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-//#include <netinet/in.h>
-
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -15,8 +13,6 @@
 #include <cstdlib>
 #include <cerrno>
 #include <cctype>
-
-#define MAX_BUF_SIZE 3000
 
 static inline bool arespace (const std::string&);
 static inline std::string ip_to_str(uint32_t);
@@ -275,6 +271,13 @@ int passiveTCP(int port)
         return -1;
     }
 
+    /* allow reusing/binding to a port in TIME_WAIT */
+    int enable = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) == -1) {
+        std::cerr << "Error: setsockopt failed" << std::endl;
+        return -1;
+    }
+
     /* set up server socket addr */
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -282,7 +285,6 @@ int passiveTCP(int port)
     serv_addr.sin_port = htons(port);
 
     /* bind to server address */
-    //if (bind(sockfd, (const struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
     if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         std::cerr << "Error: failed to bind local address" << std::endl;
         return -1;

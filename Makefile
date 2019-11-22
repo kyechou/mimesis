@@ -2,10 +2,10 @@
 # Makefile
 #
 
-TARGETS     = httpd #lb
+TARGETS     = httpd lb
 
-SRCS        = $(shell find ./src -type f | grep -E '\.(c|cpp)$$')
-OBJS        = $(notdir $(patsubst %.c,%.o,$(SRCS:%.cpp=%.o)))
+LB_SRCS     = $(shell find ./src/lb -type f | grep -E '\.(c|cpp)$$')
+LB_OBJS     = $(notdir $(patsubst %.c,%.o,$(LB_SRCS:%.cpp=%.o)))
 VPATH       = $(shell find ./src -type d)
 
 CC          = gcc
@@ -16,7 +16,7 @@ INSTALL     = /usr/bin/install -c
 MKDIR_P     = /usr/bin/mkdir -p
 CFLAGS      = -O3 -Wall -Wextra -Werror -std=c11
 CXXFLAGS    = -O3 -Wall -Wextra -Werror -std=c++17
-CPPFLAGS    =
+CPPFLAGS    = -iquote ./src -iquote ./src/lb
 LDFLAGS     =
 LIBS        =
 
@@ -27,6 +27,9 @@ LIBS        =
 all: $(TARGETS)
 
 httpd: httpd.o
+	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+lb: $(LB_OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 clean:
