@@ -87,7 +87,7 @@ int proxy(const Server& server)
 
     srv_addr.sin_family = AF_INET;
     srv_addr.sin_addr.s_addr = htonl(server.ip);
-    srv_addr.sin_port = server.port;
+    srv_addr.sin_port = htons(server.port);
 
     if (connect(srvfd, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) < 0) {
         std::cerr << "Error: connect failed" << std::endl;
