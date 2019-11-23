@@ -14,6 +14,7 @@
 #include "LB_algo.hpp"
 #include "RoundRobin.hpp"
 #include "LeastConn.hpp"
+#include "SourceHash.hpp"
 
 LB_algo *lb;
 
@@ -52,6 +53,7 @@ int main(int argc, char **argv)
         }
 
         Server server = lb->select_server(cli_addr);
+	std::cout << "The selected server is " << server.ip << ":" << server.port << std::endl;
 
         if ((childpid = fork()) < 0) {
             std::cerr << "Error: fork failed" << std::endl;
@@ -87,10 +89,10 @@ int proxy(const Server& server)
 
     srv_addr.sin_family = AF_INET;
     srv_addr.sin_addr.s_addr = htonl(server.ip);
-    srv_addr.sin_port = server.port;
+    srv_addr.sin_port = htons(server.port);
 
     if (connect(srvfd, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) < 0) {
-        std::cerr << "Error: connect failed" << std::endl;
+        std::cerr << "Error: connect failed on IP:" << server.ip << ", PORT:" << server.port << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -190,6 +192,8 @@ void load_config(const std::string& cfg, LB_algo *&lb)
         lb = new RoundRobin();
     } else if (buf == "leastconn") {
         lb = new LeastConn();
+    } else if (buf == "sourcehash") {
+        lb = new SourceHash();
     } else {
         std::cerr << "Error: unknown algorithm: " + buf << std::endl;
         exit(EXIT_FAILURE);
@@ -238,6 +242,8 @@ int passiveTCP(int port)
         std::cerr << "Error: listen failed" << std::endl;
         return -1;
     }
+
+    std::cout << "load balancer is listening..." << std::endl;
 
     return sockfd;
 }
