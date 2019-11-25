@@ -9,8 +9,8 @@ void LeastConn::add_server(uint32_t ip, int port)
 Server LeastConn::select_server(
     const struct sockaddr_in& client __attribute__((unused)))
 {
-    size_t least_num_conns = srv_conns.begin()->second.size();
-    Server least_conn_server = srv_conns.begin()->first;
+    size_t least_num_conns = -1;
+    Server least_conn_server;
 
     for (const auto& srv_conn : srv_conns) {
         if (srv_conn.second.size() < least_num_conns) {

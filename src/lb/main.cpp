@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -53,7 +54,8 @@ int main(int argc, char **argv)
         }
 
         Server server = lb->select_server(cli_addr);
-	std::cout << "The selected server is " << server.ip << ":" << server.port << std::endl;
+        std::cout << "The selected server is " << server.ip << ":"
+                  << server.port << std::endl;
 
         if ((childpid = fork()) < 0) {
             std::cerr << "Error: fork failed" << std::endl;
@@ -92,7 +94,7 @@ int proxy(const Server& server)
     srv_addr.sin_port = htons(server.port);
 
     if (connect(srvfd, (struct sockaddr *)&srv_addr, sizeof(srv_addr)) < 0) {
-        std::cerr << "Error: connect failed on IP:" << server.ip << ", PORT:" << server.port << std::endl;
+        std::cerr << "Error: connect failed" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -242,8 +244,6 @@ int passiveTCP(int port)
         std::cerr << "Error: listen failed" << std::endl;
         return -1;
     }
-
-    std::cout << "load balancer is listening..." << std::endl;
 
     return sockfd;
 }

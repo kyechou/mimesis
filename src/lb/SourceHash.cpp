@@ -1,10 +1,10 @@
-#include <netinet/in.h>
-
 #include "SourceHash.hpp"
 
 Server SourceHash::select_server(const struct sockaddr_in& client)
 {
-    uint32_t hashed = (client.sin_addr.s_addr + (uint32_t)client.sin_port) % (uint32_t)servers.size();
+    uint32_t cli_addr = ntohl(client.sin_addr.s_addr);
+    uint32_t cli_port = ntohs(client.sin_port);
+    size_t choice = (cli_addr + cli_port) % servers.size();
 
-    return servers.at(hashed);
+    return servers[choice];
 }

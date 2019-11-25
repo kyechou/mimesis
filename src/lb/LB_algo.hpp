@@ -1,6 +1,8 @@
 #pragma once
 
 #include <unistd.h>
+#include <netinet/in.h>
+
 #include <cstdint>
 #include <vector>
 
