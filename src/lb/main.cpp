@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -14,6 +15,7 @@
 #include "LB_algo.hpp"
 #include "RoundRobin.hpp"
 #include "LeastConn.hpp"
+#include "SourceHash.hpp"
 
 LB_algo *lb;
 
@@ -52,6 +54,8 @@ int main(int argc, char **argv)
         }
 
         Server server = lb->select_server(cli_addr);
+        std::cout << "The selected server is " << server.ip << ":"
+                  << server.port << std::endl;
 
         if ((childpid = fork()) < 0) {
             std::cerr << "Error: fork failed" << std::endl;
@@ -190,6 +194,8 @@ void load_config(const std::string& cfg, LB_algo *&lb)
         lb = new RoundRobin();
     } else if (buf == "leastconn") {
         lb = new LeastConn();
+    } else if (buf == "sourcehash") {
+        lb = new SourceHash();
     } else {
         std::cerr << "Error: unknown algorithm: " + buf << std::endl;
         exit(EXIT_FAILURE);

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <unistd.h>
+#include <netinet/in.h>
+
 #include <cstdint>
 #include <vector>
 
@@ -28,7 +30,7 @@ protected:
     std::vector<Server> servers;
 
 public:
-    void add_server(uint32_t ip, int port);
+    virtual void add_server(uint32_t ip, int port);
     virtual Server select_server(const struct sockaddr_in& client) = 0;
     virtual void add_connection(pid_t pid, const Server& server);
     virtual void job_done(pid_t pid);

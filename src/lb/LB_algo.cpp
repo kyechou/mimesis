@@ -27,7 +27,7 @@ void LB_algo::add_server(uint32_t ip, int port)
 }
 
 void LB_algo::add_connection(pid_t pid __attribute__((unused)),
-                    const Server& server __attribute__((unused)))
+                             const Server& server __attribute__((unused)))
 {
 }
 
