@@ -122,7 +122,7 @@ static inline void usage(const std::string& progname)
               "Usage: " + progname + " [OPTIONS]\n"
               "Options:\n"
               "    -h, --help         print this help message\n"
-              "    -f, --conf <file>  specify the configuration file (default: lb.conf)\n"
+              "    -f, --conf <file>  specify the configuration file (default: src/lb.conf)\n"
               "    -p, --port <port>  specify the listening port (default: 8088)\n";
 }
 
@@ -137,7 +137,7 @@ void parse_args(int argc, char **argv, std::string& cfg, int& port)
         {0, 0, 0, 0}
     };
 
-    cfg = "lb.conf";
+    cfg = "src/lb.conf";
     port = 8088;
 
     while ((opt = getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
