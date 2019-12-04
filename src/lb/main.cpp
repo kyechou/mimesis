@@ -8,31 +8,33 @@
 #include <unistd.h>
 
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <cstring>
+#include <cstdio>
 
 #include "LB_algo.hpp"
 #include "RoundRobin.hpp"
 #include "LeastConn.hpp"
 #include "SourceHash.hpp"
 
-LB_algo *lb;
+//LB_algo lb;
+//RoundRobin lb;
+//LeastConn  lb;
+SourceHash lb;
 
-void load_config(const std::string& cfg, LB_algo *&lb);
+void load_config();
 void reaper(int sig);
 int passiveTCP(int port);
 int proxy(const Server& server);
 
 int main()
 {
-    std::string cfg = "src/lb.conf";
     int msock, ssock, port = 8088;
     pid_t childpid;
     struct sockaddr_in cli_addr;
     socklen_t clilen = sizeof(struct sockaddr_in);
 
-    load_config(cfg, lb);
+    load_config();
     signal(SIGCHLD, reaper);
 
     /* build a TCP listening socket */
@@ -51,7 +53,7 @@ int main()
             return EXIT_FAILURE;
         }
 
-        Server server = lb->select_server(cli_addr);
+        Server server = lb.select_server(cli_addr);
         std::cout << "The selected server is " << server.ip << ":"
                   << server.port << std::endl;
 
@@ -67,14 +69,14 @@ int main()
             return proxy(server);
         }
 
-        lb->add_connection(childpid, server);
+        lb.add_connection(childpid, server);
         close(ssock);
     }
 
     return EXIT_SUCCESS;
 }
 
-#define buflen 100000
+#define buflen 1000
 
 int proxy(const Server& server)
 {
@@ -109,7 +111,7 @@ void reaper(int sig)
 {
     pid_t pid;
     while ((pid = waitpid(-1, NULL, WNOHANG)) > 0) {
-        lb->job_done(pid);
+        lb.job_done(pid);
     }
     signal(sig, reaper);
 }
@@ -124,55 +126,33 @@ static inline void usage(const std::string& progname)
               "    -p, --port <port>  specify the listening port (default: 8088)\n";
 }
 
-static inline uint32_t strtoIP(const std::string& ips)
+//static inline uint32_t strtoIP(const std::string& ips)
+//{
+//    int parsed, r, oct[4];
+//    r = sscanf(ips.c_str(), "%d.%d.%d.%d%n", oct, oct + 1, oct + 2, oct + 3,
+//               &parsed);
+//    if (r != 4 || parsed != (int)ips.size()) {
+//        std::cerr << "Failed to parse IP: " + ips << std::endl;
+//        exit(EXIT_FAILURE);
+//    }
+//    uint32_t value = 0;
+//    for (int i = 0; i < 4; ++i) {
+//        if (oct[i] < 0 || oct[i] > 255) {
+//            std::cerr << "Invalid IP octet: " + std::to_string(oct[i])
+//                      << std::endl;
+//            exit(EXIT_FAILURE);
+//        }
+//        value = (value << 8) + oct[i];
+//    }
+//    return value;
+//}
+
+void load_config()
 {
-    int parsed, r, oct[4];
-    r = sscanf(ips.c_str(), "%d.%d.%d.%d%n", oct, oct + 1, oct + 2, oct + 3,
-               &parsed);
-    if (r != 4 || parsed != (int)ips.size()) {
-        std::cerr << "Failed to parse IP: " + ips << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    uint32_t value = 0;
-    for (int i = 0; i < 4; ++i) {
-        if (oct[i] < 0 || oct[i] > 255) {
-            std::cerr << "Invalid IP octet: " + std::to_string(oct[i])
-                      << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        value = (value << 8) + oct[i];
-    }
-    return value;
-}
-
-void load_config(const std::string& cfg, LB_algo *&lb)
-{
-    std::string buf;
-    std::ifstream config(cfg);
-
-    if (config.fail()) {
-        std::cerr << "Error: cannot open file: " + cfg << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    std::getline(config, buf);
-    if (buf == "roundrobin") {
-        lb = new RoundRobin();
-    } else if (buf == "leastconn") {
-        lb = new LeastConn();
-    } else if (buf == "sourcehash") {
-        lb = new SourceHash();
-    } else {
-        std::cerr << "Error: unknown algorithm: " + buf << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    while (std::getline(config, buf)) {
-        size_t colon = buf.find(':');
-        int port = std::stoi(std::string(buf, colon + 1));
-        buf.erase(colon);
-        lb->add_server(strtoIP(buf), port);
-    }
+    lb.add_server(2130706433UL, 9000);
+    lb.add_server(2130706433UL, 9001);
+    lb.add_server(2130706433UL, 9002);
+    lb.add_server(2130706433UL, 9003);
 }
 
 int passiveTCP(int port)

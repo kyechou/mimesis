@@ -8,7 +8,7 @@ import angr
 
 TARGET = 'lb'
 CONFIG_NAME = 'src/lb.conf'
-CONFIG_CONTENT = '''leastconn
+CONFIG_CONTENT = '''sourcehash
 127.0.0.1:9000
 127.0.0.1:9001
 127.0.0.1:9002
@@ -89,10 +89,13 @@ s2 = sm.found[0]
 # };
 
 s2.mem[cli_addr_ptr].short      = 2
-s2.mem[cli_addr_ptr+2].uint16_t = 8000
-s2.mem[cli_addr_ptr+4].uint32_t = 0xffffffff
+s2.mem[cli_addr_ptr+2].uint16_t = 12345
+s2.mem[cli_addr_ptr+4].uint32_t = 0x7f000001    # 127.0.0.1
 
-#s3 = s2.step().successors[0]
+#lb = p.loader.find_symbol('lb')
+#s1.mem[lb.rebased_addr].uint64_t
+
+s3 = s2.step().successors[0]
 
 
 decision_funcs = list()
@@ -103,4 +106,3 @@ for sym in p.loader.symbols:
 
 #state.inspect.b('call', when=angr.BP_BEFORE, function_name='accept', action=test)
 #state.inspect.b('instruction', when=angr.BP_BEFORE, instruction=accept_insn.insn.address, action=test)
-
