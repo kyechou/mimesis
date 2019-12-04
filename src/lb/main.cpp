@@ -51,8 +51,6 @@ int main()
             return EXIT_FAILURE;
         }
 
-        // RDI, RSI, RDX, RCX, R8, R9
-
         Server server = lb->select_server(cli_addr);
         std::cout << "The selected server is " << server.ip << ":"
                   << server.port << std::endl;
