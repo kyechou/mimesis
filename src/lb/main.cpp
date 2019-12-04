@@ -19,21 +19,19 @@
 
 LB_algo *lb;
 
-void parse_args(int argc, char **argv, std::string& cfg, int& port);
 void load_config(const std::string& cfg, LB_algo *&lb);
 void reaper(int sig);
 int passiveTCP(int port);
 int proxy(const Server& server);
 
-int main(int argc, char **argv)
+int main()
 {
-    std::string cfg;
-    int msock, ssock, port;
+    std::string cfg = "src/lb.conf";
+    int msock, ssock, port = 8088;
     pid_t childpid;
     struct sockaddr_in cli_addr;
     socklen_t clilen = sizeof(struct sockaddr_in);
 
-    parse_args(argc, argv, cfg, port);
     load_config(cfg, lb);
     signal(SIGCHLD, reaper);
 
@@ -52,6 +50,8 @@ int main(int argc, char **argv)
             std::cerr << "Error: accept failed" << std::endl;
             return EXIT_FAILURE;
         }
+
+        // RDI, RSI, RDX, RCX, R8, R9
 
         Server server = lb->select_server(cli_addr);
         std::cout << "The selected server is " << server.ip << ":"
@@ -124,38 +124,6 @@ static inline void usage(const std::string& progname)
               "    -h, --help         print this help message\n"
               "    -f, --conf <file>  specify the configuration file (default: src/lb.conf)\n"
               "    -p, --port <port>  specify the listening port (default: 8088)\n";
-}
-
-void parse_args(int argc, char **argv, std::string& cfg, int& port)
-{
-    int opt;
-    const char *optstring = "hp:f:";
-    const struct option longopts[] = {
-        {"help",    no_argument,       0, 'h'},
-        {"conf",    required_argument, 0, 'f'},
-        {"port",    required_argument, 0, 'p'},
-        {0, 0, 0, 0}
-    };
-
-    cfg = "src/lb.conf";
-    port = 8088;
-
-    while ((opt = getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
-        switch (opt) {
-            case 'h':
-                usage(argv[0]);
-                exit(EXIT_SUCCESS);
-            case 'f':
-                cfg = optarg;
-                break;
-            case 'p':
-                port = strtol(optarg, NULL, 10);
-                break;
-            default:
-                usage(argv[0]);
-                exit(EXIT_FAILURE);
-        }
-    }
 }
 
 static inline uint32_t strtoIP(const std::string& ips)

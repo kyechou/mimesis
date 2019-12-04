@@ -14,8 +14,8 @@ LD          = g++
 LN_S        = ln -s
 INSTALL     = /usr/bin/install -c
 MKDIR_P     = /usr/bin/mkdir -p
-CFLAGS      = -O3 -Wall -Wextra -Werror -std=c11
-CXXFLAGS    = -O3 -Wall -Wextra -Werror -std=c++17
+CFLAGS      = -O0 -Wall -Wextra -Werror -std=c11
+CXXFLAGS    = -O0 -Wall -Wextra -Werror -std=c++17
 CPPFLAGS    = -iquote ./src -iquote ./src/lb
 LDFLAGS     =
 LIBS        =
