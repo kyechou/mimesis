@@ -3,6 +3,9 @@
 import os
 import sys
 import angr
+import logging
+
+logging.getLogger('angr').setLevel('ERROR')
 
 ################################################################################
 
@@ -39,13 +42,13 @@ def find_instruction(p, parent_func, find, find_all=False):
 #os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 TARGET = 'lb'
-CONFIG_NAME = 'src/lb.conf'
-CONFIG_CONTENT = '''sourcehash
-127.0.0.1:9000
-127.0.0.1:9001
-127.0.0.1:9002
-127.0.0.1:9003
-'''
+# CONFIG_NAME = 'src/lb.conf'
+# CONFIG_CONTENT = '''sourcehash
+# 127.0.0.1:9000
+# 127.0.0.1:9001
+# 127.0.0.1:9002
+# 127.0.0.1:9003
+# '''
 
 p = angr.Project(TARGET, auto_load_libs=False)
 cfg = p.analyses.CFGFast()
@@ -93,12 +96,13 @@ if not fork_insn:
 
 ################################################################################
 
-config = angr.SimFile(CONFIG_NAME, content=CONFIG_CONTENT, concrete=True)
+#config = angr.SimFile(CONFIG_NAME, content=CONFIG_CONTENT, concrete=True)
 blank_concrete_file = angr.SimFile('blank_concrete_file', content='',
         concrete=True)
 main = cfg.kb.functions['main']
-state = p.factory.entry_state(addr=main.addr, args=[TARGET, '-f', CONFIG_NAME],
-        fs={CONFIG_NAME: config}, stdin=blank_concrete_file)
+#state = p.factory.entry_state(addr=main.addr, args=[TARGET, '-f', CONFIG_NAME],
+#        fs={CONFIG_NAME: config}, stdin=blank_concrete_file)
+state = p.factory.entry_state(addr=main.addr, stdin=blank_concrete_file)
 sm = p.factory.simulation_manager(state)
 
 ## Find the state right before calling accept
@@ -126,8 +130,14 @@ sm.move('found', 'active')
 # };
 
 s2.mem[cli_addr_ptr].short      = 2
-s2.mem[cli_addr_ptr+2].uint16_t = 12345
-s2.mem[cli_addr_ptr+4].uint32_t = 0x7f000001    # 127.0.0.1
+#s2.mem[cli_addr_ptr+2].uint16_t = 12345
+#s2.mem[cli_addr_ptr+4].uint32_t = 0x7f000001    # 127.0.0.1
+cli_port = s2.solver.BVS("cli_port", 16)
+cli_ip = s2.solver.BVS("cli_ip", 32)
+s2.solver.add(cli_ip == 0x7f000001)
+s2.solver.add(cli_port > 1024)
+s2.mem[cli_addr_ptr+2].uint16_t = cli_port
+s2.mem[cli_addr_ptr+4].uint32_t = cli_ip
 
 ################################################################################
 
@@ -197,3 +207,12 @@ sm.move('found', 'active')
 ################################################################################
 # SourceHash
 ################################################################################
+print('================ SourceHash ================')
+addr = s4.regs.rax & s4.solver.BVV(0xffffffff, 64)
+port = (s4.regs.rax & s4.solver.BVV(0xffffffff00000000, 64)) >> 32
+print('Addr:', addr)
+print('Port:', port)
+s4.solver.add(addr == 0x7f000001)
+s4.solver.add(port == 9003)
+print('Evaluated cli_ip:',   s4.solver.eval(cli_ip))
+print('Evaluated cli_port:', s4.solver.eval(cli_port))

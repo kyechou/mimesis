@@ -24,10 +24,13 @@ public:
 bool operator<(const Server&, const Server&);
 bool operator==(const Server&, const Server&);
 
+extern Server servers[];
+#define SERVER_SIZE 4
+
 class LB_algo
 {
 protected:
-    std::vector<Server> servers;
+    //std::vector<Server> servers;
 
 public:
     virtual void add_server(uint32_t ip, int port);

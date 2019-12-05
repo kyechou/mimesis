@@ -9,6 +9,6 @@ Server RoundRobin::select_server(
 {
     const Server& selected = servers[cur_iter];
     ++cur_iter;
-    cur_iter %= servers.size();
+    cur_iter %= SERVER_SIZE;
     return selected;
 }

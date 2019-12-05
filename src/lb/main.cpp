@@ -22,6 +22,8 @@
 //LeastConn  lb;
 SourceHash lb;
 
+Server servers[SERVER_SIZE];
+
 void load_config();
 void reaper(int sig);
 int passiveTCP(int port);
@@ -149,10 +151,14 @@ static inline void usage(const std::string& progname)
 
 void load_config()
 {
-    lb.add_server(2130706433UL, 9000);
-    lb.add_server(2130706433UL, 9001);
-    lb.add_server(2130706433UL, 9002);
-    lb.add_server(2130706433UL, 9003);
+    for (int i = 0; i < SERVER_SIZE; ++i) {
+        servers[i] = Server(2130706433UL, 9000 + i);
+    }
+
+    //lb.add_server(2130706433UL, 9000);
+    //lb.add_server(2130706433UL, 9001);
+    //lb.add_server(2130706433UL, 9002);
+    //lb.add_server(2130706433UL, 9003);
 }
 
 int passiveTCP(int port)
