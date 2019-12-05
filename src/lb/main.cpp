@@ -118,15 +118,15 @@ void reaper(int sig)
     signal(sig, reaper);
 }
 
-static inline void usage(const std::string& progname)
-{
-    std::cout <<
-              "Usage: " + progname + " [OPTIONS]\n"
-              "Options:\n"
-              "    -h, --help         print this help message\n"
-              "    -f, --conf <file>  specify the configuration file (default: src/lb.conf)\n"
-              "    -p, --port <port>  specify the listening port (default: 8088)\n";
-}
+//static inline void usage(const std::string& progname)
+//{
+//    std::cout <<
+//              "Usage: " + progname + " [OPTIONS]\n"
+//              "Options:\n"
+//              "    -h, --help         print this help message\n"
+//              "    -f, --conf <file>  specify the configuration file (default: src/lb.conf)\n"
+//              "    -p, --port <port>  specify the listening port (default: 8088)\n";
+//}
 
 //static inline uint32_t strtoIP(const std::string& ips)
 //{
