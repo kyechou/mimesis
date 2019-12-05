@@ -5,7 +5,16 @@ import sys
 import angr
 import logging
 
+################################################################################
+
+#os.chdir(os.path.dirname(os.path.realpath(__file__)))
 logging.getLogger('angr').setLevel('ERROR')
+
+TARGET = 'lb'
+
+p = angr.Project(TARGET, auto_load_libs=False)
+cfg = p.analyses.CFGFast()
+cg = cfg.functions.callgraph
 
 ################################################################################
 
@@ -35,24 +44,6 @@ def inorder_DFS(p, parent_func, find, find_all):
 
 def find_instruction(p, parent_func, find, find_all=False):
     return inorder_DFS(p, parent_func, find, find_all)
-
-
-################################################################################
-
-#os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
-TARGET = 'lb'
-# CONFIG_NAME = 'src/lb.conf'
-# CONFIG_CONTENT = '''sourcehash
-# 127.0.0.1:9000
-# 127.0.0.1:9001
-# 127.0.0.1:9002
-# 127.0.0.1:9003
-# '''
-
-p = angr.Project(TARGET, auto_load_libs=False)
-cfg = p.analyses.CFGFast()
-cg = cfg.functions.callgraph
 
 ################################################################################
 
@@ -96,67 +87,10 @@ if not fork_insn:
 
 ################################################################################
 
-#config = angr.SimFile(CONFIG_NAME, content=CONFIG_CONTENT, concrete=True)
-blank_concrete_file = angr.SimFile('blank_concrete_file', content='',
-        concrete=True)
-main = cfg.kb.functions['main']
-#state = p.factory.entry_state(addr=main.addr, args=[TARGET, '-f', CONFIG_NAME],
-#        fs={CONFIG_NAME: config}, stdin=blank_concrete_file)
-state = p.factory.entry_state(addr=main.addr, stdin=blank_concrete_file)
-sm = p.factory.simulation_manager(state)
-
-## Find the state right before calling accept
-sm.explore(find=accept_insn.insn.address)
-s1 = sm.found[0]
-sm.drop()
-sm.move('found', 'active')
-cli_addr_ptr = s1.regs.rsi  # (struct sockaddr_in *)
-
-## Find the state right after accept returns
-sm.explore(find=accept_insn.insn.address + accept_insn.insn.size)
-s2 = sm.found[0]
-sm.drop()
-sm.move('found', 'active')
-
-# struct sockaddr_in {
-#     short            sin_family;   // e.g. AF_INET
-#     unsigned short   sin_port;     // e.g. htons(3490)
-#     struct in_addr   sin_addr;     // see struct in_addr, below
-#     char             sin_zero[8];  // zero this if you want to
-# };
-#
-# struct in_addr {
-#     unsigned long s_addr;  // load with inet_aton()
-# };
-
-s2.mem[cli_addr_ptr].short      = 2
-#s2.mem[cli_addr_ptr+2].uint16_t = 12345
-#s2.mem[cli_addr_ptr+4].uint32_t = 0x7f000001    # 127.0.0.1
-cli_port = s2.solver.BVS("cli_port", 16)
-cli_ip = s2.solver.BVS("cli_ip", 32)
-s2.solver.add(cli_ip == 0x7f000001)
-s2.solver.add(cli_port > 1024)
-s2.mem[cli_addr_ptr+2].uint16_t = cli_port
-s2.mem[cli_addr_ptr+4].uint32_t = cli_ip
-
-################################################################################
-
-# def reading_cli_addr(insn):
-#    if insn.insn.insn_name() == 'mov':
-#        print(insn)
-#    return insn.insn.insn_name() == 'mov'
-
 decision_funcs = list()
 for sym in p.loader.symbols:
     if sym.is_function and 'select_server' in sym.name:
         decision_funcs.append(cfg.kb.functions[sym.rebased_addr])
-#read_cli_insns = set()
-#for f in decision_funcs:
-#    insns = find_instruction(p, f, reading_cli_addr, find_all=True)
-#    if insns:
-#        read_cli_insns.update(insns)
-
-################################################################################
 
 decision_parents = set()    # parent functions who call select_server()
 
@@ -180,39 +114,113 @@ decision_insn = list(decision_insns)[0]
 
 ################################################################################
 
+blank_concrete_file = angr.SimFile('blank_concrete_file', content='',
+        concrete=True)
+main = cfg.kb.functions['main']
+state = p.factory.entry_state(addr=main.addr, stdin=blank_concrete_file)
+sm = p.factory.simulation_manager(state)
+
+# Find the state right before calling accept
+sm.explore(find=accept_insn.insn.address)
+s1 = sm.found[0]
+sm.drop()
+sm.move('found', 'active')
+cli_addr_ptr = s1.regs.rsi  # (struct sockaddr_in *)
+
+# Find the state right after accept returns
+sm.explore(find=accept_insn.insn.address + accept_insn.insn.size)
+s2 = sm.found[0]
+sm.drop()
+sm.move('found', 'active')
+
+################################################################################
+# SourceHash
+################################################################################
+
+# struct sockaddr_in {
+#     short            sin_family;   // e.g. AF_INET
+#     unsigned short   sin_port;     // e.g. htons(3490)
+#     struct in_addr   sin_addr;     // see struct in_addr, below
+#     char             sin_zero[8];  // zero this if you want to
+# };
+#
+# struct in_addr {
+#     unsigned long s_addr;  // load with inet_aton()
+# };
+
+s2.mem[cli_addr_ptr].short      = 2
+s2.mem[cli_addr_ptr+2].uint16_t = 12345
+s2.mem[cli_addr_ptr+4].uint32_t = 0x7f000001    # 127.0.0.1
+#cli_port = s2.solver.BVS("cli_port", 16)
+#cli_ip = s2.solver.BVS("cli_ip", 32)
+#s2.solver.add(cli_ip == 0x7f000001)
+#s2.solver.add(cli_port > 1024)
+#s2.mem[cli_addr_ptr+2].uint16_t = cli_port
+#s2.mem[cli_addr_ptr+4].uint32_t = cli_ip
+#
 ## Find the state right before calling select_server
+#sm.explore(find=decision_insn.insn.address)
+#s3 = sm.found[0]
+#sm.drop()
+#sm.move('found', 'active')
+#
+## Find the state right after select_server returns
+#sm.explore(find=decision_insn.insn.address + decision_insn.insn.size)
+#s4 = sm.found[0]
+#sm.drop()
+#sm.move('found', 'active')
+#
+#print('================ SourceHash ================')
+#addr = s4.regs.rax & s4.solver.BVV(0xffffffff, 64)
+#port = (s4.regs.rax & s4.solver.BVV(0xffffffff00000000, 64)) >> 32
+#print('Addr:', addr)
+#print('Port:', port)
+#s4.solver.add(addr == 0x7f000001)
+#s4.solver.add(port == 9003)
+#print('Evaluated cli_ip:',   s4.solver.eval(cli_ip))
+#print('Evaluated cli_port:', s4.solver.eval(cli_port))
+
+################################################################################
+# RoundRobin
+################################################################################
+
+# Find the state right before calling select_server
 sm.explore(find=decision_insn.insn.address)
 s3 = sm.found[0]
 sm.drop()
 sm.move('found', 'active')
 
-## Find the state right after select_server returns
+# round robin iterator
+rr_this = s3.regs.rdi
+cur_iter_ptr = rr_this + 8
+cur_iter = s3.solver.BVS("cur_iter", 32)
+s3.solver.add(cur_iter >= 0)
+s3.solver.add(cur_iter < 4)
+s3.mem[cur_iter_ptr].int = cur_iter
+
+# Find the state right after select_server returns
 sm.explore(find=decision_insn.insn.address + decision_insn.insn.size)
 s4 = sm.found[0]
 sm.drop()
 sm.move('found', 'active')
 
-################################################################################
-
-# def bp_action(state):
-#    print('============ BREAKPOINT ============')
-#    print('IP:', state.ip)
-#    print('&cli_addr:', cli_addr_ptr)
-#    print('MEM READ:', state.inspect.mem_read_address)
-#    print('MEM RD LEN:', state.inspect.mem_read_length)
-#bp = s4.inspect.b('mem_read', mem_read_address=cli_addr_ptr+2, action=bp_action)
-#bp = s4.inspect.b('mem_read', mem_read_address=cli_addr_ptr+4, action=bp_action)
-#sm.explore(find=fork_insn.insn.address)
-
-################################################################################
-# SourceHash
-################################################################################
-print('================ SourceHash ================')
+print('================ RoundRobin ================')
 addr = s4.regs.rax & s4.solver.BVV(0xffffffff, 64)
 port = (s4.regs.rax & s4.solver.BVV(0xffffffff00000000, 64)) >> 32
 print('Addr:', addr)
 print('Port:', port)
-s4.solver.add(addr == 0x7f000001)
-s4.solver.add(port == 9003)
-print('Evaluated cli_ip:',   s4.solver.eval(cli_ip))
-print('Evaluated cli_port:', s4.solver.eval(cli_port))
+print('Evaluated addr:', s4.solver.eval(addr))
+print('Evaluated port:', s4.solver.eval(port))
+
+# def bp_action(state):
+#    print('============ RoundRobin BP ============')
+#    addr = state.regs.rax & state.solver.BVV(0xffffffff, 64)
+#    port = (state.regs.rax & state.solver.BVV(0xffffffff00000000, 64)) >> 32
+#    print('Addr:', addr)
+#    print('Port:', port)
+#    print('Evaluated addr:', s4.solver.eval(addr))
+#    print('Evaluated port:', s4.solver.eval(port))
+#bp = s4.inspect.b('instruction',
+#        instruction=decision_insn.insn.address + decision_insn.insn.size,
+#        action=bp_action)
+#sm.run()

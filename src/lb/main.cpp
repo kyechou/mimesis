@@ -18,9 +18,9 @@
 #include "SourceHash.hpp"
 
 //LB_algo lb;
-//RoundRobin lb;
+RoundRobin lb;
 //LeastConn  lb;
-SourceHash lb;
+//SourceHash lb;
 
 Server servers[SERVER_SIZE];
 
