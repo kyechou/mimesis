@@ -21,10 +21,10 @@ bool operator==(const Server& a, const Server& b)
     return false;
 }
 
-void LB_algo::add_server(uint32_t ip, int port)
-{
-    servers.push_back(Server(ip, port));
-}
+//void LB_algo::add_server(uint32_t ip, int port)
+//{
+//    servers.push_back(Server(ip, port));
+//}
 
 void LB_algo::add_connection(pid_t pid __attribute__((unused)),
                              const Server& server __attribute__((unused)))

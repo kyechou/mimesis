@@ -177,7 +177,7 @@ s2.mem[cli_addr_ptr+4].uint32_t = 0x7f000001    # 127.0.0.1
 #print('Port:', port)
 #s4.solver.add(addr == 0x7f000001)
 #s4.solver.add(port == 9003)
-#print('Evaluated cli_ip:',   s4.solver.eval(cli_ip))
+#print('Evaluated cli_ip:',   hex(s4.solver.eval(cli_ip)))
 #print('Evaluated cli_port:', s4.solver.eval(cli_port))
 
 ################################################################################
@@ -209,7 +209,7 @@ addr = s4.regs.rax & s4.solver.BVV(0xffffffff, 64)
 port = (s4.regs.rax & s4.solver.BVV(0xffffffff00000000, 64)) >> 32
 print('Addr:', addr)
 print('Port:', port)
-print('Evaluated addr:', s4.solver.eval(addr))
+print('Evaluated addr:', hex(s4.solver.eval(addr)))
 print('Evaluated port:', s4.solver.eval(port))
 
 # def bp_action(state):

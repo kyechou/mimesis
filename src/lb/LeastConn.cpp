@@ -1,10 +1,10 @@
 #include "LeastConn.hpp"
 
-void LeastConn::add_server(uint32_t ip, int port)
-{
-    LB_algo::add_server(ip, port);
-    srv_conns.emplace(servers[SERVER_SIZE-1], std::unordered_set<pid_t>());
-}
+//void LeastConn::add_server(uint32_t ip, int port)
+//{
+//    LB_algo::add_server(ip, port);
+//    srv_conns.emplace(servers[SERVER_SIZE-1], std::unordered_set<pid_t>());
+//}
 
 Server LeastConn::select_server(
     const struct sockaddr_in& client __attribute__((unused)))
