@@ -1,0 +1,15 @@
+
+\subsection{Future challenges}
+
+% future challenges: function pointer, need of program specific knowledge
+In the future, we plan to finish the implementation of the whole analysis
+procedure, and possibly automating it. However, a main challenge of our work is
+the fact that in order to do analysis, we still need to assume some level of
+understanding of the target program implementation, such as the system call APIs
+the program uses, and fully automation without prior knowledge remains very
+difficult, if not impossible, at this stage. Another challenge would be dynamic
+behavior of the program, such as function pointers that cannot be determined
+statically. Though it may be possible to inject concrete values to some
+variables to the program through angr and to get the concrete values of those
+function pointers, it would definitely increase the complexity of the analysis.
+
