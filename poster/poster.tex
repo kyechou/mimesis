@@ -21,7 +21,7 @@
 
 \documentclass[final,hyperref={pdfpagelabels=false}]{beamer}
 
-\usepackage[orientation=portrait,size=a0,scale=1.4]{beamerposter} % Use the beamerposter package for laying out the poster with a portrait orientation and an a0 paper size
+\usepackage[orientation=portrait,size=custom,width=55.9,height=86.4,scale=1]{beamerposter} % Use the beamerposter package for laying out the poster with a portrait orientation and an a0 paper size
 
 \usetheme{I6pd2} % Use the I6pd2 theme supplied with this template
 
@@ -41,7 +41,7 @@
 \usecaptiontemplate{\small\structure{\insertcaptionname~\insertcaptionnumber: }\insertcaption} % A fix for figure numbering
 
 %----------------------------------------------------------------------------------------
-%	TITLE SECTION 
+%	TITLE SECTION
 %----------------------------------------------------------------------------------------
 
 \title{\huge Unnecessarily Complicated Research Title} % Poster title
@@ -89,7 +89,7 @@
 %----------------------------------------------------------------------------------------
 %	INTRODUCTION
 %----------------------------------------------------------------------------------------
-            
+
 \begin{block}{Introduction}
 
 \begin{itemize}
@@ -147,18 +147,18 @@
 \begin{itemize}
 \item Maecenas Vel Nisl Elit
 \begin{itemize}
-\item Suspendisse potenti. Fusce a est eget turpis rhoncus varius sed sed dui. Cras justo nibh, bibendum a cursus eget, consequat et dui. Maecenas vel nisl elit, sed dignissim dolor. 
+\item Suspendisse potenti. Fusce a est eget turpis rhoncus varius sed sed dui. Cras justo nibh, bibendum a cursus eget, consequat et dui. Maecenas vel nisl elit, sed dignissim dolor.
 \item In hac habitasse platea dictumst.
 \end{itemize}
 
 \item Viewpoint Matching Constraints
 \begin{itemize}
-\item Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
+\item Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
 \item Proin in nisi diam.
 \item Nam ultricies pellentesque nunc, ultrices volutpat nisl ultrices a.
 \end{itemize}
 
-\item Volutpat 
+\item Volutpat
 \begin{itemize}
 \item Duis semper lorem eget dui dignissim porttitor.
 \item Nulla facilisi. In ullamcorper lorem quis dolor.
@@ -178,7 +178,7 @@
 \begin{itemize}
 \item Duis ante erat, bibendum nec tempus nec, interdum quis est. Nulla at mollis tortor. Phasellus quis leo dolor, aliquam laoreet orci $X$ Donec dapibus sagittis neque eu nec, interdum quis est. $Y_n, n=1,\cdots,N$ ndum nec tempus nec, interd
 \begin{align*}
-X \rightarrow r(X) & = \arg \max_{c} \Big\{ \max_n \big\{ \sum_{x_i \in X} \delta(x_i,Y_{n,c})\big\} \Big\} 
+X \rightarrow r(X) & = \arg \max_{c} \Big\{ \max_n \big\{ \sum_{x_i \in X} \delta(x_i,Y_{n,c})\big\} \Big\}
 \end{align*}
 \item Cras faucibus scelerisque cursus. Proin ut vestibulum augue. $\delta(x_i,Y_{n,c})$
 \end{itemize}
@@ -192,7 +192,7 @@ X \rightarrow r(X) & = \arg \max_{c} \Big\{ \max_n \big\{ \sum_{x_i \in X} \delt
 \end{column} % End of the first column
 
 \begin{column}{.03\textwidth}\end{column} % Empty spacer column
- 
+
 \begin{column}{.465\textwidth} % The second column
 
 %----------------------------------------------------------------------------------------
@@ -235,7 +235,7 @@ Treatment 3 & 0.0009271 & 0.296 \\
 \end{tabular}
 \caption{Table caption}
 \end{table}
-     
+
 \end{block}
 
 %------------------------------------------------
@@ -257,7 +257,7 @@ Treatment 3 & 0.0009271 & 0.296 \\
 
 \begin{itemize}
 \item Opet volutpat ligula. Duis semper lorem eget dui dignissim porttitor. Nulla facilisi. In ullamcorper lorem quis dolor iaculis nec egestas enim ultricies. Cras ut mauris elit, ut lacinia dui. Proin in ante et libero hendrerit iaculis.
-\item Nulla eu erat a urna laoreet auctor id a turpis. Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis. 
+\item Nulla eu erat a urna laoreet auctor id a turpis. Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis.
 \item Aenean id neque dolor.
 \item Opet volutpat ligula. Duis semper lorem eget dui dignissim porttitor. Nulla facilisi. In ullamcorper lorem quis dolor iaculis nec egestas enim ultricies. Cras ut mauris elit, ut lacinia dui. Proin in ante et libero hendrerit iaculis.
 \end{itemize}
@@ -269,7 +269,7 @@ Treatment 3 & 0.0009271 & 0.296 \\
 %----------------------------------------------------------------------------------------
 
 \begin{block}{References}
-        
+
 \nocite{*} % Insert publications even if they are not cited in the poster
 \small{\bibliographystyle{unsrt}
 \bibliography{sample}}
