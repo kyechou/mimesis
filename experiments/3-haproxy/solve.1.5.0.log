@@ -1,0 +1,49 @@
+/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/pysmt/walkers/generic.py:43: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.9 it will stop working
+  if len(nodetypes) == 1 and isinstance(nodetypes[0], collections.Iterable):
+WARNING | 2019-12-11 22:48:08,194 | [36mcle.loader[0m | [36mThe main binary is a position-independent executable. It is being loaded with a base address of 0x400000.[0m
+WARNING | 2019-12-11 22:48:08,981 | [32mangr.state_plugins.symbolic_memory[0m | [32mThe program is accessing memory or registers with an unspecified value. This could indicate unwanted behavior.[0m
+WARNING | 2019-12-11 22:48:08,981 | [32mangr.state_plugins.symbolic_memory[0m | [32mangr will cope with this by generating an unconstrained symbolic variable and continuing. You can resolve this by:[0m
+WARNING | 2019-12-11 22:48:08,981 | [32mangr.state_plugins.symbolic_memory[0m | [32m1) setting a value to the initial state[0m
+WARNING | 2019-12-11 22:48:08,981 | [32mangr.state_plugins.symbolic_memory[0m | [32m2) adding the state option ZERO_FILL_UNCONSTRAINED_{MEMORY,REGISTERS}, to make unknown regions hold null[0m
+WARNING | 2019-12-11 22:48:08,981 | [32mangr.state_plugins.symbolic_memory[0m | [32m3) adding the state option SYMBOL_FILL_UNCONSTRAINED_{MEMORY_REGISTERS}, to suppress these messages.[0m
+WARNING | 2019-12-11 22:48:08,981 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7fffffff with 8 unconstrained bytes referenced from 0x40c3c9 (_start+0x9 in haproxy-1.5.0 (0xc3c9))[0m
+WARNING | 2019-12-11 22:48:18,274 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:21,903 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:21,918 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:21,918 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:22,009 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:22,034 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:22,034 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:23,039 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:23,058 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:23,058 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:23,082 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:26,259 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:26,309 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:27,052 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:28,670 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:28,688 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:28,711 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:31,091 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:31,107 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:31,122 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:31,142 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:31,142 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:31,183 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:31,199 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:34,988 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:35,051 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:35,085 | [37mclaripy.vsa.strided_interval[0m | [37mReversing a real strided-interval <64>0x1[0x900000000000000, 0x7fffffffffffffff]R(uninit) is bad[0m
+WARNING | 2019-12-11 22:48:36,006 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:36,024 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 22:48:36,043 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+ERROR   | 2019-12-11 22:48:36,816 | [34mangr.analyses.cfg.cfg_fast[0m | [34mDecoding error occurred at address 0x40b786 of function 0x40b77f.[0m
+ERROR   | 2019-12-11 22:48:38,106 | [34mangr.analyses.cfg.cfg_fast[0m | [34mDecoding error occurred at address 0x4527ef of function 0x4527e9.[0m
+ERROR   | 2019-12-11 22:48:38,106 | [34mangr.analyses.cfg.cfg_fast[0m | [34mDecoding error occurred at address 0x4527f0 of function 0x4527f0.[0m
+WARNING | 2019-12-11 22:48:41,622 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0060 with 8 unconstrained bytes referenced from 0x413be3 (parse_logformat_var+0x323 in haproxy-1.5.0 (0x13be3))[0m
+WARNING | 2019-12-11 22:48:41,756 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0000 with 8 unconstrained bytes referenced from 0x45e153 (stats_dump_proxy_to_buffer+0x73 in haproxy-1.5.0 (0x5e153))[0m
+WARNING | 2019-12-11 22:51:00,479 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0000 with 128 unconstrained bytes referenced from 0x10003a0 (strchr+0x0 in extern-address space (0x3a0))[0m
+Simulation manager: <SimulationManager with 1 deadended>
+SimMgr.found stash: []
+176.22user 0.38system 2:56.94elapsed 99%CPU (0avgtext+0avgdata 525912maxresident)k
+0inputs+1064outputs (0major+161362minor)pagefaults 0swaps

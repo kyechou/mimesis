@@ -5,5 +5,8 @@ cd "$SCRIPT_DIR"
 
 source "$SCRIPT_DIR/../../angr.venv/bin/activate"
 
-/usr/bin/time python solve.py --target 'haproxy-2.0.7' >solve.2.0.7.log 2>&1
-/usr/bin/time python solve.py --target 'haproxy-1.5.0' >solve.1.5.0.log 2>&1
+versions=('1.5.0' '1.6.0' '1.7.0' '1.8.0' '1.9.0' '2.0.0' '2.1.0')
+
+for ver in ${versions[@]}; do
+    /usr/bin/time python solve.py --target "haproxy-$ver" >solve.$ver.log 2>&1
+done

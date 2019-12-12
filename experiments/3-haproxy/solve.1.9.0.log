@@ -1,0 +1,123 @@
+/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/pysmt/walkers/generic.py:43: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.9 it will stop working
+  if len(nodetypes) == 1 and isinstance(nodetypes[0], collections.Iterable):
+WARNING | 2019-12-11 23:14:20,258 | [36mcle.loader[0m | [36mThe main binary is a position-independent executable. It is being loaded with a base address of 0x400000.[0m
+WARNING | 2019-12-11 23:14:21,871 | [32mangr.state_plugins.symbolic_memory[0m | [32mThe program is accessing memory or registers with an unspecified value. This could indicate unwanted behavior.[0m
+WARNING | 2019-12-11 23:14:21,871 | [32mangr.state_plugins.symbolic_memory[0m | [32mangr will cope with this by generating an unconstrained symbolic variable and continuing. You can resolve this by:[0m
+WARNING | 2019-12-11 23:14:21,871 | [32mangr.state_plugins.symbolic_memory[0m | [32m1) setting a value to the initial state[0m
+WARNING | 2019-12-11 23:14:21,871 | [32mangr.state_plugins.symbolic_memory[0m | [32m2) adding the state option ZERO_FILL_UNCONSTRAINED_{MEMORY,REGISTERS}, to make unknown regions hold null[0m
+WARNING | 2019-12-11 23:14:21,871 | [32mangr.state_plugins.symbolic_memory[0m | [32m3) adding the state option SYMBOL_FILL_UNCONSTRAINED_{MEMORY_REGISTERS}, to suppress these messages.[0m
+WARNING | 2019-12-11 23:14:21,871 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7fffffff with 8 unconstrained bytes referenced from 0x4196f9 (_start+0x9 in haproxy-1.9.0 (0x196f9))[0m
+WARNING | 2019-12-11 23:14:40,515 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:40,517 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+INFO    | 2019-12-11 23:14:40,537 | [34mpyvex.lifting.libvex[0m | [34munhandled opc_aux = 0x 1
+first_opcode == 0xD9
+[0m
+WARNING | 2019-12-11 23:14:40,608 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:40,629 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:40,644 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:41,000 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:41,015 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:41,015 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:42,176 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:42,552 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:43,644 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:45,049 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:45,118 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:45,136 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:45,136 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:45,201 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:45,222 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:45,223 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:45,248 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for >>: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:46,077 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for >>: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:46,137 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:46,137 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:46,138 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:46,837 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:46,969 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:46,985 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:47,044 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:47,062 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:49,286 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:49,304 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:51,640 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+INFO    | 2019-12-11 23:14:51,658 | [34mpyvex.lifting.libvex[0m | [34munhandled opc_aux = 0x 1
+first_opcode == 0xD9
+[0m
+WARNING | 2019-12-11 23:14:51,659 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:51,739 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:51,761 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:51,761 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:51,786 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:51,787 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:51,823 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:51,856 | [37mclaripy.vsa.strided_interval[0m | [37mReversing a real strided-interval <64>0x1[0x900000000000000, 0x7fffffffffffffff]R(uninit) is bad[0m
+WARNING | 2019-12-11 23:14:53,463 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:54,337 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:54,357 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for &: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:56,046 | [35mangr.analyses.cfg.indirect_jump_resolvers.jumptable.JumpTableProcessor[0m | unsupported operand type(s) for <<: 'RegisterOffset' and 'int'
+WARNING | 2019-12-11 23:14:56,059 | [34mangr.engines.successors[0m | [34mExit state has over 0 possible solutions. Likely unconstrained; skipping. <BV64 SignExt(32, Reverse(unconstrained_read_34123_32{UNINITIALIZED})) + 0x51a684>[0m
+ERROR   | 2019-12-11 23:14:59,195 | [34mangr.analyses.cfg.cfg_fast[0m | [34mDecoding error occurred at address 0x46b15f of function 0x4699ee.[0m
+ERROR   | 2019-12-11 23:14:59,197 | [34mangr.analyses.cfg.cfg_fast[0m | [34mDecoding error occurred at address 0x46ab7b of function 0x4699ee.[0m
+WARNING | 2019-12-11 23:15:07,516 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff002c with 4 unconstrained bytes referenced from 0x4c5994 (smp_resolve_args+0x5d4 in haproxy-1.9.0 (0xc5994))[0m
+WARNING | 2019-12-11 23:15:07,518 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0058 with 8 unconstrained bytes referenced from 0x4c599c (smp_resolve_args+0x5dc in haproxy-1.9.0 (0xc599c))[0m
+WARNING | 2019-12-11 23:15:07,522 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0060 with 8 unconstrained bytes referenced from 0x4c599d (smp_resolve_args+0x5dd in haproxy-1.9.0 (0xc599d))[0m
+WARNING | 2019-12-11 23:15:07,524 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0068 with 8 unconstrained bytes referenced from 0x4c599e (smp_resolve_args+0x5de in haproxy-1.9.0 (0xc599e))[0m
+WARNING | 2019-12-11 23:15:07,525 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0070 with 8 unconstrained bytes referenced from 0x4c59a0 (smp_resolve_args+0x5e0 in haproxy-1.9.0 (0xc59a0))[0m
+WARNING | 2019-12-11 23:15:07,527 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0078 with 8 unconstrained bytes referenced from 0x4c59a2 (smp_resolve_args+0x5e2 in haproxy-1.9.0 (0xc59a2))[0m
+WARNING | 2019-12-11 23:15:07,528 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0080 with 8 unconstrained bytes referenced from 0x4c59a4 (smp_resolve_args+0x5e4 in haproxy-1.9.0 (0xc59a4))[0m
+WARNING | 2019-12-11 23:15:07,529 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0088 with 8 unconstrained bytes referenced from 0x4c59a6 (smp_resolve_args+0x5e6 in haproxy-1.9.0 (0xc59a6))[0m
+WARNING | 2019-12-11 23:15:07,547 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0000 with 8 unconstrained bytes referenced from 0x41965e (__raw_sock_init+0xe in haproxy-1.9.0 (0x1965e))[0m
+WARNING | 2019-12-11 23:15:07,763 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0008 with 8 unconstrained bytes referenced from 0x450b73 (h2_detach+0x743 in haproxy-1.9.0 (0x50b73))[0m
+WARNING | 2019-12-11 23:15:07,883 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0018 with 8 unconstrained bytes referenced from 0x465fe6 (parse_spoe_flt+0x1396 in haproxy-1.9.0 (0x65fe6))[0m
+WARNING | 2019-12-11 23:15:08,058 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0008 with 8 unconstrained bytes referenced from 0x49dca9 (h1_detach+0x499 in haproxy-1.9.0 (0x9dca9))[0m
+WARNING | 2019-12-11 23:15:08,059 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0000 with 8 unconstrained bytes referenced from 0x49dcae (h1_detach+0x49e in haproxy-1.9.0 (0x9dcae))[0m
+WARNING | 2019-12-11 23:15:08,320 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0008 with 8 unconstrained bytes referenced from 0x4fa06e (htx_add_stline+0xe in haproxy-1.9.0 (0xfa06e))[0m
+WARNING | 2019-12-11 23:15:08,321 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0010 with 8 unconstrained bytes referenced from 0x4fa073 (htx_add_stline+0x13 in haproxy-1.9.0 (0xfa073))[0m
+WARNING | 2019-12-11 23:15:08,322 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0018 with 8 unconstrained bytes referenced from 0x4fa078 (htx_add_stline+0x18 in haproxy-1.9.0 (0xfa078))[0m
+WARNING | 2019-12-11 23:15:08,323 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0020 with 8 unconstrained bytes referenced from 0x4fa07d (htx_add_stline+0x1d in haproxy-1.9.0 (0xfa07d))[0m
+WARNING | 2019-12-11 23:18:11,946 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7ffffffffff0000 with 128 unconstrained bytes referenced from 0x10003e0 (strchr+0x0 in extern-address space (0x3e0))[0m
+WARNING | 2019-12-11 23:18:11,992 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xc000d342 with 2 unconstrained bytes referenced from 0x416d80 (main+0x430 in haproxy-1.9.0 (0x16d80))[0m
+WARNING | 2019-12-11 23:18:12,155 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7fffffffffefb70 with 4 unconstrained bytes referenced from 0x4b32f4 (print_message+0x64 in haproxy-1.9.0 (0xb32f4))[0m
+WARNING | 2019-12-11 23:18:12,157 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7fffffffffefb74 with 4 unconstrained bytes referenced from 0x4b32f9 (print_message+0x69 in haproxy-1.9.0 (0xb32f9))[0m
+WARNING | 2019-12-11 23:18:13,018 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xc000d345 with 253 unconstrained bytes referenced from 0x10004e0 (fprintf+0x0 in extern-address space (0x4e0))[0m
+WARNING | 2019-12-11 23:18:13,020 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xc000d442 with 1 unconstrained bytes referenced from 0x10004e0 (fprintf+0x0 in extern-address space (0x4e0))[0m
+Traceback (most recent call last):
+  File "solve.py", line 70, in <module>
+    sm.explore(find=capstone_insn.insn.address)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/sim_manager.py", line 238, in explore
+    self.run(stash=stash, n=n, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/sim_manager.py", line 260, in run
+    self.step(stash=stash, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/misc/hookset.py", line 75, in __call__
+    result = current_hook(self.func.__self__, *args, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/exploration_techniques/explorer.py", line 96, in step
+    return simgr.step(stash=stash, extra_stop_points=base_extra_stop_points | self._extra_stop_points, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/misc/hookset.py", line 80, in __call__
+    return self.func(*args, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/sim_manager.py", line 344, in step
+    successors = self.step_state(state, successor_func=successor_func, **run_args)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/sim_manager.py", line 382, in step_state
+    successors = self.successors(state, successor_func=successor_func, **run_args)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/sim_manager.py", line 421, in successors
+    return self._project.factory.successors(state, **run_args)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/factory.py", line 54, in successors
+    return self.project.engines.successors(*args, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/engines/hub.py", line 128, in successors
+    r = engine.process(state, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/engines/hook.py", line 55, in process
+    return self.project.factory.procedure_engine.process(state, procedure, force_addr=force_addr, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/engines/procedure.py", line 28, in process
+    return super(SimEngineProcedure, self).process(state, procedure,
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/engines/engine.py", line 60, in process
+    self._process(new_state, successors, *args, **kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/engines/procedure.py", line 59, in _process
+    inst = procedure.execute(state, successors, ret_to=ret_to)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/sim_procedure.py", line 230, in execute
+    r = getattr(inst, inst.run_func)(*sim_args, **inst.kwargs)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/procedures/libc/fprintf.py", line 26, in run
+    simfd.write_data(out_str, out_str.size() // 8)
+AttributeError: 'NoneType' object has no attribute 'size'
+Command exited with non-zero status 1
+236.92user 0.56system 3:57.71elapsed 99%CPU (0avgtext+0avgdata 862072maxresident)k
+0inputs+824outputs (0major+244620minor)pagefaults 0swaps

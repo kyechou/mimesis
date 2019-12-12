@@ -1,0 +1,65 @@
+/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/pysmt/walkers/generic.py:43: DeprecationWarning: Using or importing the ABCs from 'collections' instead of from 'collections.abc' is deprecated since Python 3.3, and in 3.9 it will stop working
+  if len(nodetypes) == 1 and isinstance(nodetypes[0], collections.Iterable):
+WARNING | 2019-12-11 20:45:09,928 | [36mcle.loader[0m | [36mThe main binary is a position-independent executable. It is being loaded with a base address of 0x400000.[0m
+WARNING | 2019-12-11 20:45:09,929 | [31mcle.backends.externs[0m | [31mSymbol was allocated without a known size; emulation will fail if it is used non-opaquely: _ZTVN10__cxxabiv120__si_class_type_infoE[0m
+WARNING | 2019-12-11 20:45:09,929 | [31mcle.backends.externs[0m | [31mSymbol was allocated without a known size; emulation will fail if it is used non-opaquely: _ZTVN10__cxxabiv117__class_type_infoE[0m
+WARNING | 2019-12-11 20:45:09,929 | [31mcle.backends.externs[0m | [31mSymbol was allocated without a known size; emulation will fail if it is used non-opaquely: _ZSt4cout[0m
+WARNING | 2019-12-11 20:45:09,929 | [31mcle.backends.externs[0m | [31mSymbol was allocated without a known size; emulation will fail if it is used non-opaquely: _ZSt4cerr[0m
+WARNING | 2019-12-11 20:45:09,931 | [36mcle.loader[0m | [36mFor more information about "Symbol was allocated without a known size", see https://docs.angr.io/extending-angr/environment#simdata[0m
+WARNING | 2019-12-11 20:45:10,141 | [32mangr.state_plugins.symbolic_memory[0m | [32mThe program is accessing memory or registers with an unspecified value. This could indicate unwanted behavior.[0m
+WARNING | 2019-12-11 20:45:10,141 | [32mangr.state_plugins.symbolic_memory[0m | [32mangr will cope with this by generating an unconstrained symbolic variable and continuing. You can resolve this by:[0m
+WARNING | 2019-12-11 20:45:10,141 | [32mangr.state_plugins.symbolic_memory[0m | [32m1) setting a value to the initial state[0m
+WARNING | 2019-12-11 20:45:10,142 | [32mangr.state_plugins.symbolic_memory[0m | [32m2) adding the state option ZERO_FILL_UNCONSTRAINED_{MEMORY,REGISTERS}, to make unknown regions hold null[0m
+WARNING | 2019-12-11 20:45:10,142 | [32mangr.state_plugins.symbolic_memory[0m | [32m3) adding the state option SYMBOL_FILL_UNCONSTRAINED_{MEMORY_REGISTERS}, to suppress these messages.[0m
+WARNING | 2019-12-11 20:45:10,142 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x7fffffff with 8 unconstrained bytes referenced from 0x403509 (_start+0x9 in lb (0x3509))[0m
+WARNING | 2019-12-11 20:45:13,221 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffff00000000000 with 8 unconstrained bytes referenced from 0x409263 (_Z11load_configRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERP7LB_algo+0x251 in lb (0x9263))[0m
+WARNING | 2019-12-11 20:45:13,369 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0x3fffffeb with 8 unconstrained bytes referenced from 0x40926a (_Z11load_configRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERP7LB_algo+0x258 in lb (0x926a))[0m
+WARNING | 2019-12-11 20:45:13,465 | [33mangr.engines.vex.engine[0m | [33m0x409175 hit an error while analyzing statement 10[0m
+Traceback (most recent call last):
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/engines/vex/engine.py", line 278, in _handle_irsb
+    cont = self._handle_statement(state, successors, stmt)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/engines/vex/engine.py", line 393, in _handle_statement
+    exit_data = stmt_handler(self, state, stmt)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/engines/vex/statements/store.py", line 29, in SimIRStmt_Store
+    state.memory.store(addr, data, action=a, endness=stmt.endness)
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/storage/memory.py", line 572, in store
+    self._store(request) #will use state_plugins/symbolic_memory.py
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/state_plugins/symbolic_memory.py", line 770, in _store
+    req.actual_addresses = sorted(self.concretize_write_addr(req.addr))
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/state_plugins/symbolic_memory.py", line 410, in concretize_write_addr
+    return self._apply_concretization_strategies(addr, strategies, 'store')
+  File "/home/kyc/cs/projects/nekton/angr.venv/lib/python3.8/site-packages/angr/state_plugins/symbolic_memory.py", line 391, in _apply_concretization_strategies
+    raise SimMemoryAddressError(
+angr.errors.SimMemoryAddressError: Unable to concretize address for store with the provided strategies.
+WARNING | 2019-12-11 20:45:13,950 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfff0000000000000 with 8 unconstrained bytes referenced from 0x409263 (_Z11load_configRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERP7LB_algo+0x251 in lb (0x9263))[0m
+WARNING | 2019-12-11 20:45:14,099 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffffe9 with 8 unconstrained bytes referenced from 0x40926a (_Z11load_configRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERP7LB_algo+0x258 in lb (0x926a))[0m
+WARNING | 2019-12-11 20:45:14,864 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff81 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:14,903 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff82 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:14,919 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff83 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:14,935 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff84 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:14,951 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff85 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:14,967 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff86 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:14,984 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff87 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:15,000 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff88 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:15,016 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff89 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:15,032 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff8a with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:15,049 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff8b with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:15,066 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff8c with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:15,122 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xffffffffffffff80 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,694 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000000 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,728 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000001 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,743 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000002 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,760 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000003 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,775 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000004 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,791 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000005 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,807 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000006 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,823 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000007 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,839 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000008 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,855 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff800000009 with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,871 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff80000000a with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,887 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff80000000b with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+WARNING | 2019-12-11 20:45:32,944 | [32mangr.state_plugins.symbolic_memory[0m | [32mFilling memory at 0xfffffff7ffffffff with 1 unconstrained bytes referenced from 0x1000028 (strtol+0x0 in extern-address space (0x28))[0m
+Simulation manager: <SimulationManager with 11 active, 1 deadended, 1 found>
+SimMgr.found stash: [<SimState @ 0x40894f>]
+36.01user 6.23system 0:25.06elapsed 168%CPU (0avgtext+0avgdata 207260maxresident)k
+0inputs+280outputs (0major+63789minor)pagefaults 0swaps
