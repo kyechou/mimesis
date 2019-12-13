@@ -2,11 +2,13 @@
 # Makefile for compiling paper notes
 #
 
-PDFS = $(patsubst %.tex,%.pdf,$(wildcard *.tex))
+TARGET = report.pdf
+SOURCE = $(shell find . -type f -name '*.tex')
+STYLE  = $(wildcard *.sty)
 
-all: $(PDFS)
+all: $(TARGET)
 
-%.pdf: %.tex %.bib
+%.pdf: %.tex %.bib $(SOURCE) $(STYLE)
 	pdflatex $<
 	bibtex $(basename $<)
 	pdflatex $<
