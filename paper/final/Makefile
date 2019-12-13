@@ -8,9 +8,9 @@ all: $(PDFS)
 
 %.pdf: %.tex %.bib
 	pdflatex $<
-	#bibtex $(basename $<)
-	#pdflatex $<
-	#pdflatex $<
+	bibtex $(basename $<)
+	pdflatex $<
+	pdflatex $<
 	@make clean
 
 clean:
