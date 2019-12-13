@@ -1,1 +1,103 @@
+%-------------------------------------------------------------------------------
 \section{Evaluation}
+%-------------------------------------------------------------------------------
+
+In order to evaluate the approach in different scenarios, we focus on two common
+load balancing schemes, source-based hashing and round-robin, get the mapping
+$f$ of inputs and outputs, and then make the solver engine generate valid
+concrete values that satisfy the constraints. For performance evaluations, we
+tested our optimized implementation of the simple load balancer, where we
+manually pruned the irrelevant code sections so as to prevent unnecessary state
+exploration. We also tested the unoptimized version with and without argument
+parsing, and also different versions of HAProxy releases.
+
+
+\subsection{Source-based hashing load balancing}
+%-------------------------------------------------------------------------------
+
+The input of the source-based hashing algorithm that affects the output (i.e.,
+the backend server IP address and port) would be the client source address
+(i.e., the source IP address and port of requests), which is used for hashing to
+determine the output. In addition, the process of source-based hashing is
+deterministic per flow across time. Namely, for each flow (or connection), the
+result is deterministic no matter when it is executed, which is different from
+the behavior of round-robin. We tested our approach in the following different
+scenarios.
+
+\begin{enumerate}
+    \item Given a concrete client source address, find the output backend server
+        address.
+
+\begin{lstlisting}[language=bash]
+$ python sourcehash/solve.py \
+    --input-addr 0x7f000001 \
+    --input-port 11111
+cli_addr: 0x7f000001
+cli_port: 11111
+Addr: <BV64 0x7f000001>
+Port: <BV64 0x2328>
+Evaluated cli_addr: 0x7f000001
+Evaluated cli_port: 11111
+Evaluated addr: 0x7f000001
+Evaluated port: 9000
+\end{lstlisting}
+
+        We can see that since the hashing algorithm is deterministic once the
+        input client IP address and port is fixed, the resulting backend server
+        address and port would also be concrete values.
+
+    \item Given a concrete backend server address, find the input source address
+        that leads to the output.
+
+\begin{lstlisting}[language=bash]
+$ python sourcehash/solve.py \
+    --output-addr 0x7f000001 \
+    --output-port 9003
+cli_addr: <BV32 cli_ip_20_32>
+cli_port: <BV16 cli_port_19_16>
+Addr: <BV64 (AST with symbolic variable cli_ip and cli_port)>
+Port: <BV64 (AST with symbolic variable cli_ip and cli_port)>
+Evaluated cli_addr: 0x7f000001
+Evaluated cli_port: 1026
+Evaluated addr: 0x7f000001
+Evaluated port: 9003
+\end{lstlisting}
+
+        In this case, we did not specify the input source address and port and
+        set them to be symbolic values. As a result, the output server address
+        and port would be arithmetic expressions of those symbolic values,
+        represented in \texttt{angr} as abstract syntax trees (ASTs).
+
+    \item Without any constraints on the input or output, get the relationship
+        between them, and find a pair of concrete values that satisfy the
+        relationship.
+
+\begin{lstlisting}[language=bash]
+$ python sourcehash/solve.py
+cli_addr: <BV32 cli_ip_20_32>
+cli_port: <BV16 cli_port_19_16>
+Addr: <BV64 (AST with symbolic variable cli_ip and cli_port)>
+Port: <BV64 (AST with symbolic variable cli_ip and cli_port)>
+Evaluated cli_addr: 0x7f000001
+Evaluated cli_port: 3074
+Evaluated addr: 0x7f000001
+Evaluated port: 9003
+\end{lstlisting}
+
+        When there are no explicit constraints on both the input and the output,
+        the solver will find a random set of values that satisfy the expressions
+        according to its internal heuristics.
+\end{enumerate}
+
+
+\subsection{Round-robin load balancing}
+%-------------------------------------------------------------------------------
+
+\subsection{Performance}
+%-------------------------------------------------------------------------------
+
+\subsection{Limitations}
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+% vim: set ft=tex :
