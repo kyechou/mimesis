@@ -4,7 +4,7 @@ import os
 import sys
 import angr
 
-#os.chdir(os.path.dirname(os.path.realpath(__file__)))
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 TARGET = 'lb'
 CONFIG = 'src/lb.conf'

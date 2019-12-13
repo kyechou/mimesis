@@ -16,7 +16,7 @@ arg = parser.parse_args()
 
 import angr
 
-#os.chdir(os.path.dirname(os.path.realpath(__file__)))
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 if arg.target != None:
     TARGET = arg.target

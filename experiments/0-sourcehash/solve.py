@@ -24,7 +24,7 @@ if arg.output_addr:
 
 import angr
 
-#os.chdir(os.path.dirname(os.path.realpath(__file__)))
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 logging.getLogger('angr').setLevel('ERROR')
 
 TARGET = 'lb'
@@ -168,18 +168,20 @@ sm.move('found', 'active')
 # };
 
 s2.mem[cli_addr_ptr].short      = 2
+
 if arg.input_port != None:
-    s2.mem[cli_addr_ptr+2].uint16_t = arg.input_port
+    cli_port = arg.input_port
 else:
     cli_port = s2.solver.BVS("cli_port", 16)
     s2.solver.add(cli_port > 1024)
-    s2.mem[cli_addr_ptr+2].uint16_t = cli_port
+s2.mem[cli_addr_ptr+2].uint16_t = cli_port
+
 if arg.input_addr != None:
-    s2.mem[cli_addr_ptr+4].uint32_t = arg.input_addr
+    cli_ip = arg.input_addr
 else:
     cli_ip = s2.solver.BVS("cli_ip", 32)
     s2.solver.add(cli_ip == 0x7f000001)
-    s2.mem[cli_addr_ptr+4].uint32_t = cli_ip
+s2.mem[cli_addr_ptr+4].uint32_t = cli_ip
 
 # Find the state right before calling select_server
 sm.explore(find=decision_insn.insn.address)

@@ -23,7 +23,7 @@ if arg.output_addr:
 
 import angr
 
-#os.chdir(os.path.dirname(os.path.realpath(__file__)))
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 logging.getLogger('angr').setLevel('ERROR')
 
 TARGET = 'lb'
