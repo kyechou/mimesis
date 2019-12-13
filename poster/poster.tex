@@ -119,8 +119,8 @@
     \item Given a software network function, with input stream $s_i$ and output
         stream $s_o$, we would like to find $f$, such that $s_o = f(s_i)$.
     \item With this input-output mapping $f$, essentially a model of the
-        middlebox, we could know what output results from certain input, and
-        what input yields certain output.
+        middlebox, we are able to compute outputs from certain input, or valid
+        inputs from certain output.
 \end{enumerate}
 
 \end{block}
@@ -161,13 +161,14 @@
 \begin{column}{.43\textwidth}
 \begin{enumerate}
     \item Build the control flow graph and call graph of the binary.
-    \item Locate the instruction that calls \emph{accept} and
-        \emph{select\_server} functions.
+    \item Locate the instructions calling functions that read inputs or decide
+        outputs.
     \item Symbolically execute the program from the initial state.
-    \item Set the symbolic or concrete values for the returned client address of
-        \emph{accept} after the call instruction, or other variables if needed.
-    \item Get the output address/port after calling \emph{select\_server}
-        and use solver engine (Z3) to evaluate the values.
+    \item Set the symbolic or concrete values for the input and output variables
+        and add constraints according to the needs.
+    \item Get the outputs after the function deciding the outputs, and the
+        outputs would be the $f$ we want.
+    \item We can use solver engine to compute valid concrete values.
 \end{enumerate}
 \end{column}
 
@@ -188,10 +189,10 @@ sm.explore(find=decision_ins)
 s2 = sm.found[0]
 addr = s2.regs.rax & 0xffffffff
 port = (s2.regs.rax & 0xffffffff00000000) >> 32
-print('Addr:', addr)
-print('Port:', port)
-print('Evaluated addr:', s2.solver.eval(addr))
-print('Evaluated port:', s2.solver.eval(port))
+print(`Addr:', addr)
+print(`Port:', port)
+print(`Evaluated addr:', s2.solver.eval(addr))
+print(`Evaluated port:', s2.solver.eval(port))
 \end{lstlisting}
 \end{column}
 
@@ -210,11 +211,11 @@ print('Evaluated port:', s2.solver.eval(port))
 %	RESULTS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Results}
+\begin{block}{Evaluation Results}
 
 \begin{itemize}
-\item We built a small load balancer as an example target, with two load
-    balancing schemes, source-based hashing and round-robin.
+    \item We built a small load balancer as an example target, with two load
+        balancing schemes, source-based hashing and round-robin.
 \end{itemize}
 
 \begin{columns}
@@ -257,14 +258,15 @@ Evaluated port: 9003
 %	PERFORMANCE
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Performance}
+\begin{block}{Evaluation Performance}
 
 \begin{columns}
 \begin{column}{.39\textwidth}
 \begin{itemize}
-    \item The binary analysis tool doesn't support argument parsing very well.
-    \item Time usage increased by 13 times and memory usage increased by 58
-        times for argument parsing.
+    \item The method works within reasonable resource consumption after pruning
+        unneeded code sections.
+    \item Time and memory usage increased by 13x and 58x just for parsing
+        arguments.
 \end{itemize}
 \end{column}
 
@@ -277,7 +279,7 @@ Evaluated port: 9003
 Source-based hashing        & 2.90 sec & 129.278 MB \\
 Round-robin                 & 2.99 sec & 129.033 MB \\
 Find accept w/o arg parsing & 25.06 sec & 207.260 MB \\
-Find accept w arg parsing   & 333.40 sec & 12064.724 MB \\
+Find accept w/ arg parsing   & 333.40 sec & 12064.724 MB \\
 \bottomrule
 \end{tabular}
 \caption{Performance result}
