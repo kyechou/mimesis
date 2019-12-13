@@ -1,5 +1,5 @@
-% Copyright 2007 by 
-% Philippe Dreuw <dreuw@cs.rwth-aachen.de> and 
+% Copyright 2007 by
+% Philippe Dreuw <dreuw@cs.rwth-aachen.de> and
 % Thomas Deselaers <deselaers@cs.rwth-aachen.de>
 %
 % This file may be distributed and/or modified
@@ -35,20 +35,20 @@
 \def\beamerposter@Error#1#2{\PackageError{\beamerposter@name}{#1}{#2}}
 \def\beamerposter@Warning#1{\PackageWarning{\beamerposter@name}{#1}}
 \def\beamerposter@Info#1{\PackageInfo{\beamerposter@name}{#1}}
- 
+
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{\beamerposter@name}[\beamerposter@releaseinfo]
 \RequirePackage{xkeyval}[2006/11/18]
 \RequirePackage{type1cm} %% get it from ftp://cam.ctan.org/tex-archive/macros/latex/contrib/type1cm.zip
 \RequirePackage{fp}
- 
+
 \newif\if@beamerposter@portrait
 \newif\if@beamerposter@customsize
 \newif\if@beamerposter@extern
 \newif\if@beamerposter@debug
- 
+
 \global\def\WhenPortrait#1#2{\if@beamerposter@portrait#1\else#2\fi}
- 
+
 \DeclareOptionX{size}[a0]{
   \beamerposter@Info{checking size input, please wait.}
   \XKV@cc*+[\val\nr]{#1}{a0b,a0,a1,a2,a3,a4,custom}{%
@@ -97,7 +97,7 @@
     \edef\fontscale{0.25}          % fontscale=(1/sqrt(2))^4
     \or
     \@beamerposter@customsizetrue
-    \fi    
+    \fi
   }{%
     \beamerposter@Warning{the input \val\ was incorrect and was ignored.}
   }%
@@ -111,7 +111,7 @@
     \@beamerposter@portraittrue
     \or
     \@beamerposter@portraitfalse
-    \fi    
+    \fi
   }{%
     \beamerposter@Warning{the input \val\ was incorrect and was ignored.}
   }%
@@ -127,15 +127,15 @@
 %\DeclareOptionX*{\PassOptionsToClass{\CurrentOption}{beamer}}
 \ExecuteOptionsX{size=a0,scale=1.0}
 \ProcessOptionsX\relax
- 
+
 %% enable debug mode for fp package (mainly for upn functions)
 \if@beamerposter@debug
-  \FPdebugtrue  
+  \FPdebugtrue
 \fi
- 
+
 %% normalize scale depending on poster size
 \FPupn{\myfontscale}{myfontscale fontscale * 2 round}
- 
+
 %% swap sizes for portrait orientation
 \if@beamerposter@portrait
   \newdimen\tmp
@@ -151,7 +151,7 @@
   \setlength{\textwidth}{\textwidthValue cm}
   \setlength{\textheight}{\textheightValue cm}
 \fi
- 
+
 %% overwrite dimensions if custom size
 \if@beamerposter@customsize
   \setlength{\paperwidth}{\customwidth cm}
@@ -161,13 +161,13 @@
   \setlength{\textwidth}{\resulttextwidth cm}
   \setlength{\textheight}{\resulttextheight cm}
 \fi
- 
+
 %% Setting proper dimensions for a DIN A0 printer
 \setlength{\headheight}{0 cm}
 \setlength{\headsep}{0 cm}
 \setlength{\topmargin}{-12.7 mm}     % -1in +1.47cm
 \setlength{\oddsidemargin}{-25.4 mm} % -1in +0.4cm
- 
+
 %% For the page layout
 \beamerposter@Info{paperwidth=\the\paperwidth, paperheight=\the\paperheight}
 \beamerposter@Info{textwidth=\the\textwidth, textwidth=\the\textheight}
@@ -177,11 +177,11 @@
   paperheight=\the\paperheight,
   hmargin=1cm,%
   vmargin=0cm,%
-  head=0.5cm, % 
+  head=0.5cm, %
   headsep=0pt,%
-  foot=0.5cm  % 
+  foot=0.5cm  %
 }
- 
+
 %%
 %% printer definition file example 'rwth-glossy-uv.df':
 %% ----
@@ -204,7 +204,7 @@
     \beamerposter@Error{%
       resultmaxwidth=\resultmaxwidth \MessageBreak
       printermaxwidthValue=\printermaxwidthValue \MessageBreak
-      paperwidthValue=\paperwidthValue \MessageBreak 
+      paperwidthValue=\paperwidthValue \MessageBreak
       The specified poster dimensions might not be printable using
       '\printerToUse'.
     }{%
@@ -215,76 +215,76 @@
     \fi
   \fi
 %\fi
- 
+
 %% scalable vector fonts
 \edef\fontSizeX{12}\edef\fontSizeY{14}
 \FPupn{\resulttinyX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resulttinyY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\tiny}{\fontsize{\resulttinyX}{\resulttinyY}\selectfont}
- 
-\edef\fontSizeX{14.4}\edef\fontSizeY{18}   
+
+\edef\fontSizeX{14.4}\edef\fontSizeY{18}
 \FPupn{\resultscriptsizeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultscriptsizeY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\scriptsize}{\fontsize{\resultscriptsizeX}{\resultscriptsizeY}\selectfont}
- 
+
 \edef\fontSizeX{17.28}\edef\fontSizeY{22}
 \FPupn{\resultfootnotesizeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultfootnotesizeY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\footnotesize}{\fontsize{\resultfootnotesizeX}{\resultfootnotesizeY}\selectfont}
- 
+
 \edef\fontSizeX{20.74}\edef\fontSizeY{25}
 \FPupn{\resultsmallX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultsmallY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\small}{\fontsize{\resultsmallX}{\resultsmallY}\selectfont}
- 
+
 \edef\fontSizeX{24.88}\edef\fontSizeY{30}
 \FPupn{\resultnormalsizeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultnormalsizeY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\normalsize}{\fontsize{\resultnormalsizeX}{\resultnormalsizeY}\selectfont}
- 
+
 \edef\fontSizeX{29.86}\edef\fontSizeY{37}
 \FPupn{\resultlargeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultlargeY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\large}{\fontsize{\resultlargeX}{\resultlargeY}\selectfont}
- 
+
 \edef\fontSizeX{35.83}\edef\fontSizeY{45}
 \FPupn{\resultLargeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultLargeY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\Large}{\fontsize{\resultLargeX}{\resultLargeY}\selectfont}
- 
+
 \edef\fontSizeX{43}\edef\fontSizeY{54}
 \FPupn{\resultLARGEX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultLARGEY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\LARGE}{\fontsize{\resultLARGEX}{\resultLARGEY}\selectfont}
- 
+
 \edef\fontSizeX{51.6}\edef\fontSizeY{64}
 \FPupn{\resulthugeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resulthugeY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\huge}{\fontsize{\resulthugeX}{\resulthugeY}\selectfont}
- 
+
 \edef\fontSizeX{61.92}\edef\fontSizeY{77}
 \FPupn{\resultHugeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultHugeY}{myfontscale fontSizeY * 2 round}
 \renewcommand*{\Huge}{\fontsize{\resultHugeX}{\resultHugeY}\selectfont}
- 
+
 \edef\fontSizeX{74.3}\edef\fontSizeY{93}
 \FPupn{\resultveryHugeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultveryHugeY}{myfontscale fontSizeY * 2 round}
 \newcommand*{\veryHuge}{\fontsize{\resultveryHugeX}{\resultveryHugeY}\selectfont}
- 
+
 \edef\fontSizeX{89.16}\edef\fontSizeY{112}
 \FPupn{\resultVeryHugeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultVeryHugeY}{myfontscale fontSizeY * 2 round}
 \newcommand*{\VeryHuge}{\fontsize{\resultVeryHugeX}{\resultVeryHugeY}\selectfont}
- 
+
 \edef\fontSizeX{107}\edef\fontSizeY{134}
 \FPupn{\resultVERYHugeX}{myfontscale fontSizeX * 2 round}
 \FPupn{\resultVERYHugeY}{myfontscale fontSizeY * 2 round}
 \newcommand*{\VERYHuge}{\fontsize{\resultVERYHugeX}{\resultVERYHugeY}\selectfont}
- 
+
 % set the normalfont (default)
 \renewcommand*{\normalfont}{\normalsize}
- 
+
 % adapt list indention (e.g. itemize/enumeration/... see beamer docu)
 \edef\labelWidthValue{1}            % 1em label width
 \edef\labelSepValue{1}              % 1em label separator width

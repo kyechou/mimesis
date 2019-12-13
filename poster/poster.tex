@@ -21,7 +21,7 @@
 
 \documentclass[final,hyperref={pdfpagelabels=false}]{beamer}
 
-\usepackage[orientation=portrait,size=custom,width=55.9,height=86.4,scale=1]{beamerposter} % Use the beamerposter package for laying out the poster with a portrait orientation and an a0 paper size
+\usepackage[orientation=landscape,size=custom,width=86.4,height=55.9,scale=1.1]{beamerposter} % Use the beamerposter package for laying out the poster with a portrait orientation and an a0 paper size
 
 \usetheme{I6pd2} % Use the I6pd2 theme supplied with this template
 
@@ -30,7 +30,7 @@
 \usepackage{amsmath,amsthm,amssymb,latexsym} % For including math equations, theorems, symbols, etc
 
 %\usepackage{times}\usefonttheme{professionalfonts}  % Uncomment to use Times as the main font
-%\usefonttheme[onlymath]{serif} % Uncomment to use a Serif font within math environments
+\usefonttheme[onlymath]{serif} % Uncomment to use a Serif font within math environments
 
 \boldmath % Use bold for everything within the math environment
 
@@ -40,31 +40,53 @@
 
 \usecaptiontemplate{\small\structure{\insertcaptionname~\insertcaptionnumber: }\insertcaption} % A fix for figure numbering
 
+%-------------------------------------------------------------------------------
+%   CODE INCLUSION CONFIGURATION
+%-------------------------------------------------------------------------------
+
+\usepackage{listings}
+
+%\lstset{language=C,
+%        frame=LR,
+%        belowcaptionskip=1\baselineskip,
+%        breaklines=true,
+%        xleftmargin=\parindent,
+%        showstringspaces=false,
+%        basicstyle=\footnotesize\ttfamily,
+%        keywordstyle=\bfseries\color{Green},
+%        commentstyle=\color{Gray},
+%        identifierstyle=\color{Black},
+%        stringstyle=\color{Orange},
+%        %numbers=left, % Line numbers on left
+%        %firstnumber=1, % Line numbers start with line 1
+%        %numberstyle=\scriptsize\ttfamily\color{Brown},
+%}
+
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
 %----------------------------------------------------------------------------------------
 
-\title{\huge Unnecessarily Complicated Research Title} % Poster title
+\title{\huge Nekton: Middlebox Analysis for Network Verification} % Poster title
 
-\author{John Smith, James Smith and Jane Smith} % Author(s)
+\author{Kuan-Yen Chou and Bin-Chou Kao} % Author(s)
 
-\institute{Department and University Name} % Institution(s)
+\institute{CS @ UIUC} % Institution(s)
 
 %----------------------------------------------------------------------------------------
 %	FOOTER TEXT
 %----------------------------------------------------------------------------------------
 
-\newcommand{\leftfoot}{http://www.LaTeXTemplates.com} % Left footer text
+\newcommand{\leftfoot}{https://github.com/kyechou/nekton} % Left footer text
 
-\newcommand{\rightfoot}{john@smith.com} % Right footer text
+\newcommand{\rightfoot}{kychou2@illinois.edu} % Right footer text
 
 %----------------------------------------------------------------------------------------
 
 \begin{document}
 
-\addtobeamertemplate{block end}{}{\vspace*{2ex}} % White space under blocks
+\addtobeamertemplate{block end}{}{\vspace*{1ex}} % White space under blocks
 
-\begin{frame}[t] % The whole poster is enclosed in one beamer frame
+\begin{frame}[t,fragile] % The whole poster is enclosed in one beamer frame
 
 \begin{columns}[t] % The whole poster consists of two major columns, each of which can be subdivided further with another \begin{columns} block - the [t] argument aligns each column's content to the top
 
@@ -73,67 +95,51 @@
 \begin{column}{.465\textwidth} % The first column
 
 %----------------------------------------------------------------------------------------
+%	TERMINOLOGY
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Terminology}
+
+\begin{itemize}
+    \item \textbf{Middlebox (or network function)}: an intermediary device
+        performing functions other than traditional packet forwarding on
+        datagram path between a source host and a destination host.
+        (E.g., load balancer, cache proxy, firewall, NAT, IDS, IPS, ...)
+\end{itemize}
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
 %	OBJECTIVES
 %----------------------------------------------------------------------------------------
 
 \begin{block}{Objectives}
 
 \begin{enumerate}
-\item Donec fringilla, velit id lobortis commodo, eros dui consectetur mi, ut interdum lorem dui sed mauris.
-\item Nulla ac nulla rhoncus est bibendum ullamcorper:
-\item Quisque vestibulum, nisl sit amet gravida ultricies dis parturient montes, nascetur ridiculus musobortis commodo, eros dui consectetur mi.
+    \item Given a software network function, with input stream $s_i$ and output
+        stream $s_o$, we would like to find $f$, such that $s_o = f(s_i)$.
+    \item With this input-output mapping $f$, essentially a model of the
+        middlebox, we could know what output results from certain input, and
+        what input yields certain output.
 \end{enumerate}
 
 \end{block}
 
 %----------------------------------------------------------------------------------------
-%	INTRODUCTION
+%	MOTIVATION
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Introduction}
+\begin{block}{Motivation}
 
 \begin{itemize}
-\item Donec fringilla, velit id lobortis commodo, eros dui consectetur mi, ut interdum lorem dui sed mauris. Duis id sem nunc, a pharetra odio. Phasellus posuere \alert{semper massa}, id bibendum ligula tristique at. Integer sit amet vulputate turpis. Sed erat lacus, faucibus at viverra et, mattis nec sem. Cras faucibus \alert{scelerisque} cursus. Opet volutpat ligula. Duis semper lorem eget dui dignissim porttitor. Nulla facilisi. In ullamcorper lorem quis dolor iaculis nec egestas enim ultricies. Cras ut mauris elit, ut lacinia dui. Proin in ante et libero hendrerit iaculis. Nulla eu erat a urna laoreet auctor id a turpis. Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis. Aenean id neque dolor.
-\end{itemize}
-
-\end{block}
-
-%----------------------------------------------------------------------------------------
-%	MATERIALS
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Materials}
-
-\begin{columns} % Subdivide the first main column
-\begin{column}{.54\textwidth} % The first subdivided column within the first main column
-\begin{itemize}
-\item Vestibulum nisl, quis euismod velit eros in ligula.
-\begin{itemize}
-\item Cras rhoncus quam et augue convallis in elementum urna tincidunt.
-\end{itemize}
-\item Proin ut vestibulum augue.
-\begin{itemize}
-\item Donec dapibus sagittis neque eu ultrices.
-\end{itemize}
-\end{itemize}
-\end{column}
-
-\begin{column}{.43\textwidth} % The second subdivided column within the first main column
-\centering
-\begin{figure}
-\includegraphics[width=0.8\linewidth]{placeholder.jpg}
-\caption{Figure caption}
-\end{figure}
-\end{column}
-\end{columns} % End of the subdivision
-
-\begin{itemize}
-\item Curabitur sapien ligula, faucibus in feugiat quis, vestibulum a turpis.
-\begin{itemize}
-\item Phasellus quis nunc neque. Suspendisse mauris diam, suscipit non gravida in, placerat id enim. Ut nec ipsum in lectus ultrices sagittis.
-\item Ut nec ipsum in lectus ultrices sagittis.
-\item Phasellus quis nunc neque.
-\end{itemize}
+    \item Lack of accurate models of network functions when verifying networks
+        with such devices.
+        \begin{itemize}
+            \item Lack of standards and implementations vary across venders.
+            \item Implementation bugs/quirks not being modelled.
+        \end{itemize}
+    \item Binary instructions provide a low-level, faithful description of the
+        input and output streams.
 \end{itemize}
 
 \end{block}
@@ -145,107 +151,158 @@
 \begin{block}{Methods}
 
 \begin{itemize}
-\item Maecenas Vel Nisl Elit
-\begin{itemize}
-\item Suspendisse potenti. Fusce a est eget turpis rhoncus varius sed sed dui. Cras justo nibh, bibendum a cursus eget, consequat et dui. Maecenas vel nisl elit, sed dignissim dolor.
-\item In hac habitasse platea dictumst.
+    \item We use angr as the main binary analysis framework and apply symbolic
+        execution on variables (registers and memory areas) of the given target
+        program binary.
 \end{itemize}
 
-\item Viewpoint Matching Constraints
-\begin{itemize}
-\item Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-\item Proin in nisi diam.
-\item Nam ultricies pellentesque nunc, ultrices volutpat nisl ultrices a.
-\end{itemize}
+\begin{columns}
 
-\item Volutpat
-\begin{itemize}
-\item Duis semper lorem eget dui dignissim porttitor.
-\item Nulla facilisi. In ullamcorper lorem quis dolor.
-\end{itemize}
-\end{itemize}
+\begin{column}{.43\textwidth}
+\begin{enumerate}
+    \item Build the control flow graph and call graph of the binary.
+    \item Locate the instruction that calls \emph{accept} and
+        \emph{select\_server} functions.
+    \item Symbolically execute the program from the initial state.
+    \item Set the symbolic or concrete values for the returned client address of
+        \emph{accept} after the call instruction, or other variables if needed.
+    \item Get the output address/port after calling \emph{select\_server}
+        and use solver engine (Z3) to evaluate the values.
+\end{enumerate}
+\end{column}
 
-\end{block}
+\begin{column}{.54\textwidth}
+\begin{lstlisting}[language=python,basicstyle=\footnotesize\ttfamily]
+...
+accept_ins = find_ins(call_accept)
+decision_ins = find_ins(call_select_server)
+...
+sm.explore(find=accept_ins)
+s1 = sm.found[0]
+...
+s1.mem[cli_addr_p].short      = 2
+s1.mem[cli_addr_p+2].uint16_t = 12345
+s1.mem[cli_addr_p+4].uint32_t = 0x7f000001
+...
+sm.explore(find=decision_ins)
+s2 = sm.found[0]
+addr = s2.regs.rax & 0xffffffff
+port = (s2.regs.rax & 0xffffffff00000000) >> 32
+print('Addr:', addr)
+print('Port:', port)
+print('Evaluated addr:', s2.solver.eval(addr))
+print('Evaluated port:', s2.solver.eval(port))
+\end{lstlisting}
+\end{column}
 
-%----------------------------------------------------------------------------------------
-%	MATHEMATICAL SECTION
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Mathematical Section}
-
-\begin{itemize}
-\item Maecenas Ultricies Feugiat Velit Non Mattis.
-\begin{itemize}
-\item Duis ante erat, bibendum nec tempus nec, interdum quis est. Nulla at mollis tortor. Phasellus quis leo dolor, aliquam laoreet orci $X$ Donec dapibus sagittis neque eu nec, interdum quis est. $Y_n, n=1,\cdots,N$ ndum nec tempus nec, interd
-\begin{align*}
-X \rightarrow r(X) & = \arg \max_{c} \Big\{ \max_n \big\{ \sum_{x_i \in X} \delta(x_i,Y_{n,c})\big\} \Big\}
-\end{align*}
-\item Cras faucibus scelerisque cursus. Proin ut vestibulum augue. $\delta(x_i,Y_{n,c})$
-\end{itemize}
-\item Fusce tempus arcu id ligula varius dictum. Donec ut nisl dui, ac consectetur elit. In nec enim porta augue venenatis sollicitudin. Phasellus quis nunc neque. Suspendisse mauris diam, suscipit non gravida in, placerat id enim. Ut nec ipsum in lectus ultrices sagittis.
-\end{itemize}
-
+\end{columns}
 \end{block}
 
 %----------------------------------------------------------------------------------------
 
 \end{column} % End of the first column
 
-\begin{column}{.03\textwidth}\end{column} % Empty spacer column
+\begin{column}{.02\textwidth}\end{column} % Empty spacer column
 
-\begin{column}{.465\textwidth} % The second column
+\begin{column}{.47\textwidth} % The second column
 
 %----------------------------------------------------------------------------------------
 %	RESULTS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Results: Table}
+\begin{block}{Results}
 
 \begin{itemize}
-\item Ased Aliquet Luctus Lectus
+\item We built a small load balancer as an example target, with two load
+    balancing schemes, source-based hashing and round-robin.
 \end{itemize}
 
-\begin{table}
-\begin{tabular}{l l l}
-\toprule
-\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2}\\
-\midrule
-Treatment 1 & 0.0003262 & 0.562 \\
-Treatment 2 & 0.0015681 & 0.910 \\
-Treatment 3 & 0.0009271 & 0.296 \\
-\bottomrule
-\end{tabular}
-\caption{Table caption}
-\end{table}
+\begin{columns}
+\begin{column}{.48\textwidth}
+\begin{lstlisting}[language=python,basicstyle=\footnotesize\ttfamily]
+$ python sourcehash/solve.py --input-addr 0x7f000001 --input-port 11111
+cli_addr: 0x7f000001
+cli_port: 11111
+Addr: <BV64 0x7f000001>
+Port: <BV64 0x2328>
+Evaluated cli_addr: 0x7f000001
+Evaluated cli_port: 11111
+Evaluated addr: 0x7f000001
+Evaluated port: 9000
+\end{lstlisting}
+\end{column}
+\begin{column}{.40\textwidth}
+\end{column}
+\end{columns}
 
-\begin{itemize}
-\item Sollicitudin Vel Orci
-\item Maecenas Ultricies Feugiat Velit Non Mattis.
-\end{itemize}
-
-\begin{table}
-\begin{tabular}{l l l}
-\toprule
-\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2}\\
-\midrule
-Treatment 1 & 0.0003262 & 0.562 \\
-Treatment 2 & 0.0015681 & 0.910 \\
-Treatment 3 & 0.0009271 & 0.296 \\
-\bottomrule
-\end{tabular}
-\caption{Table caption}
-\end{table}
+\begin{columns}
+\begin{column}{.48\textwidth}
+\begin{lstlisting}[language=python,basicstyle=\footnotesize\ttfamily]
+$ python roundrobin/solve.py --output-addr 0x7f000001 --output-port 9003
+cur_iter: <BV32 cur_iter_19_32>
+Addr: <BV64 (AST with symbolic variable cur_iter_19_32)>
+Port: <BV64 (AST with symbolic variable cur_iter_19_32)>
+Evaluated cur_iter: 3
+Evaluated addr: 0x7f000001
+Evaluated port: 9003
+\end{lstlisting}
+\end{column}
+\begin{column}{.40\textwidth}
+\end{column}
+\end{columns}
 
 \end{block}
 
-%------------------------------------------------
+%----------------------------------------------------------------------------------------
+%	PERFORMANCE
+%----------------------------------------------------------------------------------------
 
-\begin{block}{Results: Figure}
+\begin{block}{Performance}
 
-\begin{figure}
-\includegraphics[width=0.8\linewidth]{placeholder.jpg}
-\caption{Figure caption}
-\end{figure}
+\begin{columns}
+\begin{column}{.39\textwidth}
+\begin{itemize}
+    \item The binary analysis tool doesn't support argument parsing very well.
+    \item Time usage increased by 13 times and memory usage increased by 58
+        times for argument parsing.
+\end{itemize}
+\end{column}
+
+\begin{column}{.58\textwidth}
+\begin{table}
+\begin{tabular}{l r r}
+\toprule
+\textbf{Experiment} & \textbf{Time} & \textbf{Memory}\\
+\midrule
+Source-based hashing        & 2.90 sec & 129.278 MB \\
+Round-robin                 & 2.99 sec & 129.033 MB \\
+Find accept w/o arg parsing & 25.06 sec & 207.260 MB \\
+Find accept w arg parsing   & 333.40 sec & 12064.724 MB \\
+\bottomrule
+\end{tabular}
+\caption{Performance result}
+\end{table}
+\end{column}
+\end{columns}
+
+%\begin{figure}
+%\includegraphics[width=0.8\linewidth]{placeholder.jpg}
+%\caption{Figure caption}
+%\end{figure}
+
+\end{block}
+
+%----------------------------------------------------------------------------------------
+%	LIMITATIONS AND ASSUMPTIONS
+%----------------------------------------------------------------------------------------
+
+\begin{block}{Limitations and Assumptions}
+
+\begin{itemize}
+\item Still need some human intervention and understanding of the program.
+\item Current binary analysis tools are not mature enough to handle complicated
+    real-world software. A lot of library functions are not properly simulated.
+\end{itemize}
 
 \end{block}
 
@@ -256,10 +313,10 @@ Treatment 3 & 0.0009271 & 0.296 \\
 \begin{block}{Conclusion}
 
 \begin{itemize}
-\item Opet volutpat ligula. Duis semper lorem eget dui dignissim porttitor. Nulla facilisi. In ullamcorper lorem quis dolor iaculis nec egestas enim ultricies. Cras ut mauris elit, ut lacinia dui. Proin in ante et libero hendrerit iaculis.
-\item Nulla eu erat a urna laoreet auctor id a turpis. Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis.
-\item Aenean id neque dolor.
-\item Opet volutpat ligula. Duis semper lorem eget dui dignissim porttitor. Nulla facilisi. In ullamcorper lorem quis dolor iaculis nec egestas enim ultricies. Cras ut mauris elit, ut lacinia dui. Proin in ante et libero hendrerit iaculis.
+    \item Binary analysis on network functions shows the possibility of getting
+        an accurate model. In the future, we plan to explore further about
+        source-level analysis to be able to generate models with less human
+        intervention.
 \end{itemize}
 
 \end{block}
@@ -268,41 +325,41 @@ Treatment 3 & 0.0009271 & 0.296 \\
 %	REFERENCES
 %----------------------------------------------------------------------------------------
 
-\begin{block}{References}
-
-\nocite{*} % Insert publications even if they are not cited in the poster
-\small{\bibliographystyle{unsrt}
-\bibliography{sample}}
-
-\end{block}
+%\begin{block}{References}
+%
+%%\nocite{*} % Insert publications even if they are not cited in the poster
+%\small{\bibliographystyle{unsrt}
+%\bibliography{poster}}
+%
+%\end{block}
 
 %----------------------------------------------------------------------------------------
 %	ACKNOWLEDGEMENTS
 %----------------------------------------------------------------------------------------
 
-\begin{block}{Acknowledgments}
-
-\begin{itemize}
-\item Nam mollis tristique neque eu luctus. Suspendisse rutrum congue nisi sed convallis. Aenean id neque dolor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
-\end{itemize}
-
-\end{block}
+%\begin{block}{Acknowledgments}
+%
+%\begin{itemize}
+%\item Nam mollis tristique neque eu luctus.
+%\end{itemize}
+%
+%\end{block}
 
 %----------------------------------------------------------------------------------------
 %	CONTACT INFORMATION
 %----------------------------------------------------------------------------------------
 
-\setbeamercolor{block title}{fg=black,bg=orange!70} % Change the block title color
-
-\begin{block}{Contact Information}
-
-\begin{itemize}
-\item Web: \href{http://www.university.edu/smithlab}{http://www.university.edu/smithlab}
-\item Email: \href{mailto:john@smith.com}{john@smith.com}
-\item Phone: +1 (000) 111 1111
-\end{itemize}
-
-\end{block}
+%\setbeamercolor{block title}{fg=black,bg=orange!70} % Change the block title color
+%
+%\begin{block}{Contact Information}
+%
+%\begin{itemize}
+%\item Web: \href{http://www.university.edu/smithlab}{http://www.university.edu/smithlab}
+%\item Email: \href{mailto:john@smith.com}{john@smith.com}
+%\item Phone: +1 (000) 111 1111
+%\end{itemize}
+%
+%\end{block}
 
 %----------------------------------------------------------------------------------------
 
@@ -312,6 +369,7 @@ Treatment 3 & 0.0009271 & 0.296 \\
 
 \end{columns} % End of all the columns in the poster
 
-\end{frame} % End of the enclosing frame
+\end{frame}
+% End of the enclosing frame
 
 \end{document}

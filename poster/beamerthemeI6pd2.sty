@@ -39,8 +39,8 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \setbeamertemplate{block begin}{
-  \vskip.75ex
-  \begin{beamercolorbox}[ht=3.5ex,dp=0.5ex,center,leftskip=-1em,colsep*=.75ex]{block title}%
+  %\vskip.2ex
+  \begin{beamercolorbox}[ht=4.3ex,dp=0.3ex,center,leftskip=-1em,colsep*=.75ex]{block title}%
     \usebeamerfont*{block title}%
     {\phantom{Gg}\insertblocktitle}% phantom because of baseline problem
   \end{beamercolorbox}%
@@ -65,13 +65,14 @@
         \vskip4ex
         \raggedleft
         \usebeamercolor{title in headline}{\color{fg}\textbf{\LARGE{\inserttitle}}\\[1ex]}
-        \usebeamercolor{author in headline}{\color{fg}\large{\insertauthor}\\[1ex]}
+        \usebeamercolor{author in headline}{\color{fg}\large{\insertauthor}\\}
         \usebeamercolor{institute in headline}{\color{fg}\large{\insertinstitute}\\[1ex]}
+        \vskip1ex
       \end{column}
       \begin{column}{.25\paperwidth}
         \vskip3ex
         \begin{center}
-          \includegraphics[width=.25\linewidth]{logo.png}
+          \includegraphics[width=.16\linewidth]{logo.png}
         \end{center}
         \vskip7ex
       \end{column}
