@@ -10,7 +10,7 @@ import argparse
 ################################################################################
 
 parser = argparse.ArgumentParser(description='Round robin experiment')
-parser.add_argument('--input', dest='input', type=int)
+parser.add_argument('--counter', dest='counter', type=int)
 parser.add_argument('--output-addr', dest='output_addr')
 parser.add_argument('--output-port', dest='output_port', type=int)
 parser.add_argument('--looping', dest='looping', action='store_true',
@@ -186,14 +186,14 @@ sm.move('found', 'active')
 # round robin iterator
 if not arg.looping:
     rr_this = s3.regs.rdi
-    cur_iter_ptr = rr_this + 8
-    if arg.input != None:
-        cur_iter = s3.solver.BVV(arg.input, 32)
+    counter_ptr = rr_this + 8
+    if arg.counter != None:
+        counter = s3.solver.BVV(arg.counter, 32)
     else:
-        cur_iter = s3.solver.BVS("cur_iter", 32)
-    s3.solver.add(cur_iter >= 0)
-    s3.solver.add(cur_iter < 4)
-    s3.mem[cur_iter_ptr].int = cur_iter
+        counter = s3.solver.BVS("counter", 32)
+    s3.solver.add(counter >= 0)
+    s3.solver.add(counter < 4)
+    s3.mem[counter_ptr].int = counter
 
 # Find the state right after select_server returns
 sm.explore(find=decision_insn.insn.address + decision_insn.insn.size)
@@ -223,9 +223,9 @@ else:
         s4.solver.add(addr == arg.output_addr)
     if arg.output_port != None:
         s4.solver.add(port == arg.output_port)
-    print('cur_iter:', cur_iter)
+    print('counter:', counter)
     print('Addr:', addr)
     print('Port:', port)
-    print('Evaluated cur_iter:', s4.solver.eval(cur_iter))
+    print('Evaluated counter:', s4.solver.eval(counter))
     print('Evaluated addr:', hex(s4.solver.eval(addr)))
     print('Evaluated port:', s4.solver.eval(port))
