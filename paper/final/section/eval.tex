@@ -85,13 +85,59 @@ Evaluated port: 9003
 \end{lstlisting}
 
         When there are no explicit constraints on both the input and the output,
-        the solver will find a random set of values that satisfy the expressions
-        according to its internal heuristics.
+        the solver by default will find a random set of values that satisfy the
+        expressions according to its internal heuristics. The next step is to
+        store these abstract syntax trees and use some SAT/SMT solver like Z3 to
+        find all possible solutions.
 \end{enumerate}
 
 
 \subsection{Round-robin load balancing}
 %-------------------------------------------------------------------------------
+
+The behavior of round-robin is non-deterministic per flow across time, since the
+algorithm essentially does not care about the source address or port number, but
+instead maintains an internal counter that loops through the possible choices of
+the output backend servers. The input, in this case, would be irrelevant to the
+output, i.e., the selected backend server address and port, and the internal
+counter would be the key that determines the output. In consequence, we tested
+the following scenarios.
+
+\begin{enumerate}
+    \item Given a concrete internal counter, find the output backend server
+        address.
+
+\begin{lstlisting}[language=bash]
+$ python roundrobin/solve.py --counter 2
+counter: <BV32 0x2>
+Addr: <BV64 0x7f000001>
+Port: <BV64 0x232a>
+Evaluated counter: 2
+Evaluated addr: 0x7f000001
+Evaluated port: 9002
+\end{lstlisting}
+
+    \item Without constraining the internal counter variable, get the
+        arithematic expression of the output backend server address and port,
+        which describes the relationship between the counter and the output.
+
+\begin{lstlisting}[language=bash]
+$ python roundrobin/solve.py
+counter: <BV32 counter_19_32>
+Addr: <BV64 (AST with symbolic variable counter_19_32)>
+Port: <BV64 (AST with symbolic variable counter_19_32)>
+Evaluated counter: 3
+Evaluated addr: 0x7f000001
+Evaluated port: 9003
+\end{lstlisting}
+
+        When there are no explicit constraints on both the internal counter,
+        the solver by default will find a random set of values that satisfy the
+        expressions according to its internal heuristics. As mentioned before,
+        the next step would be to store these abstract syntax trees and use a
+        solver to find all possible solutions, which should not be too hard to
+        do.
+\end{enumerate}
 
 \subsection{Performance}
 %-------------------------------------------------------------------------------
