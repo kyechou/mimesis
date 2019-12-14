@@ -234,13 +234,30 @@ caused the analysis tool (i.e., angr) to throw some unexpected exception,
 usually due to the bugs in the analysis tool or the fact that the tool does not
 support some functionalities used in the program.
 
-In spite of the deadends and unexpected exceptions, which means the explorations
-terminate early, the time and memory consumptions still seem to be within the
-reasonable range if we do these whole analysis and model extraction offline.
+In spite of the deadends and unexpected exceptions, which means that the
+explorations terminate early, the time and memory consumptions still seem to be
+within the reasonable range if we do these whole analysis and model extraction
+offline.
 
 
 \subsection{Limitations}
 %-------------------------------------------------------------------------------
+
+The approach certainly has some limitations. For example, it requires people who
+write the analysis procedure to have some understanding of the target program
+that is to be analyzed, including the calling convention of the instruction set
+architecture (ISA), the underlying APIs and libraries that are used (in our
+example, we mainly target the programs that are based on POSIX socket API), and
+for better performance, it is also required for people who do the analysis to
+know which part of the program is irrelevant to the actual computation of the
+final output and manual prune those code sections and branches. Nonetheless,
+these limitations can be resolved by devoting reasonable efforts to identify
+those commonly used libraries and APIs, while the bigger issue is, as we
+mentioned before, that current binary analysis tool implementations are not
+really out-of-the-box for complicated, production-grade programs, and in order
+to work on those complicated programs, we essentially have to implement a
+simplified version of all the library functions or system calls to simulate
+their behavior as instrumentation hooks.
 
 
 %-------------------------------------------------------------------------------
