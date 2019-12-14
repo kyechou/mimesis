@@ -1,4 +1,55 @@
 
+
+\subsection{Challenges and design of example middlebox}
+
+% explain why it's hard to analyze such implementations
+%   function pointers, event-driven, modular design, multi-threading
+To analyze a given middlebox software binary, however, can be quite challenging
+for several reasons. One major reason is that many of these production-grade
+middlebox software are highly optimized in order to achieve high performance
+within software and hence drastically increase the complexity of binary
+analysis, and oftentimes these optimizations do not affect the eventual routing
+behavior. For example, we looked into the implementation of HAProxy, which is
+both a TCP proxy and an HTTP proxy depending on the configuration. The
+implementation is highly modularized, object-oriented (function pointers),
+event-driven, and multi-threaded, so that it is difficult to figure out where
+the routing decision logic happens in the program, track how the variables and
+data structures are passed, and localize the caller of a certain function. While
+looking at the source code, we identified the part where they accept the
+incoming connections, but we couldn't track the returned data structures without
+decent documentations or the help of binary analysis tools.
+
+% why we build our own implementation of example middlebox
+% design overview of the example middlebox
+In addition, since we are trying to analyze the binaries for the sake of
+verifying the functional behavior of the middleboxes rather than their
+performance, we implemented our own version of a load balancer prototype with
+essential functionalities but without performance optimizations, so as to
+simplify the analysis. The simple load balancer prototype currently supports
+basic TCP load balancing schemes like round-robin and least-connection-first,
+and we plan to add more interesting load balancing algorithms in the future,
+possibly source-based hashing, HTTP URL hashing, etc. The middlebox prototype
+follows the typical POSIX network application implementation. It first opens up
+a socket, binds, and listens at the port. Once a connection is accepted, it then
+forks a child process for the connection and keeps the states of both the
+connections and the pre-configured backend servers. The forked child processes
+will then act as proxies and initiate connections to the actual servers based on
+the load balancing schemes mentioned above. The prototype will be used as a
+straw man example and a proof of concept. If it goes well and time permits, we
+will then move on to more complicated middlebox implementations.
+
+\subsection{Binary analysis tools and analysis procedure}
+
+% explain that we don't have time to learn bap and ocaml in this course
+% so we chose angr for now.
+We mentioned in the previous report that we were looking at binary analysis
+tools like BAP and angr. However, after spending a few weeks on BAP, we think
+that, for this course project, we don't really have that much time to learn a
+new programming language (OCaml) for BAP, and without a good understanding of
+the language, it is impossible to understand their documentations or APIs. As a
+result, we will only focus on angr, which is written in Python, for the course
+project, although BAP seems to have better performance. We may explore more
+
 \subsection{Future challenges}
 
 % future challenges: function pointer, need of program specific knowledge

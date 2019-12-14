@@ -1,77 +1,60 @@
 \section{Background}
 
-\subsection{Assumptions on middleboxes}
+In this section, we will introduce several middleboxes and binary analysis tools we have surveyed in this project.
+In particular, three middleboxes \ca HAProxy, \cb Nginx and \cc Snort are discussed in this section.
+In addition, two binary analysis tools \ca BAP and \cb Angr are introduced below.
 
-% describe the middleboxes implementation (connection terminating and
-% forwarding)
-After the survey of various open source middleboxes, we observed that, in
-general, the middleboxes can be categorized into two classes. One of them is the
-middleboxes that would forward the transport layer header (assuming that the
-end-to-end application is based on some connection-oriented protocol, like TCP),
-such as NetFilter subsystem in Linux and its derivative utilities (e.g.,
-iptables, nftables). These middleboxes might still forward packets to different
-next hops or modify the packet headers, but they will not modify the packets so
-that it breaks the transport layer connection between the client and the server.
-A common example is using iptables to configure the NetFilter subsystem as a
-firewall and/or NAT, in which case the layer 2 and layer 3 headers are modified,
-but layer 4 header fields remain untouched. The other category consists of the
-middleboxes that terminate the incoming connection at one end and start a new
-connection to the backend server at another. Such middleboxes usually act as a
-proxy or gateway, such as TCP proxies, HTTP proxies, SOCKS proxies (layer 5),
-etc. To simplify the problem, we will only focus on the second kind of
-middleboxes, which would accept/terminate the incoming connection and initiate a
-new one, so that we treat each connection as request and reply application-layer
-packets.
+\subsection{Middleboxes}
+Middleboxes are a set of network devies that widely use in various network design.
+All these divices provides different behavior for controling packets rather than packet forwarding in the middle of the network.
+According to RFC 3234~\cite{rfc3234}, middleboxes can be category into several classes, including firewall, NAT, load balancer, \etc.
+We tend to make our survey fit in as much classes as we can so we may get more concrete idea on how to analyze the non-deterministic behavior of them.
 
-\subsection{Challenges and design of example middlebox}
+\subsubsection{HAProxy}
+HAProxy is a connection-terminating load balancer, which means that an HAProxy instance will terminate an incoming TCP connection and re-initiate the connection on the other side(s), or drop the connection, according to the configuration. There are essentially two modes in HAProxy, TCP and HTTP. When configured in TCP mode, HAProxy would still terminate the TCP connection locally and start new connections to the backend servers, which hence normalizes the TCP packets (i.e., discarding or replacing those out-of-order packets or packets with abnormal flags). The difference between the TCP and HTTP mode is that in HTTP mode, HAProxy would inspect the layer 7 header and can be configured using those HTTP information in the HTTP request header (e.g., HTTP request URI), while in TCP mode, HAProxy will only look at the layer 3 and 4 information, which can be useful for better performance or encrypted payload like HTTPS without keys for decryption.
 
-% explain why it's hard to analyze such implementations
-%   function pointers, event-driven, modular design, multi-threading
-To analyze a given middlebox software binary, however, can be quite challenging
-for several reasons. One major reason is that many of these production-grade
-middlebox software are highly optimized in order to achieve high performance
-within software and hence drastically increase the complexity of binary
-analysis, and oftentimes these optimizations do not affect the eventual routing
-behavior. For example, we looked into the implementation of HAProxy, which is
-both a TCP proxy and an HTTP proxy depending on the configuration. The
-implementation is highly modularized, object-oriented (function pointers),
-event-driven, and multi-threaded, so that it is difficult to figure out where
-the routing decision logic happens in the program, track how the variables and
-data structures are passed, and localize the caller of a certain function. While
-looking at the source code, we identified the part where they accept the
-incoming connections, but we couldn't track the returned data structures without
-decent documentations or the help of binary analysis tools.
+The non-deterministic behaviors of HAProxy given a concrete configuration can be defined as the set of possible outcomes or actions that cannot be deterministically modelled by only knowing the input request. From the documentation of the current stable release (2.0.8), the supported load balancing schemes include round robin, least connections first, first available first, source address hashing, HTTP URI hashing, HTTP URI parameters, and random.
 
-% why we build our own implementation of example middlebox
-% design overview of the example middlebox
-In addition, since we are trying to analyze the binaries for the sake of
-verifying the functional behavior of the middleboxes rather than their
-performance, we implemented our own version of a load balancer prototype with
-essential functionalities but without performance optimizations, so as to
-simplify the analysis. The simple load balancer prototype currently supports
-basic TCP load balancing schemes like round-robin and least-connection-first,
-and we plan to add more interesting load balancing algorithms in the future,
-possibly source-based hashing, HTTP URL hashing, etc. The middlebox prototype
-follows the typical POSIX network application implementation. It first opens up
-a socket, binds, and listens at the port. Once a connection is accepted, it then
-forks a child process for the connection and keeps the states of both the
-connections and the pre-configured backend servers. The forked child processes
-will then act as proxies and initiate connections to the actual servers based on
-the load balancing schemes mentioned above. The prototype will be used as a
-straw man example and a proof of concept. If it goes well and time permits, we
-will then move on to more complicated middlebox implementations.
+\subsubsection{Nginx}
+Nginx plays two roles in network: reverse proxy and load balancer.
+These two roles are not independent.
+For the role of reverse proxy, two modules are used: \ca Proxy module and \cb rewrite module.
+Possible non-deterministic actions from these two modules are:
+\begin{itemize}
+	\item proxy\_set\_header: redefine the value of certain field in the header part of http request.
+	\item proxy\_set\_body: redefine the request body passed to the proxied server.
+	\item proxy\_redirect: set the text that should be changed in the “Location” and “Refresh” header fields of a proxied server response (always come with 30X response code).
+	\item proxy\_pass: Set the protocol and address of a proxied server and an optional URI to which a location should be mapped.
+	\item rewrite: redirect; changes the URI in the header.
+\end{itemize}
+Among the above, three actions, ‘proxy\_set\_header‘, ‘rewrite’ and ‘proxy\_pass’ are most possiblely to affect PEC.
+For the role of load balancer, Upstream module is used.
+After analyze the module, we find one ground truth for load balancer is that all load balancer will modify the packet header.
+However, the forwarding behavior is not affected.
+As Nginx only perform HTTP load balancing based on reverse proxy, so http headers might be modified during this process based on the algorithms user choose.
+For example, hash methods will make sure packets from certain IP can only be forwarding to certain backend server.
+While round-robin or fair method will distribute all the packets to different backend servers.
+Thus, checking the modified HTTP packets can be a reasonable direction for analyzing non-deterministic behaviors.
 
-\subsection{Binary analysis tools and analysis procedure}
+\subsubsection{Snort}
+Snort is an intrusion detection and prevention system (IDS/IPS), which is usually placed near a firewall as an additional protection for untrusted traffic.
+There are several modes provided by Snort which simply swich the settings of Snort easily for user.
+For example, Sniffer mode and Packet logger mode are two modes that don’t change PEC.
+NIDS mode, on the other hand, is much interesting since it performs detection and analysis on network traffic.
+Apart from acting as a stateless firewall, Snort’s "\textbf{flow}" keyword, used in conjunction with session tracking, allows Snort to track and take action on tcp packets depending on the tcp session state and its flag value.
+This functionality gives a network operator very finegrained control on Snort’s behavior.
 
-% explain that we don't have time to learn bap and ocaml in this course
-% so we chose angr for now.
-We mentioned in the previous report that we were looking at binary analysis
-tools like BAP and angr. However, after spending a few weeks on BAP, we think
-that, for this course project, we don't really have that much time to learn a
-new programming language (OCaml) for BAP, and without a good understanding of
-the language, it is impossible to understand their documentations or APIs. As a
-result, we will only focus on angr, which is written in Python, for the course
-project, although BAP seems to have better performance. We may explore more
-about BAP and learn OCaml properly after this course.
+\subsection{Binary Analysis Tools}
+Binary analysis tools are used for analyzing bianry codes.
+Since there are various middleboxes are provided under copyright or without open srouce, it is reasonable to assume the binary code is the best source we can use for analyzing the middleboxes.
+Two binary analysis tools are targeted to be the candidate for this project.
 
-% vim: set ft=tex :
+\subsubsection{BAP}
+BAP is a program analysis platform written inOCaml, but also comes with Python and C binding libraries.
+It basically disassembles the binary code andlifts it into their own RISC-like BAP Instruction Language (BIL) representation, on which program analysis is performed. 
+We have explored a few of BAP’s core functions, such as constructing controlflow graph (CFG) and call graph (CG) given a program binary.
+Control flow graph is a directed graph where eachnode is a code block of sequential instructions without branches, except for the beginning and the end of the block, and each edge is a branch from one block toanother.
+Call graph,  nonetheless,  is a directed graphconsisting of code blocks of functions with edges be-ing function calls or returning to the caller function.
+
+\subsubsection{Angr}
+
