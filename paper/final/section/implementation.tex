@@ -4,7 +4,7 @@
 
 In this section, we will introduce every detail on how we build up our simple load balancer as well as how binary analysis and symbolic execution implement on the load balancer by using Angr.
 
-\subsection{Implementation of Simple Load Balancer}
+\subsection{Simple load balancer}
 %-----------------------------------
 Two major components are included in the simple load balancer, which are main load balance function and load balance algorithms.
 For main load balance function, it will \ca listen to client connection, \cb accept client request, \cc alter packet head based on the information of selected server, \cd accept server respond, and \ce send respond packet back to client.
@@ -19,6 +19,6 @@ We have introduced three algorithms in this code, now we will explain how we imp
 	\item Source-based hashing: We simply provide a hash function as following:  First, aggregate four part of client IP address and client port number, then modulo it by the number of server. The result of this hash function will be the index of the server in server list.
 \end{enumerate}
 
-\subsection{Binary Analysis of LB using Angr}
+\subsection{Binary analysis of LB using angr}
 
 % vim: set ft=tex :
