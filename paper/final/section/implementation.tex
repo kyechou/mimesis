@@ -2,8 +2,23 @@
 \section{Implementation}
 %-------------------------------------------------------------------------------
 
-\subsection{Simple Load Balancer}
-%-----------------------------------
+In this section, we will introduce every detail on how we build up our simple load balancer as well as how binary analysis and symbolic execution implement on the load balancer by using Angr.
 
+\subsection{Implementation of Simple Load Balancer}
+%-----------------------------------
+Two major components are included in the simple load balancer, which are main load balance function and load balance algorithms.
+For main load balance function, it will \ca listen to client connection, \cb accept client request, \cc alter packet head based on the information of selected server, \cd accept server respond, and \ce send respond packet back to client.
+We use socket function in C to finish the work of listening, accepting and sending.
+We also use fork to create a new thread to handle each of the requests.
+
+The second part of the code is load balance algorithms.
+We have introduced three algorithms in this code, now we will explain how we implement all of them.
+\begin{enumerate}
+	\item Round-robin: As we need the order of each server in server list, we use an array to store servers, and use a iterator to indicate the last server has been assigned. As the iterator increased, the modulo of iterator by the number of server is the index for the next selected server.
+	\item Least-conncetion-first: Since the load balancer knows every conncetion to server, we can use variables to store the current conncetion of each server. Whenever a connection linked successfully, the vaiable will add 1. If the server respond a request, the connction will loss, and the variable will minus 1. by constantly tracking these behavior, we will be able to identify the server with the least connection, and assign it to be the next server for requests.
+	\item Source-based hashing: We simply provide a hash function as following:  First, aggregate four part of client IP address and client port number, then modulo it by the number of server. The result of this hash function will be the index of the server in server list.
+\end{enumerate}
+
+\subsection{Binary Analysis of LB using Angr}
 
 % vim: set ft=tex :
