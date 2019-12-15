@@ -45,36 +45,36 @@ balancing schemes include round-robin, least connections first, first available
 first, source address hashing, HTTP URI hashing, HTTP URI parameters, and
 random.
 
-\subsubsection{Nginx}
-
-Nginx plays two roles in network: reverse proxy and load balancer. These two
-roles are not independent. For reverse proxy, two modules are used: \ca Proxy
-module and \cb rewrite module. Possible non-deterministic actions from these two
-modules are:
-\begin{itemize}
-    \item proxy\_set\_header: redefine the value of certain field in the header
-        part of http request.
-    \item proxy\_set\_body: redefine the request body passed to the proxied
-        server.
-    \item proxy\_redirect: set the text that should be changed in the "Location"
-        and "Refresh" header fields of a proxied server response.
-    \item proxy\_pass: Set the protocol and address of a proxied server and an
-        optional URI to which a location should be mapped.
-	\item rewrite: redirect; changes the URI in the header.
-\end{itemize}
-Among the modules, three actions, `proxy\_set\_header', `rewrite' and
-`proxy\_pass', are the most possible functions to affect the output packet
-equivalence classes.
-
-For load balancer, upstream module is used. After analyze the module, we find
-one ground truth for load balancer is that it will definitely modify the packet
-header. However, the forwarding behavior is not affected. As Nginx only performs
-HTTP load balancing based on reverse proxy, HTTP headers might be modified
-during this process based on the algorithms that user chose. For example, hash
-methods will make sure packets from a certain IP address can only be forwarded
-to a certain backend server. While round-robin or fair methods will distribute
-all the packets to different backend servers. Thus, checking the modified HTTP
-packets can be a reasonable direction for analyzing non-deterministic behaviors.
+%\subsubsection{Nginx}
+%
+%Nginx plays two roles in network: reverse proxy and load balancer. These two
+%roles are not independent. For reverse proxy, two modules are used: \ca Proxy
+%module and \cb rewrite module. Possible non-deterministic actions from these two
+%modules are:
+%\begin{itemize}
+%    \item proxy\_set\_header: redefine the value of certain field in the header
+%        part of http request.
+%    \item proxy\_set\_body: redefine the request body passed to the proxied
+%        server.
+%    \item proxy\_redirect: set the text that should be changed in the "Location"
+%        and "Refresh" header fields of a proxied server response.
+%    \item proxy\_pass: Set the protocol and address of a proxied server and an
+%        optional URI to which a location should be mapped.
+%	\item rewrite: redirect; changes the URI in the header.
+%\end{itemize}
+%Among the modules, three actions, `proxy\_set\_header', `rewrite' and
+%`proxy\_pass', are the most possible functions to affect the output packet
+%equivalence classes.
+%
+%For load balancer, upstream module is used. After analyze the module, we find
+%one ground truth for load balancer is that it will definitely modify the packet
+%header. However, the forwarding behavior is not affected. As Nginx only performs
+%HTTP load balancing based on reverse proxy, HTTP headers might be modified
+%during this process based on the algorithms that user chose. For example, hash
+%methods will make sure packets from a certain IP address can only be forwarded
+%to a certain backend server. While round-robin or fair methods will distribute
+%all the packets to different backend servers. Thus, checking the modified HTTP
+%packets can be a reasonable direction for analyzing non-deterministic behaviors.
 
 \subsubsection{Snort}
 
