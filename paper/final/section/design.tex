@@ -2,9 +2,12 @@
 \section{Design and Methods}
 %-------------------------------------------------------------------------------
 
-In this project, our goal is to find function \(f\), \(\forall input stream s_i, \exists output stream s_o which s_o = f(s_i)\).
-As most of the behavior in the network are predictable, we will mainly focusing on the non-deterministic action of middleboxes.
-In this section, we will discribe how we design our methodology of finding output stream based on provided input stream.
+In this project, our goal is to find function $f$, such that
+\(\forall input stream s_i, \exists output stream s_o which s_o = f(s_i)\).
+As most of the behavior in the network are predictable, we will mainly focusing
+on the non-deterministic action of middleboxes.  In this section, we will
+discribe how we design our methodology of finding output stream based on
+provided input stream.
 
 \subsection{Assumptions on middleboxes}
 
@@ -39,18 +42,26 @@ packets.
 %   looking for variables (either in registers or memory)
 %   symbolic solver engine
 % how we plan to use angr for binary analysis
-In previous section, we discuss two open source binary analysis tools, BAP and Angr.
-Since our goal is to get output stream from provided input stream, and we try to targeting non-deterministic behavior, it is reasonable to use symbolic execution by binary analysis tools to get results we need.
-In addition, based on the assumption of middleboxes and our middlebox survey, load balancer seems to fit our goal.
-Although there are two load balancer in our survey list, HAProxy is the better choice since it only focus on load balance function.
+In previous section, we discuss two open source binary analysis tools, BAP and
+Angr.  Since our goal is to get output stream from provided input stream, and we
+try to targeting non-deterministic behavior, it is reasonable to use symbolic
+execution by binary analysis tools to get results we need.  In addition, based
+on the assumption of middleboxes and our middlebox survey, load balancer seems
+to fit our goal.  Although there are two load balancer in our survey list,
+HAProxy is the better choice since it only focus on load balance function.
 However, after we use both tools to analyze the HAProxy, we face two obstacles.
-\ci For using BAP, it is very hard for us to do symbolic execution on it because BAP mainly use OCaml but we are lacking expierence of it.
-Thus, it is painful to trace the memory location of each code and put exact values on it.
-\cii While analyzing the HAProxy, it is difficult to idientify function and commands from binary code since the original structure of HAProxy is complicated.
-Espetially, HAProxy provides several load balance algorithms, to idientify and analyze each of them is time-comsuming and plainful.
+\ci For using BAP, it is very hard for us to do symbolic execution on it because
+BAP mainly use OCaml but we are lacking expierence of it.  Thus, it is painful
+to trace the memory location of each code and put exact values on it.  \cii
+While analyzing the HAProxy, it is difficult to idientify function and commands
+from binary code since the original structure of HAProxy is complicated.
+Espetially, HAProxy provides several load balance algorithms, to idientify and
+analyze each of them is time-comsuming and plainful.
 
-As the result, We decide to write a simple load balancer based on only three most frequently used load balance algorithm, \ca round-robin, \cb least-connection-first and \cc source-based hashing.
-The detail and the implementation of this load balancer is introduced in following section.
+As the result, We decide to write a simple load balancer based on only three
+most frequently used load balance algorithm, \ca round-robin, \cb
+least-connection-first and \cc source-based hashing.  The detail and the
+implementation of this load balancer is introduced in following section.
 
 \subsection{Simple load balancer}
 %-----------------------------------
@@ -58,20 +69,27 @@ The detail and the implementation of this load balancer is introduced in followi
 % design overview:
 % classic listen, accept, fork, wait; connection endpoints proxying
 As mentioned above, we have a simplified implementation of a load balancer
-middlebox, which including three load balance algorithm.
-The main goal for building this simple load balancer is to simplify the analysis procesure.
-Thus, only the basic functions and load balance algorithms are included in the code.
-We even use C rather than C++ to wirte the code since object-oriented structure will increase the difficulty of the symbolic execution.
-In addition, we drop the input file and hardcode the server list and selected algorithm to avoid the infinate loop when processing file reader by using binary analysis tool.
+middlebox, which including three load balance algorithm.  The main goal for
+building this simple load balancer is to simplify the analysis procesure.  Thus,
+only the basic functions and load balance algorithms are included in the code.
+We even use C rather than C++ to wirte the code since object-oriented structure
+will increase the difficulty of the symbolic execution.  In addition, we drop
+the input file and hardcode the server list and selected algorithm to avoid the
+infinate loop when processing file reader by using binary analysis tool.
 
 Three algorithms we used in this code are introduced below:
-\ci round-robin: This algorithm select the target server by the order of server assigned previously.
-The algorithm tend to get the next candidate in order unless it is the end of the server list.
-If it is the end of the server list, then the first server in server list will be provided to next request.
-\cii least-connection-first: This algorithm will select the server with the least conncetion.
-In order to do so, the load balancer need to store the conncetion of each server.
-Since servers can only get conncetion from load balancer, by our assumption, load balancer can simply count the number of conncetion by adding one whenever it assigned a connection to a server.
-\ciii source-based hashing: This algorithm will use a hash function to map the client to server. Thus, each client will always conncet to the same server base on the hash function no matter how many request it send to server.
+\ci round-robin: This algorithm select the target server by the order of server
+assigned previously.  The algorithm tend to get the next candidate in order
+unless it is the end of the server list.  If it is the end of the server list,
+then the first server in server list will be provided to next request.
+\cii least-connection-first: This algorithm will select the server with the
+least conncetion.  In order to do so, the load balancer need to store the
+conncetion of each server.  Since servers can only get conncetion from load
+balancer, by our assumption, load balancer can simply count the number of
+conncetion by adding one whenever it assigned a connection to a server.
+\ciii source-based hashing: This algorithm will use a hash function to map the
+client to server. Thus, each client will always conncet to the same server base
+on the hash function no matter how many request it send to server.
 
 % load-balancing schemes
 % how we keep states of connections and servers

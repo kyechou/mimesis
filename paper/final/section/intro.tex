@@ -14,7 +14,7 @@ software-defined networks (SDN). Nonetheless, the middlebox analysis techniques
 should not be limited to any certain kinds of networks.}, since a minor
 configuration error by human operators can potentially affect the behavior of
 multiple networks, and even bring down customer-facing services on a global
-scale \cite{2017-Newton,2018-Speed}. As a result, it would be extremely
+scale~\cite{2017-Newton,2018-Speed}. As a result, it would be extremely
 beneficial if we are able to either formally verify or test the correctness of a
 given network to some satisfactory extent.
 
@@ -30,7 +30,7 @@ intrusion detection/prevention systems (IDS/IPS).
 
 For verifying networks with middleboxes, it is very hard to automatically or
 efficiently create accurate models for all kinds of these network functions
-deployed in the networks. Plankton-neo \cite{2018-PrabhuEtAl} tried to solve the
+deployed in the networks. Plankton-neo~\cite{2018-PrabhuEtAl} tried to solve the
 problem by combining model-checking verification with emulation. However, in
 Plankton-neo, for each execution path of a network system, the corresponding
 representative packet of a packet equivalence class (PEC) is injected only once,
@@ -54,8 +54,8 @@ middleboxes, it is impractical to build an individual, accurate, and
 bug-faithful model for each middlebox implementation in reality.
 
 % goal
-Thus, in this project, we plan to analyze some given middleboxes so as to make
-it easier to verify such networks. The goal is to find the mappings between the
+So in this project, we plan to analyze some given middleboxes so as to make it
+easier to verify such networks. The goal is to find the mappings between the
 input stream and the output stream given a middlebox, which is essentially a
 compressed accurate model for the middlebox given the concrete configurations.
 The model then can be used for verifying networks with the middlebox in

@@ -115,9 +115,19 @@ University of Illinois at Urbana-Champaign
 %-------------------------------------------------------------------------------
 %Your abstract text goes here. Just a few facts. Whet our appetites.
 %Not more than 200 words, if possible, and preferably closer to 150.
-In this report, we present the current progress and changes on the Nekton
-project about middlebox analysis, current design of analysis procedure,
-experiment, and the challenges we have encountered.
+
+    Middleboxes (or network functions) have been an issue when it comes to
+    network verification. The problem is the lack of accurate models for these
+    complicated middleboxes that can describe the behavior of the actual
+    implementations faithfully, due to the lack of standards, implementation
+    bugs, and implementation quirks across vendors. In this work, we focus on
+    the software network functions and apply binary analysis on them with an aim
+    to formulate the mapping between the inputs and outputs of such network
+    function programs. We tested our approach on an example load balancer that
+    we implemented, and the result shows that it is possible to get an accurate
+    model within reasonable resource consumption using binary analysis, despite
+    some limitations of the method.
+
 \end{abstract}
 
 \input{section/intro.tex}

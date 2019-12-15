@@ -1,60 +1,115 @@
+%-------------------------------------------------------------------------------
 \section{Background}
+%-------------------------------------------------------------------------------
 
-In this section, we will introduce several middleboxes and binary analysis tools we have surveyed in this project.
-In particular, three middleboxes \ca HAProxy, \cb Nginx and \cc Snort are discussed in this section.
-In addition, two binary analysis tools \ca BAP and \cb Angr are introduced below.
+In this section, we introduce several middleboxes and binary analysis tools that
+we have surveyed for this project. In particular, three middleboxes \ca HAProxy,
+\cb Nginx and \cc Snort are discussed in this section.  In addition, two binary
+analysis tools \ca BAP and \cb Angr are introduced below.
+
 
 \subsection{Middleboxes}
-Middleboxes are a set of network devies that widely use in various network design.
-All these divices provides different behavior for controling packets rather than packet forwarding in the middle of the network.
-According to RFC 3234~\cite{rfc3234}, middleboxes can be category into several classes, including firewall, NAT, load balancer, \etc.
-We tend to make our survey fit in as much classes as we can so we may get more concrete idea on how to analyze the non-deterministic behavior of them.
+%-------------------------------------------------------------------------------
+
+Middleboxes are a set of network devies that widely use in various network
+design.  All these divices provides different behavior for controling packets
+rather than packet forwarding in the middle of the network.  According to RFC
+3234~\cite{rfc3234}, middleboxes can be category into several classes, including
+firewall, NAT, load balancer, \etc.  We tend to make our survey fit in as much
+classes as we can so we may get more concrete idea on how to analyze the
+non-deterministic behavior of them.
 
 \subsubsection{HAProxy}
-HAProxy is a connection-terminating load balancer, which means that an HAProxy instance will terminate an incoming TCP connection and re-initiate the connection on the other side(s), or drop the connection, according to the configuration. There are essentially two modes in HAProxy, TCP and HTTP. When configured in TCP mode, HAProxy would still terminate the TCP connection locally and start new connections to the backend servers, which hence normalizes the TCP packets (i.e., discarding or replacing those out-of-order packets or packets with abnormal flags). The difference between the TCP and HTTP mode is that in HTTP mode, HAProxy would inspect the layer 7 header and can be configured using those HTTP information in the HTTP request header (e.g., HTTP request URI), while in TCP mode, HAProxy will only look at the layer 3 and 4 information, which can be useful for better performance or encrypted payload like HTTPS without keys for decryption.
 
-The non-deterministic behaviors of HAProxy given a concrete configuration can be defined as the set of possible outcomes or actions that cannot be deterministically modelled by only knowing the input request. From the documentation of the current stable release (2.0.8), the supported load balancing schemes include round robin, least connections first, first available first, source address hashing, HTTP URI hashing, HTTP URI parameters, and random.
+HAProxy is a connection-terminating load balancer, which means that an HAProxy
+instance will terminate an incoming TCP connection and re-initiate the
+connection on the other side(s), or drop the connection, according to the
+configuration. There are essentially two modes in HAProxy, TCP and HTTP. When
+configured in TCP mode, HAProxy would still terminate the TCP connection locally
+and start new connections to the backend servers, which hence normalizes the TCP
+packets (i.e., discarding or replacing those out-of-order packets or packets
+with abnormal flags). The difference between the TCP and HTTP mode is that in
+HTTP mode, HAProxy would inspect the layer 7 header and can be configured using
+those HTTP information in the HTTP request header (e.g., HTTP request URI),
+while in TCP mode, HAProxy will only look at the layer 3 and 4 information,
+which can be useful for better performance or encrypted payload like HTTPS
+without keys for decryption.
+
+The non-deterministic behaviors of HAProxy given a concrete configuration can be
+defined as the set of possible outcomes or actions that cannot be
+deterministically modelled by only knowing the input request. From the
+documentation of the current stable release (2.0.8), the supported load
+balancing schemes include round robin, least connections first, first available
+first, source address hashing, HTTP URI hashing, HTTP URI parameters, and
+random.
 
 \subsubsection{Nginx}
-Nginx plays two roles in network: reverse proxy and load balancer.
-These two roles are not independent.
-For the role of reverse proxy, two modules are used: \ca Proxy module and \cb rewrite module.
-Possible non-deterministic actions from these two modules are:
+
+Nginx plays two roles in network: reverse proxy and load balancer.  These two
+roles are not independent.  For the role of reverse proxy, two modules are used:
+\ca Proxy module and \cb rewrite module.  Possible non-deterministic actions
+from these two modules are:
 \begin{itemize}
-	\item proxy\_set\_header: redefine the value of certain field in the header part of http request.
-	\item proxy\_set\_body: redefine the request body passed to the proxied server.
-	\item proxy\_redirect: set the text that should be changed in the “Location” and “Refresh” header fields of a proxied server response (always come with 30X response code).
-	\item proxy\_pass: Set the protocol and address of a proxied server and an optional URI to which a location should be mapped.
+    \item proxy\_set\_header: redefine the value of certain field in the header
+        part of http request.
+    \item proxy\_set\_body: redefine the request body passed to the proxied
+        server.
+    \item proxy\_redirect: set the text that should be changed in the “Location”
+        and “Refresh” header fields of a proxied server response (always come
+        with 30X response code).
+    \item proxy\_pass: Set the protocol and address of a proxied server and an
+        optional URI to which a location should be mapped.
 	\item rewrite: redirect; changes the URI in the header.
 \end{itemize}
-Among the above, three actions, ‘proxy\_set\_header‘, ‘rewrite’ and ‘proxy\_pass’ are most possiblely to affect PEC.
-For the role of load balancer, Upstream module is used.
-After analyze the module, we find one ground truth for load balancer is that all load balancer will modify the packet header.
-However, the forwarding behavior is not affected.
-As Nginx only perform HTTP load balancing based on reverse proxy, so http headers might be modified during this process based on the algorithms user choose.
-For example, hash methods will make sure packets from certain IP can only be forwarding to certain backend server.
-While round-robin or fair method will distribute all the packets to different backend servers.
-Thus, checking the modified HTTP packets can be a reasonable direction for analyzing non-deterministic behaviors.
+
+Among the above, three actions, `proxy\_set\_header', `rewrite' and
+`proxy\_pass' are most possiblely to affect PEC.  For the role of load balancer,
+Upstream module is used.  After analyze the module, we find one ground truth for
+load balancer is that all load balancer will modify the packet header.  However,
+the forwarding behavior is not affected.  As Nginx only perform HTTP load
+balancing based on reverse proxy, so http headers might be modified during this
+process based on the algorithms user choose.  For example, hash methods will
+make sure packets from certain IP can only be forwarding to certain backend
+server.  While round-robin or fair method will distribute all the packets to
+different backend servers.  Thus, checking the modified HTTP packets can be a
+reasonable direction for analyzing non-deterministic behaviors.
 
 \subsubsection{Snort}
-Snort is an intrusion detection and prevention system (IDS/IPS), which is usually placed near a firewall as an additional protection for untrusted traffic.
-There are several modes provided by Snort which simply swich the settings of Snort easily for user.
-For example, Sniffer mode and Packet logger mode are two modes that don’t change PEC.
-NIDS mode, on the other hand, is much interesting since it performs detection and analysis on network traffic.
-Apart from acting as a stateless firewall, Snort’s "\textbf{flow}" keyword, used in conjunction with session tracking, allows Snort to track and take action on tcp packets depending on the tcp session state and its flag value.
-This functionality gives a network operator very finegrained control on Snort’s behavior.
+
+Snort is an intrusion detection and prevention system (IDS/IPS), which is
+usually placed near a firewall as an additional protection for untrusted
+traffic.  There are several modes provided by Snort which simply swich the
+settings of Snort easily for user.  For example, Sniffer mode and Packet logger
+mode are two modes that don't change PEC.  NIDS mode, on the other hand, is much
+interesting since it performs detection and analysis on network traffic.  Apart
+from acting as a stateless firewall, Snort's "\textbf{flow}" keyword, used in
+conjunction with session tracking, allows Snort to track and take action on tcp
+packets depending on the tcp session state and its flag value.  This
+functionality gives a network operator very finegrained control on Snort's
+behavior.
+
 
 \subsection{Binary analysis tools}
-Binary analysis tools are used for analyzing bianry codes.
-Since there are various middleboxes are provided under copyright or without open srouce, it is reasonable to assume the binary code is the best source we can use for analyzing the middleboxes.
-Two binary analysis tools are targeted to be the candidate for this project.
+%-------------------------------------------------------------------------------
+
+Binary analysis tools are used for analyzing bianry codes.  Since there are
+various middleboxes are provided under copyright or without open srouce, it is
+reasonable to assume the binary code is the best source we can use for analyzing
+the middleboxes.  Two binary analysis tools are targeted to be the candidate for
+this project.
 
 \subsubsection{BAP}
-BAP is a program analysis platform written inOCaml, but also comes with Python and C binding libraries.
-It basically disassembles the binary code andlifts it into their own RISC-like BAP Instruction Language (BIL) representation, on which program analysis is performed.
-We have explored a few of BAP’s core functions, such as constructing controlflow graph (CFG) and call graph (CG) given a program binary.
-Control flow graph is a directed graph where eachnode is a code block of sequential instructions without branches, except for the beginning and the end of the block, and each edge is a branch from one block toanother.
-Call graph,  nonetheless,  is a directed graphconsisting of code blocks of functions with edges be-ing function calls or returning to the caller function.
+
+BAP is a program analysis platform written inOCaml, but also comes with Python
+and C binding libraries.  It basically disassembles the binary code andlifts it
+into their own RISC-like BAP Instruction Language (BIL) representation, on which
+program analysis is performed.  We have explored a few of BAP's core functions,
+such as constructing controlflow graph (CFG) and call graph (CG) given a program
+binary.  Control flow graph is a directed graph where eachnode is a code block
+of sequential instructions without branches, except for the beginning and the
+end of the block, and each edge is a branch from one block toanother.  Call
+graph,  nonetheless,  is a directed graphconsisting of code blocks of functions
+with edges be-ing function calls or returning to the caller function.
 
 \subsubsection{angr}
 
