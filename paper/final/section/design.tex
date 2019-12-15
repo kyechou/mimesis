@@ -2,38 +2,43 @@
 \section{Design and Methods}
 %-------------------------------------------------------------------------------
 
-In this project, our goal is to find function $f$, such that
-\(\forall input stream s_i, \exists output stream s_o which s_o = f(s_i)\).
-As most of the behavior in the network are predictable, we will mainly focusing
-on the non-deterministic action of middleboxes.  In this section, we will
-describe how we design our methodology of finding output stream based on
-provided input stream.
+In this project, our goal is to find a mapping $f$ between the inputs and
+outputs of a given middlebox, namely, $\forall$ input stream $s_i$, $\exists$
+an output stream $s_o$, such that $s_o = f(s_i)$. In this section, we describe
+how we design our approach of finding the output based on the provided input.
+
 
 \subsection{Assumptions on middleboxes}
+%-------------------------------------------------------------------------------
 
 % describe the middleboxes implementation (connection terminating and
 % forwarding)
-After the survey of various open source middleboxes, we observed that, in
-general, the middleboxes can be categorized into two classes. One of them is the
-middleboxes that would forward the transport layer header (assuming that the
-end-to-end application is based on some connection-oriented protocol, like TCP),
-such as NetFilter subsystem in Linux and its derivative utilities (e.g.,
-iptables, nftables). These middleboxes might still forward packets to different
-next hops or modify the packet headers, but they will not modify the packets so
-that it breaks the transport layer connection between the client and the server.
-A common example is using iptables to configure the NetFilter subsystem as a
+After the survey of some open source middleboxes, we observed that, in general,
+the middleboxes can be categorized into two classes. One of them is the
+middleboxes that would simply forward the transport layer header without
+terminating the transport layer connection (assuming that the end-to-end
+application is based on some connection-oriented protocol, like TCP), such as
+NetFilter subsystem in Linux and its derivative utilities (e.g., iptables,
+nftables). These middleboxes might still forward packets to different next hops
+or modify the packet headers, but they will not modify the packets so that it
+breaks the transport layer connection between the client and the server. A
+common example is using iptables to configure the NetFilter subsystem as a
 firewall and/or NAT, in which case the layer 2 and layer 3 headers are modified,
 but layer 4 header fields remain untouched. The other category consists of the
 middleboxes that terminate the incoming connection at one end and start a new
 connection to the backend server at another. Such middleboxes usually act as a
 proxy or gateway, such as TCP proxies, HTTP proxies, SOCKS proxies (layer 5),
-etc. To simplify the problem, we will only focus on the second kind of
-middleboxes, which would accept/terminate the incoming connection and initiate a
-new one, so that we treat each connection as request and reply application-layer
-packets.
+etc. To simplify the problem, we only focus on the second kind of middleboxes,
+which accept and terminate the incoming connections and initiate a new one for
+each connection.
+
+Besides, we assume to have some level of understanding of the target program,
+including the instruction set architecture of the program, network-related APIs
+or libraries used, and the functions that take the inputs or decide the outputs.
+
 
 \subsection{Binary ananlysis}
-%-----------------------------------
+%-------------------------------------------------------------------------------
 
 % intro to angr, its abilities
 %   CFG, block, node
@@ -42,56 +47,30 @@ packets.
 %   looking for variables (either in registers or memory)
 %   symbolic solver engine
 % how we plan to use angr for binary analysis
-In previous section, we discuss two open source binary analysis tools, BAP and
-angr.  Since our goal is to get output stream from provided input stream, and we
-try to targeting non-deterministic behavior, it is reasonable to use symbolic
-execution by binary analysis tools to get results we need.  In addition, based
-on the assumption of middleboxes and our middlebox survey, load balancer seems
-to fit our goal.  Although there are two load balancer in our survey list,
-HAProxy is the better choice since it only focus on load balance function.
-However, after we use both tools to analyze the HAProxy, we face two obstacles.
-\ci For using BAP, it is very hard for us to do symbolic execution on it because
-BAP mainly use OCaml but we are lacking experience of it.  As a result, it is painful
-to trace the memory location of each code and put exact values on it.  \cii
-While analyzing the HAProxy, it is difficult to identify function and commands
-from binary code since the original structure of HAProxy is complicated.
-Especially, HAProxy provides several load balance algorithms, to identify and
-analyze each of them is time-consuming and painful.
 
-As the result, We decide to write a simple load balancer based on only three
-most frequently used load balance algorithm, \ca round-robin, \cb
-least-connection-first and \cc source-based hashing.  The detail and the
-implementation of this load balancer is introduced in following section.
+Since our goal is to get the potential output from the provided input, and also
+the potential inputs that lead to some certain output, it is reasonable to use
+symbolic execution with binary analysis tools.
 
-\subsection{Simple load balancer}
-%-----------------------------------
+The analysis procedure works as follows:
+\begin{enumerate}
+    \item Build the control flow graph and call graph of the target binary.
+    \item Locate the instructions that call the function reading inputs or the
+        function deciding outputs.
+    \item Symbolically execute the program from the initial state.
+    \item When the execution reaches and finishes the execution of the
+        instruction that calls the function reading inputs, set the input
+        relevant input variables to be symbolic values.
+    \item Add constraints on the input variables if needed.
+    \item Continue the execution until reaching and finishing the execution of
+        the instruction that calls the function deciding outputs.
+    \item Obtain the output, which should be arithmetic expressions with the
+        input symbolic variables.
+    \item Add constraints on the output variables if needed.
+    \item Evaluate the output to get valid concrete values of the input and
+        output that satisfy the expressions and constraints.
+\end{enumerate}
 
-% design overview:
-% classic listen, accept, fork, wait; connection endpoints proxying
-As mentioned above, we have a simplified implementation of a load balancer
-middlebox, which including three load balance algorithm.  The main goal for
-building this simple load balancer is to simplify the analysis procedure.  Hence,
-only the basic functions and load balancing algorithms are included in the code.
-We even use C rather than C++ to write the code since object-oriented structure
-will increase the difficulty of the symbolic execution.  In addition, we drop
-the input file and hardcode the server list and selected algorithm to avoid the
-infinite loop when processing file reader by using binary analysis tool.
 
-Three algorithms we used in this code are introduced below:
-\ci round-robin: This algorithm select the target server by the order of server
-assigned previously.  The algorithm tend to get the next candidate in order
-unless it is the end of the server list.  If it is the end of the server list,
-then the first server in server list will be provided to next request.
-\cii least-connection-first: This algorithm will select the server with the
-least connection.  In order to do so, the load balancer need to store the
-connection of each server.  Since servers can only get connection from load
-balancer, by our assumption, load balancer can simply count the number of
-connection by adding one whenever it assigned a connection to a server.
-\ciii source-based hashing: This algorithm will use a hash function to map the
-client to server, so the same client will always connect to the same server base
-on the hash function no matter how many requests it sends over time.
-
-% load-balancing schemes
-% how we keep states of connections and servers
-
+%-------------------------------------------------------------------------------
 % vim: set ft=tex :

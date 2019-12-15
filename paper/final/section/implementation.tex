@@ -9,6 +9,37 @@ the load balancer by using angr.
 
 \subsection{Simple load balancer}
 %-------------------------------------------------------------------------------
+
+% design overview:
+% classic listen, accept, fork, wait; connection endpoints proxying
+We have a simplified implementation of a load balancer
+middlebox, which including three load balance algorithm.  The main goal for
+building this simple load balancer is to simplify the analysis procedure.  Hence,
+only the basic functions and load balancing algorithms are included in the code.
+We even use C rather than C++ to write the code since object-oriented structure
+will increase the difficulty of the symbolic execution.  In addition, we drop
+the input file and hard-code the server list and selected algorithm to avoid the
+infinite loop when processing file reader by using binary analysis tool.
+
+Three algorithms we used in this code are introduced below:
+\ci round-robin: This algorithm select the target server by the order of server
+assigned previously.  The algorithm tend to get the next candidate in order
+unless it is the end of the server list.  If it is the end of the server list,
+then the first server in server list will be provided to next request.
+\cii least-connection-first: This algorithm will select the server with the
+least connection.  In order to do so, the load balancer need to store the
+connection of each server.  Since servers can only get connection from load
+balancer, by our assumption, load balancer can simply count the number of
+connection by adding one whenever it assigned a connection to a server.
+\ciii source-based hashing: This algorithm will use a hash function to map the
+client to server, so the same client will always connect to the same server base
+on the hash function no matter how many requests it sends over time.
+
+% load-balancing schemes
+% how we keep states of connections and servers
+
+
+
 Two major components are included in the simple load balancer, which are main
 load balance function and load balance algorithms.  For main load balance
 function, it will \ca listen to client connection, \cb accept client request,
@@ -39,7 +70,23 @@ three algorithms in this code, now we will explain how we implement all of them.
 \end{enumerate}
 
 
-\subsection{Binary analysis of LB using angr}
+
+However, after we use both tools to analyze the HAProxy, we face two obstacles.
+\ci For using BAP, it is very hard for us to do symbolic execution on it because
+BAP mainly use OCaml but we are lacking experience of it. As a result, it is
+painful to trace the memory location of each code and put exact values on it.
+\cii While analyzing the HAProxy, it is difficult to identify function and
+commands from binary code since the original structure of HAProxy is
+complicated.  Especially, HAProxy provides several load balance algorithms, to
+identify and analyze each of them is time-consuming and painful.
+
+As the result, We decide to write a simple load balancer based on only three
+most frequently used load balance algorithm, \ca round-robin, \cb
+least-connection-first and \cc source-based hashing.  The detail and the
+implementation of this load balancer is introduced in following section.
+
+
+\subsection{Binary analysis using angr}
 %-------------------------------------------------------------------------------
 
 
