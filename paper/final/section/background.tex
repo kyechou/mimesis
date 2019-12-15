@@ -2,22 +2,24 @@
 \section{Background}
 %-------------------------------------------------------------------------------
 
-In this section, we introduce several middleboxes and binary analysis tools that
-we have surveyed for this project. In particular, three middleboxes \ca HAProxy,
-\cb Nginx and \cc Snort are discussed in this section.  In addition, two binary
-analysis tools \ca BAP and \cb Angr are introduced below.
+In this section, we introduce some middleboxes and binary analysis tools that
+we have surveyed for this project, including three software middleboxes, \ca
+HAProxy, \cb Nginx, \cc Snort, and two binary analysis tools, \ca BAP and \cb
+angr.
 
 
 \subsection{Middleboxes}
 %-------------------------------------------------------------------------------
 
-Middleboxes are a set of network devies that widely use in various network
-design.  All these divices provides different behavior for controling packets
-rather than packet forwarding in the middle of the network.  According to RFC
-3234~\cite{rfc3234}, middleboxes can be category into several classes, including
-firewall, NAT, load balancer, \etc.  We tend to make our survey fit in as much
-classes as we can so we may get more concrete idea on how to analyze the
-non-deterministic behavior of them.
+Middleboxes (or network functions) are a set of network devices that are widely
+used in various network designs. These devices provide different functions for
+controlling packets rather than simple packet forwarding, usually in the middle
+of network datapaths between the source hosts and destination hosts. According
+to RFC 3234~\cite{rfc3234}, common middleboxes can be categorized into several
+classes, including firewall filtering, network address translation, load
+balancer, \etc. In this semester, we took a look at some popular,
+production-grade software middleboxes, and tried to understand how they work and
+how we should extract the mappings using analysis tools.
 
 \subsubsection{HAProxy}
 
@@ -39,77 +41,92 @@ The non-deterministic behaviors of HAProxy given a concrete configuration can be
 defined as the set of possible outcomes or actions that cannot be
 deterministically modelled by only knowing the input request. From the
 documentation of the current stable release (2.0.8), the supported load
-balancing schemes include round robin, least connections first, first available
+balancing schemes include round-robin, least connections first, first available
 first, source address hashing, HTTP URI hashing, HTTP URI parameters, and
 random.
 
 \subsubsection{Nginx}
 
-Nginx plays two roles in network: reverse proxy and load balancer.  These two
-roles are not independent.  For the role of reverse proxy, two modules are used:
-\ca Proxy module and \cb rewrite module.  Possible non-deterministic actions
-from these two modules are:
+Nginx plays two roles in network: reverse proxy and load balancer. These two
+roles are not independent. For reverse proxy, two modules are used: \ca Proxy
+module and \cb rewrite module. Possible non-deterministic actions from these two
+modules are:
 \begin{itemize}
     \item proxy\_set\_header: redefine the value of certain field in the header
         part of http request.
     \item proxy\_set\_body: redefine the request body passed to the proxied
         server.
-    \item proxy\_redirect: set the text that should be changed in the “Location”
-        and “Refresh” header fields of a proxied server response (always come
-        with 30X response code).
+    \item proxy\_redirect: set the text that should be changed in the "Location"
+        and "Refresh" header fields of a proxied server response.
     \item proxy\_pass: Set the protocol and address of a proxied server and an
         optional URI to which a location should be mapped.
 	\item rewrite: redirect; changes the URI in the header.
 \end{itemize}
+Among the modules, three actions, `proxy\_set\_header', `rewrite' and
+`proxy\_pass', are the most possible functions to affect the output packet
+equivalence classes.
 
-Among the above, three actions, `proxy\_set\_header', `rewrite' and
-`proxy\_pass' are most possiblely to affect PEC.  For the role of load balancer,
-Upstream module is used.  After analyze the module, we find one ground truth for
-load balancer is that all load balancer will modify the packet header.  However,
-the forwarding behavior is not affected.  As Nginx only perform HTTP load
-balancing based on reverse proxy, so http headers might be modified during this
-process based on the algorithms user choose.  For example, hash methods will
-make sure packets from certain IP can only be forwarding to certain backend
-server.  While round-robin or fair method will distribute all the packets to
-different backend servers.  Thus, checking the modified HTTP packets can be a
-reasonable direction for analyzing non-deterministic behaviors.
+For load balancer, upstream module is used. After analyze the module, we find
+one ground truth for load balancer is that it will definitely modify the packet
+header. However, the forwarding behavior is not affected. As Nginx only performs
+HTTP load balancing based on reverse proxy, HTTP headers might be modified
+during this process based on the algorithms that user chose. For example, hash
+methods will make sure packets from a certain IP address can only be forwarded
+to a certain backend server. While round-robin or fair methods will distribute
+all the packets to different backend servers. Thus, checking the modified HTTP
+packets can be a reasonable direction for analyzing non-deterministic behaviors.
 
 \subsubsection{Snort}
 
 Snort is an intrusion detection and prevention system (IDS/IPS), which is
 usually placed near a firewall as an additional protection for untrusted
-traffic.  There are several modes provided by Snort which simply swich the
-settings of Snort easily for user.  For example, Sniffer mode and Packet logger
-mode are two modes that don't change PEC.  NIDS mode, on the other hand, is much
-interesting since it performs detection and analysis on network traffic.  Apart
+traffic. There are several modes provided by Snort which make it easier for the
+users to switch the settings. For example, Sniffer mode and packet logger mode
+are the two modes that don't change the packet equivalence classes, while NIDS
+mode (network intrusion detection system mode), on the other hand, is much more
+interesting since it performs detection and analysis on network traffic. Apart
 from acting as a stateless firewall, Snort's "\textbf{flow}" keyword, used in
-conjunction with session tracking, allows Snort to track and take action on tcp
-packets depending on the tcp session state and its flag value.  This
-functionality gives a network operator very finegrained control on Snort's
+conjunction with session tracking, allows Snort to track and take action on TCP
+packets depending on the TCP session state and its flag value. This
+functionality gives network operators fine-grained control over Snort's
 behavior.
 
 
 \subsection{Binary analysis tools}
 %-------------------------------------------------------------------------------
 
-Binary analysis tools are used for analyzing bianry codes.  Since there are
-various middleboxes are provided under copyright or without open srouce, it is
-reasonable to assume the binary code is the best source we can use for analyzing
-the middleboxes.  Two binary analysis tools are targeted to be the candidate for
-this project.
+Binary analysis tools are used for analyzing programs at the level of binary
+code, mostly for security threat assessment and vulnerability testing. Since
+many software network functions are close-sourced and owned by companies, in
+this project we try to analyze the middleboxes at the binary level, assuming
+that we have the binary executables of the program. We looked at two binary
+analysis tools, BAP and angr, during this semester, and then decided to try out
+angr for this course project.
 
 \subsubsection{BAP}
 
-BAP is a program analysis platform written inOCaml, but also comes with Python
-and C binding libraries.  It basically disassembles the binary code andlifts it
-into their own RISC-like BAP Instruction Language (BIL) representation, on which
-program analysis is performed.  We have explored a few of BAP's core functions,
-such as constructing controlflow graph (CFG) and call graph (CG) given a program
-binary.  Control flow graph is a directed graph where eachnode is a code block
+BAP is a program analysis platform written in OCaml by a team from CMU, but it
+also comes with Python and C binding libraries, although there are not much
+documentation about the APIs and binding libraries. BAP (or other similar binary
+analysis tools) basically disassembles the binary code and lifts it into their
+own RISC-like BAP Instruction Language (BIL) representation, on which program
+analysis is performed. We have explored a few of BAP's core functions, such as
+constructing control flow graph (CFG) and call graph (CG) given a program
+binary. Control flow graph is a directed graph where each node is a code block
 of sequential instructions without branches, except for the beginning and the
-end of the block, and each edge is a branch from one block toanother.  Call
-graph,  nonetheless,  is a directed graphconsisting of code blocks of functions
-with edges be-ing function calls or returning to the caller function.
+end of the block, and each edge is a branch from one block to another. Call
+graph, nonetheless, is a directed graph consisting of code blocks of functions
+with edges being function calls or returning to the caller function.
 
 \subsubsection{angr}
 
+angr is another popular binary analysis tool written in Python by a team from
+UCSB and Arizona State University. angr shares many similar functions with BAP,
+including disassembling program binaries, constructing control flow graph and
+call graph, etc. angr also supports concolic execution analysis, which is useful
+for our purpose, and some other functions that may not be helpful for our work,
+such as automatic ROP (return-oriented programming) chain building. angr is able
+to symbolically execute the target program, track the execution path with
+execution "states", which are essentially sets of the execution contexts,
+including the registers and main memory, and evaluate the symbolic expressions
+with variables and constraints using Z3~\cite{z3} as the solver backend.
