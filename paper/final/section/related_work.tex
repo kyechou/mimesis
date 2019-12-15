@@ -1,27 +1,42 @@
-\section{Related work}
+%-------------------------------------------------------------------------------
+\section{Related Work}
+%-------------------------------------------------------------------------------
 
-In this section, we will compare our method with three other papers, \ci plankton~\cite{2017-Prabhu}, \cii plankton-neo~\cite{2018-PrabhuEtAl} and \ciii alembic~\cite{2019-MoonEtAl}.
-All of this papers targeting to verify the network behavior, which is the same motivation as our work
-However, each of them uses different methodology to achive it.
+In this section, we compare our method with three other papers, \ci
+Plankton~\cite{2017-Prabhu}, \cii Plankton-neo~\cite{2018-PrabhuEtAl}, and \ciii
+Alembic~\cite{2019-MoonEtAl}. All of this papers targeting to verify the network
+behavior, which is the same motivation as our work. However, each of them uses
+different methodology to achive it.
 
-  \textbf{Plankton} Plankton is a configuration verifier managing the large header space by using equivalence partitioning and explore potocal execution by checking explicit-state model.
-It focuses on two phases of verification on network, \ci data plane verification and \cii software verification.
-The data plane verification tool checks the correctness of all possible data plane behavior by analyzing the large header space.
-Software verification, on the other hand, is used to gather all the software execution path.
-The significant benefit of using plankton is that it is efficient even processing large-scale network.
-While it is not considered the middleboxes of the network so the quality of result will decline when the network is complicated with multiple middleboxes in it.
+\textbf{Plankton} Plankton is a configuration verifier managing the large header
+space by using equivalence partitioning and explore protocal execution by
+checking explicit-state model. It focuses on two phases of verification on
+network, \ci data plane verification and \cii software verification. The data
+plane verification tool checks the correctness of all possible data plane
+behavior by analyzing the large header space. Software verification, on the
+other hand, is used to gather all the software execution path. The significant
+benefit of using plankton is that it is efficient even processing large-scale
+network. While it is not considered the middleboxes of the network so the
+quality of result will decline when the network is complicated with multiple
+middleboxes in it.
 
-  \textbf{Plankton-neo} plankton-neo is a variant verification from plankton.
-plankton-neo includes the middlebox as part of verification.
-Instead of providing a new designed model for each middlebox in the method, it uses emulation to guarantee the correctness of the middlebox behavior remain the same.
-The advantage of the plankton-neo is that it successfully cover the problem addressed in plankton by considering the middleboxes inside the target network.
-However, it losses the efficiency as it will comsume a lot of time on execution the middlebox emulation apparently.
+\textbf{Plankton-neo} plankton-neo is a variant verification from plankton.
+plankton-neo includes the middlebox as part of verification. Instead of
+providing a new designed model for each middlebox in the method, it uses
+emulation to guarantee the correctness of the middlebox behavior remain the
+same. The advantage of the plankton-neo is that it successfully cover the
+problem addressed in plankton by considering the middleboxes inside the target
+network. However, it losses the efficiency as it will consume a lot of time on
+execution the middlebox emulation apparently.
 
-  \textbf{Alembic} Alembic is a new proposed middlebox modeling method.
-It uses different network rules as input and collect the output as the model of that middlebox.
-By categorize the output, it can simplify the final model to make it much more concise.
-Since it uses the symbolic model, the accuracy of the middlebox model is improved comparing to other previous research.
-However, Alembic treat all type of middlebox as a blackbox.
-As our method has the background knowledge of the middlebox, our model is expected to be much accurate than Alembic.
+\textbf{Alembic} Alembic is a new proposed middlebox modeling method. It uses
+different network rules as input and collect the output as the model of that
+middlebox. By categorize the output, it can simplify the final model to make it
+much more concise. Since it uses the symbolic model, the accuracy of the
+middlebox model is improved comparing to other previous research. However,
+Alembic treat all type of middlebox as a blackbox. As our method has the
+background knowledge of the middlebox, our model is expected to be much accurate
+than Alembic.
 
+%-------------------------------------------------------------------------------
 % vim: set ft=tex :
