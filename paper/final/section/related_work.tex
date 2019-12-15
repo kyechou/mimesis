@@ -2,41 +2,43 @@
 \section{Related Work}
 %-------------------------------------------------------------------------------
 
-In this section, we compare our method with three other papers, \ci
-Plankton~\cite{2017-Prabhu}, \cii Plankton-neo~\cite{2018-PrabhuEtAl}, and \ciii
-Alembic~\cite{2019-MoonEtAl}. All of this papers targeting to verify the network
-behavior, which is the same motivation as our work. However, each of them uses
-different methodology to achive it.
+In this section, we discuss and compare our method with three other papers,
+Plankton~\cite{2020-PrabhuEtAl}, Plankton-neo~\cite{2018-PrabhuEtAl}, and
+Alembic~\cite{2019-MoonEtAl}. These papers are about network verification, or
+trying to solve some issues emerged from network verification. However, each of
+those targets a different problem and goal.
 
-\textbf{Plankton} Plankton is a configuration verifier managing the large header
-space by using equivalence partitioning and explore protocal execution by
-checking explicit-state model. It focuses on two phases of verification on
-network, \ci data plane verification and \cii software verification. The data
-plane verification tool checks the correctness of all possible data plane
-behavior by analyzing the large header space. Software verification, on the
-other hand, is used to gather all the software execution path. The significant
-benefit of using plankton is that it is efficient even processing large-scale
-network. While it is not considered the middleboxes of the network so the
-quality of result will decline when the network is complicated with multiple
-middleboxes in it.
+\textbf{Plankton} is a configuration verifier that manages the large header
+space by using equivalence partitioning and explores protocol executions with
+explicit-state model checking. It is the first prototype of a network verifier
+that achieves high scalability using model checking. However, it uses
+hand-written models for network components, assumes the correctness of those
+models and does not handle the case where we may not have accurate models.
 
-\textbf{Plankton-neo} plankton-neo is a variant verification from plankton.
-plankton-neo includes the middlebox as part of verification. Instead of
-providing a new designed model for each middlebox in the method, it uses
-emulation to guarantee the correctness of the middlebox behavior remain the
-same. The advantage of the plankton-neo is that it successfully cover the
-problem addressed in plankton by considering the middleboxes inside the target
-network. However, it losses the efficiency as it will consume a lot of time on
-execution the middlebox emulation apparently.
+\textbf{Plankton-neo} is a hybrid approach combining Plankton with emulation,
+with an aim to solve the problem that we do not have accurate models for some
+network components, such as software network functions. Instead of writing a new
+model for each middlebox in a network, it uses emulation to guarantee the
+correctness of the middlebox's behavior. However, since Plankton-neo uses
+emulations for middleboxes, it cannot handle the non-determinism inside the
+middleboxes themselves (i.e., it may have multiple possible outputs given the
+same input and the same current state, which are not fully explored), which
+means that it cannot provide guaranteed coverage.
 
-\textbf{Alembic} Alembic is a new proposed middlebox modeling method. It uses
-different network rules as input and collect the output as the model of that
-middlebox. By categorize the output, it can simplify the final model to make it
-much more concise. Since it uses the symbolic model, the accuracy of the
-middlebox model is improved comparing to other previous research. However,
-Alembic treat all type of middlebox as a blackbox. As our method has the
-background knowledge of the middlebox, our model is expected to be much accurate
-than Alembic.
+\textbf{Alembic} is a newly proposed model inference method. It treats network
+functions as blackboxes, constructs symbolic rules from configuration
+documentations at the offline stage, extends the L* algorithm to infer symbolic
+models in the form of finite state machines, which essentially injects packets
+that would exercise their symbolic rules, and then collects the library of
+symbolic models for the online stage, where they plug in concrete configurations
+to generate a corresponding concrete model. The generated model has improved
+coverage compared to emulations, and also has comparable accuracy, although
+there are not actually any ground truth to evaluate that. However, the Alembic
+approach requires a lot of human effort at the offline stage, and can only be
+applied on certain type of network function implementations. We expect to have a
+more universal and applicable solution with better coverage/accuracy with binary
+analysis, which is not completely blackbox testing.
+
 
 %-------------------------------------------------------------------------------
 % vim: set ft=tex :
