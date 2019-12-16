@@ -46,8 +46,9 @@ $ source angr.venv/bin/activate
 You can run the individual experiments manually by:
 ```bash
 $ cd nekton
-$ make -j -C experiments/<experiment-name>
-$ python experiments/<experiment-name>/solve.py [OPTIONS]
+$ source angr.venv/bin/activate
+(angr.venv) $ make -j -C experiments/<experiment-name>
+(angr.venv) $ python experiments/<experiment-name>/solve.py [OPTIONS]
 ```
 , where `<experiment-name>` should be changed to the directory of any experiment
 you wish to run, and also you can use `-h` or `--help` option to see all the
