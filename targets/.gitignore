@@ -1,1 +1,3 @@
 *.o
+klee-out*/
+klee-last

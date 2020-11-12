@@ -44,7 +44,7 @@ topdown: simplerouter.c
 run-klee: topdown driver.bc
 	sudo klee --libc=uclibc --use-query-log=solver:kquery \
 		--external-calls=concrete --solver-optimize-divides \
-		--output-dir=klee-out --only-output-states-covering-new \
+		--only-output-states-covering-new \
 		--search=nurs:covnew --use-incomplete-merge \
 		--exit-on-error-type=Abort --exit-on-error-type=ReportError \
 		--watchdog --max-time=1h --max-depth=100 --max-memory=8000 \
@@ -53,6 +53,6 @@ run-klee: topdown driver.bc
 		#--use-batching-search --batch-time=5s --batch-instructions=10000 \
 
 clean:
-	-@rm -rf $(TARGETS) *.o *.bc simplerouter*
+	-@rm -rf $(TARGETS) *.o *.bc simplerouter
 
 .PHONY: all clean topdown run-klee
