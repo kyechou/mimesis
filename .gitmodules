@@ -1,0 +1,12 @@
+[submodule "cxx-common"]
+	path = deps/cxx-common
+	url = https://github.com/kyechou/aur-cxx-common.git
+[submodule "remill"]
+	path = deps/remill
+	url = https://github.com/kyechou/aur-remill.git
+[submodule "anvill"]
+	path = deps/anvill
+	url = https://github.com/kyechou/aur-anvill.git
+[submodule "mcsema"]
+	path = deps/mcsema
+	url = https://github.com/kyechou/aur-mcsema.git
