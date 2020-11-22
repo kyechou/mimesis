@@ -153,6 +153,8 @@ aur_install() {
 }
 
 main() {
+    git submodule update --init
+
     DISTRO="$(get_distro)"
 
     if [ "$DISTRO" = "arch" ]; then
