@@ -145,7 +145,7 @@ aur_install() {
     fi
     if [[ -d "$TARGET" ]]; then
         cd "$TARGET"; git pull; cd ..
-    elif
+    else
         git clone "https://aur.archlinux.org/$TARGET.git"
     fi
     makepkg_$(get_distro) "$TARGET" $@
