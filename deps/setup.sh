@@ -90,7 +90,7 @@ makepkg_ubuntu() {
     shift
     echo "[+] Building $TARGET..."
     pushd "$TARGET"
-    sed -i -e 's|\<python\>|python3|g' PKGBUILD
+    sed -i -e 's|\<python\> |python3 |g' PKGBUILD
     source PKGBUILD
     srcdir="$(realpath src)"
     pkgdir=/
