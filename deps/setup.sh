@@ -168,8 +168,8 @@ main() {
 
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_depends=(build-essential curl git)
-        makedepends=(python3 python3-pip ninja-build liblzma-dev libssl-dev
-                     clang build-essential git wget curl libtinfo-dev
+        makedepends=(python3 python3-setuptools ninja-build liblzma-dev
+                     libssl-dev clang build-essential git wget curl libtinfo-dev
                      lsb-release zlib1g-dev ccache gcc-multilib g++-multilib)
         sudo apt update -y -qq
         sudo apt install -y -qq ${script_depends[@]}
