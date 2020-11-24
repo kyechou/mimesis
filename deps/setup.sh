@@ -13,7 +13,7 @@ cd "$SCRIPT_DIR"
     (echo '[!] Please run this script without root privilege' >&2; exit 1)
 
 # dependencies with local PKGBUILDs
-local_depends=(cxx-common remill anvill mcsema)
+local_depends=(cxx-common remill anvill mcsema klee-uclibc)
 
 depends=()
 
@@ -86,6 +86,8 @@ makepkg_arch() {
 # Build and install the package with PKGBUILD
 #
 makepkg_ubuntu() {
+    export MAKEFLAGS="-j$(nproc)"
+
     TARGET="$1"
     shift
     echo "[+] Building $TARGET..."
