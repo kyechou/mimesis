@@ -132,6 +132,10 @@ makepkg_ubuntu() {
     [ "$(type -t check)" = "function" ] && check
     sudo bash -c "pkgdir=\"$pkgdir\"; srcdir=\"$srcdir\";
                   source \"$srcdir/../PKGBUILD\"; package"
+    unset -f prepare
+    unset -f build
+    unset -f check
+    unset -f package
     popd # "$srcdir"
     popd # "$TARGET"
 }
