@@ -187,7 +187,8 @@ main() {
                      libssl-dev clang build-essential git wget curl libtinfo-dev
                      lsb-release zlib1g-dev ccache gcc-multilib g++-multilib
                      golang libunwind-dev libncurses5-dev libncursesw5-dev
-                     libarchive-tools libcap-dev sqlite3 libgoogle-perftools-dev)
+                     libarchive-tools libcap-dev libsqlite3-dev
+                     libgoogle-perftools-dev)
         sudo apt update -y -qq
         sudo apt install -y -qq ${script_depends[@]}
         sudo apt install -y -qq ${makedepends[@]}
