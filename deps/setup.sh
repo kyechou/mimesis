@@ -88,6 +88,8 @@ makepkg_arch() {
 #
 makepkg_ubuntu() {
     export MAKEFLAGS="-j$(nproc)"
+    [[ -z "${CFLAGS+x}" ]] && export CFLAGS=""
+    [[ -z "${CXXFLAGS+x}" ]] && export CXXFLAGS=""
 
     TARGET="$1"
     shift
