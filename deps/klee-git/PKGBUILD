@@ -8,8 +8,7 @@ url="https://klee.github.io/"
 license=('custom:UIUC')
 groups=()
 depends=('cxx-common=0.0.14' 'libcap' 'ncurses' 'sqlite' 'gperftools' 'zlib'
-         'z3' 'python' 'klee-uclibc' 'klee-libc++' 'lib32-glibc'
-         'lib32-gcc-libs')
+         'python' 'klee-uclibc' 'klee-libc++' 'lib32-glibc' 'lib32-gcc-libs')
 makedepends=('git' 'llvm10') # llvm10: for testing (lit)
 checkdepends=('python-tabulate')
 optdepends=()
@@ -52,6 +51,7 @@ build() {
         -DENABLE_SOLVER_Z3=ON \
         -DENABLE_SOLVER_STP=OFF \
         -DENABLE_SOLVER_METASMT=OFF \
+        -DZ3_ROOT="${TRAILOFBITS_LIBRARIES}/z3" \
         -DCMAKE_INSTALL_PREFIX="/usr" \
         -DCMAKE_INSTALL_LIBDIR="/usr/lib" \
         -DCMAKE_BUILD_TYPE=Release \
