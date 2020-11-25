@@ -26,6 +26,14 @@ sha256sums=('SKIP'
             'SKIP')
 validpgpkeys=()
 
+prepare() {
+    export TRAILOFBITS_LIBRARIES="/opt/cxx-common/libraries"
+    export Z3_PREFIX="${TRAILOFBITS_LIBRARIES}/z3"
+
+    sed -i "$srcdir/$pkgname/cmake/find_z3.cmake" \
+        -e "s|find_package(Z3)|find_package(Z3 PATHS ${Z3_PREFIX})|"
+}
+
 pkgver() {
     cd "$srcdir/$pkgname"
     git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
@@ -51,7 +59,8 @@ build() {
         -DENABLE_SOLVER_Z3=ON \
         -DENABLE_SOLVER_STP=OFF \
         -DENABLE_SOLVER_METASMT=OFF \
-        -DZ3_ROOT="${TRAILOFBITS_LIBRARIES}/z3" \
+        -DZ3_INCLUDE_DIRS="${TRAILOFBITS_LIBRARIES}/z3/include" \
+        -DZ3_LIBRARIES="${TRAILOFBITS_LIBRARIES}/z3/lib/libz3.a" \
         -DCMAKE_INSTALL_PREFIX="/usr" \
         -DCMAKE_INSTALL_LIBDIR="/usr/lib" \
         -DCMAKE_BUILD_TYPE=Release \
