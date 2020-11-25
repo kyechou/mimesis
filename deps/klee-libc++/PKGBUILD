@@ -73,8 +73,8 @@ package() {
 
     install -Dm0644 -t "$pkgdir"/usr/share/"$pkgname"/usr/lib/ "$srcdir"/build/lib/libc++.bca
     install -Dm0644 -t "$pkgdir"/usr/share/"$pkgname"/usr/lib/ "$srcdir"/build/lib/libc++.so*.bc
-    ln -s libc++.so.1.0.bc "$pkgdir"/usr/share/"$pkgname"/usr/lib/libc++.so.bc
-    ln -s libc++.so.1.0.bc "$pkgdir"/usr/share/"$pkgname"/usr/lib/libc++.so.1.bc
+    ln -sf libc++.so.1.0.bc "$pkgdir"/usr/share/"$pkgname"/usr/lib/libc++.so.bc
+    ln -sf libc++.so.1.0.bc "$pkgdir"/usr/share/"$pkgname"/usr/lib/libc++.so.1.bc
     install -Dm0644 "$srcdir"/llvm/projects/libcxx/CREDITS.TXT "$pkgdir"/usr/share/licenses/"$pkgname"/CREDITS
     install -Dm0644 "$srcdir"/llvm/projects/libcxx/LICENSE.TXT "$pkgdir"/usr/share/licenses/"$pkgname"/LICENSE
 
@@ -84,8 +84,8 @@ package() {
 
     install -Dm0644 -t "$pkgdir"/usr/share/"$pkgname"/usr/lib/ "$srcdir"/build/lib/libc++abi.bca
     install -Dm0644 -t "$pkgdir"/usr/share/"$pkgname"/usr/lib/ "$srcdir"/build/lib/libc++abi.so*.bc
-    ln -s libc++abi.so.1.0.bc "$pkgdir"/usr/share/"$pkgname"/usr/lib/libc++abi.so.bc
-    ln -s libc++abi.so.1.0.bc "$pkgdir"/usr/share/"$pkgname"/usr/lib/libc++abi.so.1.bc
+    ln -sf libc++abi.so.1.0.bc "$pkgdir"/usr/share/"$pkgname"/usr/lib/libc++abi.so.bc
+    ln -sf libc++abi.so.1.0.bc "$pkgdir"/usr/share/"$pkgname"/usr/lib/libc++abi.so.1.bc
     mkdir -p "$pkgdir"/usr/src/ && cp -r "$srcdir"/llvm/projects/libcxxabi "$pkgdir"/usr/src/
     install -Dm0644 "$srcdir"/llvm/projects/libcxxabi/CREDITS.TXT "$pkgdir"/usr/share/licenses/"$pkgname"/CREDITS
     install -Dm0644 "$srcdir"/llvm/projects/libcxxabi/LICENSE.TXT "$pkgdir"/usr/share/licenses/"$pkgname"/LICENSE
