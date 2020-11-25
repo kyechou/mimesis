@@ -13,7 +13,8 @@ cd "$SCRIPT_DIR"
     (echo '[!] Please run this script without root privilege' >&2; exit 1)
 
 # dependencies with local PKGBUILDs
-local_depends=(cxx-common remill anvill mcsema klee-uclibc)
+local_depends=(cxx-common remill anvill mcsema klee-uclibc
+               gllvm-git klee-libc++ klee-git)
 
 depends=()
 
@@ -110,7 +111,7 @@ makepkg_ubuntu() {
             # only support common tarballs and git sources
             if [[ "$url" == git+http* ]]; then
                 git clone ${url#git+} $target
-            elif [[ "$url" == *.tar.gz ]]; then
+            elif [[ "$url" == *.tar.* ]]; then
                 curl -L "$url" -o "$target" >/dev/null 2>&1
             else
                 echo "[-] Unsupported source URL $url" >&2
@@ -119,8 +120,8 @@ makepkg_ubuntu() {
         fi
         # create links in the src directory
         ln -sf "../$target" "$srcdir/$target"
-        # extract tarballs
-        if [[ "$target" == *.tar.gz ]]; then
+        # extract tarballs if the target is not in noextract
+        if [[ "$target" == *.tar.* -a ! " ${noextract[@]} " =~ " $target " ]]; then
             tar -C "$srcdir" -xf "$srcdir/$target"
         fi
         i=$((i + 1))
@@ -132,10 +133,6 @@ makepkg_ubuntu() {
     [ "$(type -t check)" = "function" ] && check
     sudo bash -c "pkgdir=\"$pkgdir\"; srcdir=\"$srcdir\";
                   source \"$srcdir/../PKGBUILD\"; package"
-    unset -f prepare
-    unset -f build
-    unset -f check
-    unset -f package
     popd # "$srcdir"
     popd # "$TARGET"
 }
@@ -166,25 +163,26 @@ main() {
 
     if [ "$DISTRO" = "arch" ]; then
         script_depends=(base-devel curl git)
-        sudo pacman -Syy --needed --noconfirm --asdeps ${script_depends[@]}
+        sudo pacman -Sy --needed --noconfirm --asdeps ${script_depends[@]}
 
         # local dependencies
         for dep in ${local_depends[@]}; do
-            makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps
+            (makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps)
         done
 
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_depends=(build-essential curl git)
         makedepends=(python3 python3-setuptools ninja-build liblzma-dev
                      libssl-dev clang build-essential git wget curl libtinfo-dev
-                     lsb-release zlib1g-dev ccache gcc-multilib g++-multilib)
+                     lsb-release zlib1g-dev ccache gcc-multilib g++-multilib
+                     libunwind-dev)
         sudo apt update -y -qq
         sudo apt install -y -qq ${script_depends[@]}
         sudo apt install -y -qq ${makedepends[@]}
 
         # local dependencies
         for dep in ${local_depends[@]}; do
-            makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps
+            (makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps)
         done
 
     else

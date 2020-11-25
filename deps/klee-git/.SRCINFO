@@ -1,0 +1,31 @@
+pkgbase = klee-git
+	pkgdesc = Symbolic virtual machine built on top of the LLVM compiler infrastructure
+	pkgver = v2.1.r168.g53ace1a1
+	pkgrel = 1
+	url = https://klee.github.io/
+	arch = x86_64
+	license = custom:UIUC
+	checkdepends = python-tabulate
+	makedepends = git
+	makedepends = llvm10
+	depends = cxx-common=0.0.14
+	depends = libcap
+	depends = ncurses
+	depends = sqlite
+	depends = gperftools
+	depends = zlib
+	depends = z3
+	depends = python
+	depends = klee-uclibc
+	depends = klee-libc++
+	depends = lib32-glibc
+	depends = lib32-gcc-libs
+	provides = klee=2.1
+	conflicts = klee
+	source = klee-git::git+https://github.com/klee/klee.git#commit=53ace1a119c5ede520d2e597f9bcdfeece31229a
+	source = git+https://github.com/google/googletest.git#tag=release-1.7.0
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = klee-git
+

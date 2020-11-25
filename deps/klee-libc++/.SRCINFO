@@ -1,0 +1,33 @@
+pkgbase = klee-libc++
+	pkgdesc = LLVM C++ standard library for KLEE.
+	pkgver = 10.0.0
+	pkgrel = 1
+	url = https://libcxx.llvm.org/
+	arch = i686
+	arch = x86_64
+	license = custom:Apache 2.0 with LLVM Exception
+	makedepends = libunwind
+	makedepends = ninja
+	makedepends = python
+	makedepends = gllvm-git
+	depends = cxx-common=0.0.14
+	provides = libc++
+	provides = libc++abi
+	provides = libc++experimental
+	conflicts = libc++
+	conflicts = libc++abi
+	conflicts = libc++experimental
+	noextract = llvm-10.0.0.src.tar.xz
+	noextract = libcxx-10.0.0.src.tar.xz
+	noextract = libcxxabi-10.0.0.src.tar.xz
+	options = staticlibs
+	options = !strip
+	source = https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/llvm-10.0.0.src.tar.xz
+	source = https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/libcxx-10.0.0.src.tar.xz
+	source = https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/libcxxabi-10.0.0.src.tar.xz
+	sha256sums = df83a44b3a9a71029049ec101fb0077ecbbdf5fe41e395215025779099a98fdf
+	sha256sums = 270f8a3f176f1981b0f6ab8aa556720988872ec2b48ed3b605d0ced8d09156c7
+	sha256sums = e71bac75a88c9dde455ad3f2a2b449bf745eafd41d2d8432253b2964e0ca14e1
+
+pkgname = klee-libc++
+
