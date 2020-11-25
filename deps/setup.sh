@@ -101,16 +101,23 @@ makepkg_ubuntu() {
     # prepare the sources
     i=0
     for s in ${source[@]}; do
-        target=$(echo ${s%%::*})
-        url=$(echo ${s#*::})
+        target=${s%%::*}
+        url=${s#*::}
         if [[ "$target" == "$url" ]]; then
-            target=$(basename "$url" | sed 's/\.git$//')
+            target=$(basename "${url%%#*}" | sed 's/\.git$//')
         fi
         # fetch the source files if they do not exist already
         if [[ ! -e "$target" ]]; then
             # only support common tarballs and git sources
             if [[ "$url" == git+http* ]]; then
-                git clone ${url#git+} $target
+                git clone $(echo ${url%%#*} | sed -e 's/^git+//') $target
+                # check out the corresponding revision if there is a fragment
+                fragment=${url#*#}
+                if [[ "$fragment" != "$url" ]]; then
+                    pushd $target
+                    git checkout ${fragment#*=}
+                    popd
+                fi
             elif [[ "$url" == *.tar.* ]]; then
                 curl -L "$url" -o "$target" >/dev/null 2>&1
             else
@@ -121,7 +128,7 @@ makepkg_ubuntu() {
         # create links in the src directory
         ln -sf "../$target" "$srcdir/$target"
         # extract tarballs if the target is not in noextract
-        if [[ "$target" == *.tar.* -a ! " ${noextract[@]} " =~ " $target " ]]; then
+        if [[ "$target" == *.tar.* && ! " ${noextract[@]} " =~ " $target " ]]; then
             tar -C "$srcdir" -xf "$srcdir/$target"
         fi
         i=$((i + 1))
