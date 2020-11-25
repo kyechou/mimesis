@@ -163,7 +163,7 @@ aur_install() {
     else
         git clone "https://aur.archlinux.org/$TARGET.git"
     fi
-    makepkg_$(get_distro) "$TARGET" $@
+    (makepkg_$(get_distro) "$TARGET" $@) || exit $?
     rm -rf "$TARGET"
 }
 
@@ -178,7 +178,7 @@ main() {
 
         # local dependencies
         for dep in ${local_depends[@]}; do
-            (makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps)
+            (makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps) || exit $?
         done
 
     elif [ "$DISTRO" = "ubuntu" ]; then
@@ -194,7 +194,7 @@ main() {
 
         # local dependencies
         for dep in ${local_depends[@]}; do
-            (makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps)
+            (makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps) || exit $?
         done
 
     else
