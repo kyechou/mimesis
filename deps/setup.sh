@@ -186,7 +186,7 @@ main() {
         makedepends=(python3 python3-setuptools ninja-build liblzma-dev
                      libssl-dev clang build-essential git wget curl libtinfo-dev
                      lsb-release zlib1g-dev ccache gcc-multilib g++-multilib
-                     libunwind-dev libncurses5-dev libncursesw5-dev
+                     golang libunwind-dev libncurses5-dev libncursesw5-dev
                      libarchive-tools libcap-dev sqlite3 google-perftools z3)
         sudo apt update -y -qq
         sudo apt install -y -qq ${script_depends[@]}
