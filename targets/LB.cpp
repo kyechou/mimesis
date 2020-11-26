@@ -12,10 +12,10 @@
 #include <cstring>
 #include <cstdio>
 
-#include "LB_algo.hpp"
-#include "RoundRobin.hpp"
-#include "LeastConn.hpp"
-#include "SourceHash.hpp"
+#include "LB_Algo.hpp"
+#include "LB_RoundRobin.hpp"
+#include "LB_LeastConn.hpp"
+#include "LB_SourceHash.hpp"
 
 //LB_algo lb;
 RoundRobin lb;

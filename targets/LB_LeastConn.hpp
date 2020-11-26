@@ -3,7 +3,7 @@
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
-#include "LB_algo.hpp"
+#include "LB_Algo.hpp"
 
 class LeastConn : public LB_algo
 {

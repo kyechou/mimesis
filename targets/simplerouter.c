@@ -11,7 +11,7 @@
 #include <linux/if_tun.h> // TUNSETIFF
 #undef __USE_MISC
 
-#define BUFLEN 100U
+#define BUFLEN 128U
 
 struct DemoProto {
     // -- type --
@@ -24,30 +24,30 @@ struct DemoProto {
     char msg[BUFLEN - 3 * sizeof(int)];
 };
 
-static size_t djb2(const char *s, size_t len)
-{
-    size_t hash = 5381;
-    for (size_t i = 0; i < len; ++i) {
-        int c = s[i];
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-    }
-    return hash;
-}
-
-static size_t hash1(size_t seed, size_t val)    // boost hash
-{
-    seed ^= val + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    return seed;
-}
-
-static size_t hash2(size_t seed, size_t val)    // splitmix64
-{
-    val += seed;
-    val = (val ^ (val >> 30)) * 0xbf58476d1ce4e5b9ULL;
-    val = (val ^ (val >> 27)) * 0x94d049bb133111ebULL;
-    val = val ^ (val >> 31);
-    return val;
-}
+//static size_t djb2(const char *s, size_t len)
+//{
+//    size_t hash = 5381;
+//    for (size_t i = 0; i < len; ++i) {
+//        int c = s[i];
+//        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+//    }
+//    return hash;
+//}
+//
+//static size_t hash1(size_t seed, size_t val)    // boost hash
+//{
+//    seed ^= val + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+//    return seed;
+//}
+//
+//static size_t hash2(size_t seed, size_t val)    // splitmix64
+//{
+//    val += seed;
+//    val = (val ^ (val >> 30)) * 0xbf58476d1ce4e5b9ULL;
+//    val = (val ^ (val >> 27)) * 0x94d049bb133111ebULL;
+//    val = val ^ (val >> 31);
+//    return val;
+//}
 
 static inline void cleanup_tapfds(int numintfs, int *tapfds)
 {
@@ -62,7 +62,7 @@ static inline void cleanup_tapfds(int numintfs, int *tapfds)
 
 int main(int argc, char **argv)
 {
-    int numintfs = 5, *tapfds;
+    int numintfs = 3, *tapfds;
     struct ifreq ifr;
 
     /* setting up the number of tap interfaces to be created */
@@ -114,16 +114,21 @@ int main(int argc, char **argv)
 
         /* response */
         if (packet.type == 0) {
-            size_t shash = djb2(packet.msg, packet.len);
-            size_t hash_val = hash1(packet.seed, shash);
-            int out_port_idx = hash_val % numintfs;
+            //fputs("warning: packet.type == 0\n", stderr);
+            //size_t shash = djb2(packet.msg, packet.len);
+            //size_t hash_val = hash1(packet.seed, shash);
+            int out_port_idx = packet.seed % numintfs;
+            fputs("WRIIIIIIIIIIIIIIIIIITE: hash1\n", stderr);
             write(tapfds[out_port_idx], &packet, nread);
         } else if (packet.type == 1) {
-            size_t shash = djb2(packet.msg, packet.len);
-            size_t hash_val = hash2(packet.seed, shash);
-            int out_port_idx = hash_val % numintfs;
+            //fputs("warning: packet.type == 1\n", stderr);
+            //size_t shash = djb2(packet.msg, packet.len);
+            //size_t hash_val = hash2(packet.seed, shash);
+            int out_port_idx = packet.seed % numintfs;
+            fputs("WRIIIIIIIIIIIIIIIIIITE: hash2\n", stderr);
             write(tapfds[out_port_idx], &packet, nread);
         } else {
+            fputs("warning: unknown packet type\n", stderr);
             continue; // drop
         }
     }

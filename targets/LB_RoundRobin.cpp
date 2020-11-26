@@ -1,4 +1,4 @@
-#include "RoundRobin.hpp"
+#include "LB_RoundRobin.hpp"
 
 RoundRobin::RoundRobin(): cur_iter(0)
 {

@@ -18,6 +18,7 @@ ssize_t read(int fd, void *buf, size_t count)
     } else if (loopcount != 0) {
         klee_report_error("driver.c", 40, "IS NOT SYMBOLIC", "suffix");
     }
+    fputs("REEEEEEEEEEEEEEEEEEEEEEEEEEEEEAD\n", stderr);
 
     klee_make_symbolic(&nread, sizeof(nread), "nread");
     klee_assume((size_t)nread <= count);
@@ -33,7 +34,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 //#pragma unused(buf)
 //#pragma unused(count)
 
-    fputs("YAY\n", stdout);
+    fputs("DDDDDDDDDDDDDDDDDDD\n", stderr);
 
     klee_print_range("write fd", fd);
     klee_print_range("write buf[0]", ((int *)buf)[0]);
@@ -41,6 +42,6 @@ ssize_t write(int fd, const void *buf, size_t count)
 
     // log all constraints on buf
 
-    klee_report_error("driver.c", 40, "message", "suffix");
     klee_abort();
+    klee_report_error("driver.c", 40, "message", "suffix");
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LB_algo.hpp"
+#include "LB_Algo.hpp"
 
 class RoundRobin : public LB_algo
 {

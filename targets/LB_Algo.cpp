@@ -1,4 +1,4 @@
-#include "LB_algo.hpp"
+#include "LB_Algo.hpp"
 
 bool operator<(const Server& a, const Server& b)
 {
