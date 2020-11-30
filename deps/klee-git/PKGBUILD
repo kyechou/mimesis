@@ -20,10 +20,12 @@ options=()
 install=
 changelog=
 source=("$pkgname"::"git+https://github.com/klee/klee.git#commit=53ace1a119c5ede520d2e597f9bcdfeece31229a"
-        "git+https://github.com/google/googletest.git#tag=release-1.7.0")
+        "git+https://github.com/google/googletest.git#tag=release-1.7.0"
+        '00-ret-void.patch')
 noextract=()
 sha256sums=('SKIP'
-            'SKIP')
+            'SKIP'
+            '6751dcfe91ecfaec975c88ea1ce054ae4b73c10608918a0b1a54fb4884283bc9')
 validpgpkeys=()
 
 prepare() {
@@ -32,6 +34,9 @@ prepare() {
 
     sed -i "$srcdir/$pkgname/cmake/find_z3.cmake" \
         -e "s|find_package(Z3)|find_package(Z3 PATHS ${Z3_PREFIX})|"
+
+    cd "$srcdir/$pkgname"
+    patch -Np1 -i "$srcdir/00-ret-void.patch"
 }
 
 pkgver() {
