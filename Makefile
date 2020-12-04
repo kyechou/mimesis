@@ -2,7 +2,7 @@
 # Makefile
 #
 
-TARGET_BITCODE = driver.bc simplerouter.bc #httpd.bc lb.bc
+TARGET_BITCODE = driver.bc simplerouter.bc topdown.bc #httpd.bc lb.bc
 
 CC          = /opt/cxx-common/libraries/llvm/bin/clang
 CXX         = /opt/cxx-common/libraries/llvm/bin/clang++
@@ -28,6 +28,9 @@ all: $(TARGET_BITCODE)
 driver.bc: driver.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -emit-llvm -c $^ -o $@
 
+topdown.bc: $(TARGETS_DIR)/simplerouter.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -emit-llvm -c $^ -o $@
+
 %.bc: $(TARGETS_DIR)/%
 	$(MCSEMA_DISASS) \
 		--disassembler "$(IDAT64)" \
@@ -38,51 +41,22 @@ driver.bc: driver.c
 		--output $(notdir $<).cfg \
 		--log_file $(notdir $<).log \
 		--binary $<
-		#--std-defs <file>     Load additional external function definitions from <file>
-		#--rebase REBASE       Amount by which to rebase a binary
-#	$(MCSEMA_LIFT) \
-#		--arch amd64 \
-#		--os linux \
-#		--explicit_args \
-#		--merge_segments \
-#		--name_lifted_sections \
-#		--cfg $(notdir $<).cfg \
-#		--output $@
+	$(MCSEMA_LIFT) \
+		--arch amd64 \
+		--os linux \
+		--loglevel 0 \
+		--explicit_args \
+		--cfg $(notdir $<).cfg \
+		--output $@
 
-#run-klee: simplerouter.bc driver.bc
-#	sudo klee \
-#		--max-solver-time=1s \
-#		--simplify-sym-indices \
-#		--solver-backend=z3 \
-#		--solver-optimize-divides \
-#		--use-forked-solver \
-#		--use-independent-solver \
-#		--use-query-log=solver:kquery \
-#		--external-calls=concrete \
-#		--suppress-external-warnings \
-#		\
-#		--libc=none \
-#		--search=random-path --search=nurs:covnew \
-#		--exit-on-error --exit-on-error-type=Abort --exit-on-error-type=ReportError \
-#		--max-depth=100 --max-memory=8000 --max-memory-inhibit=false \
-#		--max-time=1h --watchdog \
-#		\
-#		--write-cov \
-#		--write-kqueries \
-#		--write-paths \
-#		--write-sym-paths \
-#		--only-output-states-covering-new \
-#		\
-#		--link-llvm-lib=driver.bc \
-#		simplerouter.bc 3
-#		#target.bc 3
-#
-#		#--use-batching-search --batch-time=5s --batch-instructions=10000 \
+$(TARGETS_DIR)/%:
+	make -C $(TARGETS_DIR) $(notdir $@)
 
 clean:
+	-@make -C $(TARGETS_DIR) clean
 	-@rm -rf *.bc *.cfg *.log
 
 distclean: clean
-	-@sudo rm -rf klee-*
+	-@sudo rm -rf klee-last klee-out-*
 
 .PHONY: all clean distclean

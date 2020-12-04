@@ -1,3 +1,5 @@
+klee-last
+klee-out-*
 *.bc
 *.cfg
 *.log
