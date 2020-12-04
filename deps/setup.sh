@@ -13,8 +13,8 @@ cd "$SCRIPT_DIR"
     (echo '[!] Please run this script without root privilege' >&2; exit 1)
 
 # dependencies with local PKGBUILDs
-local_depends=(cxx-common remill anvill mcsema klee-uclibc
-               gllvm-git klee-libc++ klee-git)
+local_depends=(cxx-common remill anvill mcsema klee-uclibc gllvm-git klee-libc++
+               klee-git)
 
 depends=()
 
@@ -178,7 +178,7 @@ main() {
 
         # local dependencies
         for dep in ${local_depends[@]}; do
-            (makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps) || exit $?
+            (makepkg_$DISTRO "$dep" --noconfirm --asdeps $@) || exit $?
         done
 
     elif [ "$DISTRO" = "ubuntu" ]; then
@@ -195,7 +195,7 @@ main() {
 
         # local dependencies
         for dep in ${local_depends[@]}; do
-            (makepkg_$DISTRO "$dep" --needed --noconfirm --asdeps) || exit $?
+            (makepkg_$DISTRO "$dep" --noconfirm --asdeps $@) || exit $?
         done
 
     else
