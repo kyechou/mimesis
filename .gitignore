@@ -1,5 +1,6 @@
 klee-last
 klee-out-*
+klee.console.txt
 *.bc
 *.cfg
 *.log

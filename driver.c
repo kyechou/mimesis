@@ -89,9 +89,9 @@ ssize_t write(int fd, const void *buf, size_t count)
 
     fprintf(stdout, DRIVER_OUTPUT_PREFIX "Depth: %d\n", write_count);
     klee_print_range(DRIVER_OUTPUT_PREFIX "fd ", fd);
-    klee_print_range(DRIVER_OUTPUT_PREFIX "out.type ", packet->type);
-    klee_print_range(DRIVER_OUTPUT_PREFIX "out.seed ", packet->seed);
-    klee_print_range(DRIVER_OUTPUT_PREFIX "out.len ", packet->len);
+    klee_print_expr(DRIVER_OUTPUT_PREFIX "out.type ", packet->type);
+    klee_print_expr(DRIVER_OUTPUT_PREFIX "out.seed ", packet->seed);
+    klee_print_expr(DRIVER_OUTPUT_PREFIX "out.len ", packet->len);
     //klee_print_expr
 
     if (write_count >= DEPTH_LIMIT) { // reached depth limit; end this path

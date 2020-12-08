@@ -54,9 +54,9 @@ $(TARGETS_DIR)/%:
 
 clean:
 	-@make -C $(TARGETS_DIR) clean
-	-@rm -rf *.bc *.cfg *.log
+	-@rm -rf *.bc *.cfg *.log klee.console.txt
 
 distclean: clean
-	-@rm -rf klee-last klee-out-*
+	-@sudo rm -rf klee-last klee-out-*
 
 .PHONY: all clean distclean

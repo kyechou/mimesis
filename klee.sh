@@ -9,12 +9,14 @@ cd "$SCRIPT_DIR"
 [ $UID -eq 0 ] && \
     (echo '[!] Please run this script without root privilege' >&2; exit 1)
 
+KLEE_OUT_TXT=klee.console.txt
+
 echo [+] Compiling...
 make driver.bc
 make $1
 
 echo [+] Starting KLEE...
-sudo klee \
+sudo /usr/bin/time -v klee \
     --max-solver-time=1s \
     --simplify-sym-indices \
     --solver-backend=z3 \
@@ -38,11 +40,8 @@ sudo klee \
     --write-test-info \
     \
     --link-llvm-lib=driver.bc \
-    $@
-
-    #--only-output-states-covering-new \
-    #--posix-runtime \
-    #--link-llvm-lib=/usr/lib/runtime_amd64.bc \
+    $@ > "$KLEE_OUT_TXT" 2>&1
 
 OUT_DIR="$(readlink -f klee-last)"
 sudo chown -R $(id -u):$(id -g) "$OUT_DIR" klee-last
+mv "$KLEE_OUT_TXT" "$OUT_DIR"
