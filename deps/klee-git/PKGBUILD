@@ -8,9 +8,10 @@ url="https://klee.github.io/"
 license=('custom:UIUC')
 groups=()
 depends=('cxx-common=0.0.14' 'libcap' 'ncurses' 'sqlite' 'gperftools' 'zlib'
-         'python' 'klee-uclibc' 'klee-libc++' 'lib32-glibc' 'lib32-gcc-libs')
+         'python' 'python-tabulate' 'klee-uclibc' 'klee-libc++' 'lib32-glibc'
+         'lib32-gcc-libs')
 makedepends=('git')
-checkdepends=('python-tabulate')
+checkdepends=()
 optdepends=()
 provides=('klee=2.1')
 conflicts=('klee')
