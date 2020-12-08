@@ -13,7 +13,7 @@ INSTALL     = /usr/bin/install -c
 MKDIR_P     = /usr/bin/mkdir -p
 CFLAGS      = -g -O0 -Xclang -disable-O0-optnone -Wall -Wextra -Werror -std=c11
 CXXFLAGS    = -g -O0 -Xclang -disable-O0-optnone -Wall -Wextra -Werror -std=c++17
-CPPFLAGS    =
+CPPFLAGS    = -iquote ..
 LDFLAGS     =
 LIBS        =
 

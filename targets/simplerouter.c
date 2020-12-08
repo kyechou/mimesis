@@ -11,45 +11,7 @@
 #include <linux/if_tun.h> // TUNSETIFF
 #undef __USE_MISC
 
-#define BUFLEN 128U
-
-struct DemoProto {
-    // -- type --
-    // 0: boost hash
-    // 1: splitmix64
-    // *: drop
-    int  type;
-    int  seed;
-    int  len; // length of msg
-    char msg[BUFLEN - 3 * sizeof(int)];
-};
-
-/*
-static size_t djb2(const char *s, size_t len)
-{
-    size_t hash = 5381;
-    for (size_t i = 0; i < len; ++i) {
-        int c = s[i];
-        hash = ((hash << 5) + hash) + c; // hash * 33 + c
-    }
-    return hash;
-}
-
-static size_t hash1(size_t seed, size_t val)    // boost hash
-{
-    seed ^= val + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    return seed;
-}
-
-static size_t hash2(size_t seed, size_t val)    // splitmix64
-{
-    val += seed;
-    val = (val ^ (val >> 30)) * 0xbf58476d1ce4e5b9ULL;
-    val = (val ^ (val >> 27)) * 0x94d049bb133111ebULL;
-    val = val ^ (val >> 31);
-    return val;
-}
-*/
+#include "protocol.h"
 
 static inline void cleanup_tapfds(int numintfs, int *tapfds)
 {
@@ -117,11 +79,9 @@ int main(int argc, char **argv)
         /* response */
         int out_port_idx;
         if (packet.type == 0) {
-            out_port_idx = packet.seed % numintfs;
-            fputs("WRITE: type 0\n", stderr);
+            out_port_idx = (packet.seed + packet.type) % numintfs;
         } else if (packet.type == 1) {
-            out_port_idx = packet.seed % numintfs;
-            fputs("WRITE: type 1\n", stderr);
+            out_port_idx = (packet.seed + packet.type) % numintfs;
         } else {
             fputs("warning: unknown packet type\n", stderr);
             continue; // drop

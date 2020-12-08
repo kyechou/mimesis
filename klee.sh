@@ -21,27 +21,28 @@ sudo klee \
     --solver-optimize-divides \
     --use-forked-solver \
     --use-independent-solver \
-    --use-query-log=solver:kquery \
     --external-calls=concrete \
     --suppress-external-warnings \
     \
     --libc=none \
-    --search=bfs \
-    --exit-on-error-type=Abort --exit-on-error-type=ReportError \
+    --search=dfs \
+    --exit-on-error-type=ReportError \
     --max-depth=100 --max-memory=$((100 * 1024)) --max-memory-inhibit=false \
-    --max-time=1h --watchdog \
+    --max-time=1h \
     \
     --write-cov \
     --write-kqueries \
+    --write-smt2s \
     --write-paths \
     --write-sym-paths \
-    --only-output-states-covering-new \
+    --write-test-info \
     \
     --link-llvm-lib=driver.bc \
     $@
 
-    #--search=random-path --search=nurs:covnew \
-
+    #--only-output-states-covering-new \
     #--posix-runtime \
     #--link-llvm-lib=/usr/lib/runtime_amd64.bc \
-    #--use-batching-search --batch-time=5s --batch-instructions=10000 \
+
+OUT_DIR="$(readlink -f klee-last)"
+sudo chown -R $(id -u):$(id -g) "$OUT_DIR" klee-last
