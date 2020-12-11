@@ -1,8 +1,8 @@
 #
-# Makefile
+# Makefile for building target application binaries
 #
 
-TARGETS     = router-s1 httpd lb
+TARGETS     = httpd lb router-s1 router-s2 router-s3
 
 CC          = /opt/cxx-common/libraries/llvm/bin/clang
 CXX         = /opt/cxx-common/libraries/llvm/bin/clang++
@@ -23,17 +23,11 @@ LIBS        =
 
 all: $(TARGETS)
 
-router-s1: router-s1.o
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
-
-httpd: httpd.o
-	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
-
 LB_SRCS = $(shell ls LB* | grep -E '\.(c|cpp)')
 LB_OBJS = $(notdir $(patsubst %.c,%.o,$(LB_SRCS:%.cpp=%.o)))
 
 lb: $(LB_OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 clean:
 	-@rm -rf $(TARGETS) *.o

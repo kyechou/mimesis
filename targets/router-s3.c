@@ -62,6 +62,7 @@ int main(int argc, char **argv)
 
     struct DemoProto packet;
     bool pkttype_0_has_been_seen = false;
+    bool pkttype_1_has_been_seen = false;
 
     while (1) {
         /* read/recv from the first interface */
@@ -84,8 +85,14 @@ int main(int argc, char **argv)
             pkttype_0_has_been_seen = true;
             out_port_idx = (packet.seed + packet.type) % numintfs;
         } else if (packet.type == 1) {
-            if (!pkttype_0_has_been_seen) { // if it's not been seen, drop type 1
+            if (!pkttype_0_has_been_seen) {
+                // if type 0 has not been seen, drop type 1
                 continue; // drop
+            } else if (!pkttype_1_has_been_seen) {
+                // if this is the first time we receive type 1 after type 0 has
+                // been seen, also drop this time.
+                pkttype_1_has_been_seen = true;
+                continue;
             }
             out_port_idx = (packet.seed + packet.type) % numintfs;
         } else {

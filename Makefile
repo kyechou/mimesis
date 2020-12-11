@@ -1,9 +1,11 @@
 #
-# Makefile
+# Makefile for getting LLVM IR bitcodes
 #
 
 DRIVER_BC   = driver.bc
-TARGET_BC   = router-s1.bc topdown-router-s1.bc
+TARGET_BC   = router-s1.bc topdown-router-s1.bc \
+              router-s2.bc topdown-router-s2.bc \
+              router-s3.bc topdown-router-s3.bc
 BITCODES    = $(DRIVER_BC) $(TARGET_BC) #httpd.bc lb.bc
 
 CC          = /opt/cxx-common/libraries/llvm/bin/clang

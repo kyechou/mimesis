@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# KLEE wrapper script
+#
 
 set -e
 set -o nounset

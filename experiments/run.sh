@@ -10,7 +10,7 @@ cd "$PROJECT_DIR"
 [ $UID -eq 0 ] && \
     (echo '[!] Please run this script without root privilege' >&2; exit 1)
 
-PROGRAM_DEPTHS=(1 2) #3)   # actual depths of statefulness
+PROGRAM_DEPTHS=(1 2 3)      # actual depths of statefulness
 DEPTH_LIMITS=(1 2 3 4 5)    # depth limits of KLEE exploration
 
 # actual depth of statefulness within the program
