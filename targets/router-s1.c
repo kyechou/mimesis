@@ -26,7 +26,7 @@ static inline void cleanup_tapfds(int numintfs, int *tapfds)
 
 int main(int argc, char **argv)
 {
-    int numintfs = 3, *tapfds;
+    int numintfs = 5, *tapfds;
     struct ifreq ifr;
 
     /* setting up the number of tap interfaces to be created */
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
             return -1;
         }
     } else if (argc > 2) {
-        fputs("Usage: ./simplerouter [<num_intfs>]\n", stderr);
+        fprintf(stderr, "Usage: %s [<num_intfs>]\n", argv[0]);
         return -1;
     }
 

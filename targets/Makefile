@@ -2,7 +2,7 @@
 # Makefile
 #
 
-TARGETS     = simplerouter httpd lb
+TARGETS     = router-s1 httpd lb
 
 CC          = /opt/cxx-common/libraries/llvm/bin/clang
 CXX         = /opt/cxx-common/libraries/llvm/bin/clang++
@@ -23,7 +23,7 @@ LIBS        =
 
 all: $(TARGETS)
 
-simplerouter: simplerouter.o
+router-s1: router-s1.o
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 httpd: httpd.o

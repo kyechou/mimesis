@@ -7,30 +7,14 @@
 #include "protocol.h"
 
 #define DEBUG 0
+#ifndef DEPTH_LIMIT
 #define DEPTH_LIMIT 2
+#endif
 #define DRIVER_OUTPUT_PREFIX "__MIMESIS_DRIVER__  "
 
 int read_count = 0;
 int write_count = 0;
 int last_write_count = 0;
-
-/*
- * Implement my own malloc to see if it would prevent the mcsema/KLEE problem.
- */
-//static void *my_malloc(size_t size)
-//{
-//    if (size == 0) {
-//        return NULL;
-//    }
-//
-//    void *addr = sbrk(size);
-//
-//    if (addr == (void *)-1) {
-//        klee_report_error(NULL, 0, "sbrk failed", "");
-//    }
-//
-//    return addr;
-//}
 
 static inline void *make_symbolic_memcpy(void *dest, size_t size, const char *name)
 {
@@ -67,7 +51,7 @@ ssize_t read(int fd, void *buf, size_t count)
     start = make_symbolic_memcpy(start, sizeof(int), "DemoProto.type");
     start = make_symbolic_memcpy(start, sizeof(int), "DemoProto.seed");
     start = make_symbolic_memcpy(start, sizeof(int), "DemoProto.len");
-    start = make_symbolic_memcpy(start, PAYLOAD_LEN, "DemoProto.msg");
+    //start = make_symbolic_memcpy(start, PAYLOAD_LEN, "DemoProto.msg");
 
     //memset(buf + nread, 0, count - nread); // NONONONONO (TODO: explain)
 
@@ -87,11 +71,11 @@ ssize_t write(int fd, const void *buf, size_t count)
     // record the egress interface and output packet
     const struct DemoProto *packet = buf;
 
-    fprintf(stdout, DRIVER_OUTPUT_PREFIX "Depth: %d\n", write_count);
+    fprintf(stderr, DRIVER_OUTPUT_PREFIX "Depth: %d\n", write_count);
     klee_print_range(DRIVER_OUTPUT_PREFIX "fd ", fd);
-    klee_print_expr(DRIVER_OUTPUT_PREFIX "out.type ", packet->type);
-    klee_print_expr(DRIVER_OUTPUT_PREFIX "out.seed ", packet->seed);
-    klee_print_expr(DRIVER_OUTPUT_PREFIX "out.len ", packet->len);
+    klee_print_range(DRIVER_OUTPUT_PREFIX "out.type ", packet->type);
+    klee_print_range(DRIVER_OUTPUT_PREFIX "out.seed ", packet->seed);
+    klee_print_range(DRIVER_OUTPUT_PREFIX "out.len ", packet->len);
     //klee_print_expr
 
     if (write_count >= DEPTH_LIMIT) { // reached depth limit; end this path

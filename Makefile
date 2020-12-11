@@ -2,7 +2,9 @@
 # Makefile
 #
 
-TARGET_BITCODE = driver.bc simplerouter.bc topdown.bc #httpd.bc lb.bc
+DRIVER_BC   = driver.bc
+TARGET_BC   = router-s1.bc topdown-router-s1.bc
+BITCODES    = $(DRIVER_BC) $(TARGET_BC) #httpd.bc lb.bc
 
 CC          = /opt/cxx-common/libraries/llvm/bin/clang
 CXX         = /opt/cxx-common/libraries/llvm/bin/clang++
@@ -16,6 +18,7 @@ CXXFLAGS    = -g -O0 -Xclang -disable-O0-optnone -Wall -Wextra -Werror -std=c++1
 CPPFLAGS    = -iquote .
 LDFLAGS     =
 LIBS        =
+DEPTH_LIMIT ?= 2
 
 TARGETS_DIR     = ./targets
 MCSEMA_DISASS   = $(shell which mcsema-disass-3)
@@ -23,12 +26,12 @@ MCSEMA_LIFT     = $(shell which mcsema-lift-10.0)
 IDA_PATH        = /opt/idapro-7.5
 IDAT64          = /opt/idapro-7.5/idat64
 
-all: $(TARGET_BITCODE)
+all: $(BITCODES)
 
 driver.bc: driver.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -emit-llvm -c $^ -o $@
+	$(CC) $(CPPFLAGS) -DDEPTH_LIMIT=$(DEPTH_LIMIT) $(CFLAGS) -emit-llvm -c $^ -o $@
 
-topdown.bc: $(TARGETS_DIR)/simplerouter.c
+topdown-%.bc: $(TARGETS_DIR)/%.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -emit-llvm -c $^ -o $@
 
 %.bc: $(TARGETS_DIR)/%
@@ -54,7 +57,7 @@ $(TARGETS_DIR)/%:
 
 clean:
 	-@make -C $(TARGETS_DIR) clean
-	-@rm -rf *.bc *.cfg *.log klee.console.txt
+	-@rm -rf *.bc *.cfg *.log console.txt
 
 distclean: clean
 	-@sudo rm -rf klee-last klee-out-*
