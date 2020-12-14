@@ -23,7 +23,7 @@ for program_depth in ${PROGRAM_DEPTHS[@]}; do
     for depth_limit in ${DEPTH_LIMITS[@]}; do
         EXPERIMENT="${SCRIPT_DIR}/${PROGRAM_NAME}-d${depth_limit}"
         if [ -e "$EXPERIMENT" ]; then
-            echo [-] \"$EXPERIMENT\" already exists\; skipped...
+            echo [-] \"$EXPERIMENT\" already exists\; skipping...
         else
             make DEPTH_LIMIT=${depth_limit} -B driver.bc
             ./klee.sh ${PROGRAM_BC}
@@ -47,7 +47,7 @@ for program_depth in ${PROGRAM_DEPTHS[@]}; do
     for depth_limit in ${DEPTH_LIMITS[@]}; do
         EXPERIMENT="${SCRIPT_DIR}/${PROGRAM_NAME}-d${depth_limit}"
         if [ -e "$EXPERIMENT" ]; then
-            echo [-] \"$EXPERIMENT\" already exists\; skipped...
+            echo [-] \"$EXPERIMENT\" already exists\; skipping...
         else
             make DEPTH_LIMIT=${depth_limit} -B driver.bc
             ./klee.sh ${PROGRAM_BC}
