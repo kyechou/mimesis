@@ -34,13 +34,13 @@ target network function binary `targets/router-s1`, and then use McSema to lift
 the binary to get LLVM IR bitcode.
 
 ```sh
-make router-s1.bc
+$ make router-s1.bc
 ```
 
 And this command would build the driver bitcode from source.
 
 ```sh
-make driver.bc
+$ make driver.bc
 ```
 
 Or you could simply use `make` to get all the bitcode files of network functions
