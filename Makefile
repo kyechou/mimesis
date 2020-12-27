@@ -8,10 +8,11 @@ TARGET_BC   = router-s1.bc topdown-router-s1.bc \
               router-s3.bc topdown-router-s3.bc
 BITCODES    = $(DRIVER_BC) $(TARGET_BC) #httpd.bc lb.bc
 
-CC          = /opt/cxx-common/libraries/llvm/bin/clang
-CXX         = /opt/cxx-common/libraries/llvm/bin/clang++
-LD          = /opt/cxx-common/libraries/llvm/bin/clang++
-LLVM_LINK   = /opt/cxx-common/libraries/llvm/bin/llvm-link
+vcpkg_prefix= /opt/cxx-common/installed/x64-linux-rel
+CC          = $(vcpkg_prefix)/bin/clang
+CXX         = $(vcpkg_prefix)/bin/clang++
+LD          = $(vcpkg_prefix)/bin/clang++
+LLVM_LINK   = $(vcpkg_prefix)/bin/llvm-link
 LN_S        = ln -s
 INSTALL     = /usr/bin/install -c
 MKDIR_P     = /usr/bin/mkdir -p

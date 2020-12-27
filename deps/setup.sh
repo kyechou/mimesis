@@ -16,7 +16,7 @@ cd "$SCRIPT_DIR"
 local_depends=(cxx-common remill anvill mcsema klee-uclibc gllvm-git klee-libc++
                klee-git)
 
-depends=()
+depends=(time)
 
 
 #
@@ -175,6 +175,7 @@ main() {
     if [ "$DISTRO" = "arch" ]; then
         script_depends=(base-devel curl git)
         sudo pacman -Sy --needed --noconfirm --asdeps ${script_depends[@]}
+        sudo pacman -Sy --needed --noconfirm --asdeps ${depends[@]}
 
         # local dependencies
         for dep in ${local_depends[@]}; do
@@ -192,6 +193,7 @@ main() {
         sudo apt update -y -qq
         sudo apt install -y -qq ${script_depends[@]}
         sudo apt install -y -qq ${makedepends[@]}
+        sudo apt install -y -qq ${depends[@]}
 
         # local dependencies
         for dep in ${local_depends[@]}; do
