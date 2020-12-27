@@ -5,8 +5,8 @@ pkgdesc='LLVM C++ standard library for KLEE.'
 arch=('i686' 'x86_64')
 url="https://libcxx.llvm.org/"
 license=('custom:Apache 2.0 with LLVM Exception')
-depends=('cxx-common=0.0.14')
-makedepends=('libunwind' 'ninja' 'python' 'gllvm-git')
+depends=('cxx-common=0.1.1')
+makedepends=('cmake' 'libunwind' 'ninja' 'python' 'gllvm-git')
 provides=('libc++' 'libc++abi' 'libc++experimental')
 conflicts=('libc++' 'libc++abi' 'libc++experimental')
 options=('staticlibs' '!strip')
@@ -28,8 +28,8 @@ prepare() {
 }
 
 build() {
-    export TRAILOFBITS_LIBRARIES="/opt/cxx-common/libraries"
-    export PATH="${TRAILOFBITS_LIBRARIES}/cmake/bin:${TRAILOFBITS_LIBRARIES}/llvm/bin:${PATH}"
+    vcpkg_libs='/opt/cxx-common/installed/x64-linux-rel'
+    export PATH="$vcpkg_libs/bin:${PATH}"
 
     cd "$srcdir/build"
     # https://wiki.archlinux.org/index.php/Clang#Build_packages_with_Clang
@@ -37,9 +37,9 @@ build() {
     CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments}
     export CC=gclang
     export CXX=gclang++
-    export LLVM_COMPILER_PATH="${TRAILOFBITS_LIBRARIES}/llvm/bin"
+    export LLVM_COMPILER_PATH="$vcpkg_libs/bin"
 
-    "${TRAILOFBITS_LIBRARIES}/cmake/bin/cmake" \
+    cmake \
         -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr \
@@ -59,9 +59,6 @@ build() {
 }
 
 check() {
-    export TRAILOFBITS_LIBRARIES="/opt/cxx-common/libraries"
-    export PATH="${TRAILOFBITS_LIBRARIES}/cmake/bin:${TRAILOFBITS_LIBRARIES}/llvm/bin:${PATH}"
-
     cd "$srcdir/build"
     ninja check-cxx check-cxxabi
 }

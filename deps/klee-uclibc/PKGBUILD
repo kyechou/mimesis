@@ -7,7 +7,7 @@ arch=('x86_64')
 url="https://klee.github.io/"
 license=('LGPL')
 groups=()
-depends=('cxx-common=0.0.14')
+depends=('cxx-common=0.1.1')
 makedepends=('python' 'wget')
 checkdepends=()
 optdepends=()
@@ -24,11 +24,13 @@ sha256sums=('6e983da7aa04db9bc93506d8e9c3208ed79782f72152d6e543e7dcbe5a517745')
 validpgpkeys=()
 
 prepare() {
-    export TRAILOFBITS_LIBRARIES="/opt/cxx-common/libraries"
-    export PATH="${TRAILOFBITS_LIBRARIES}/cmake/bin:${TRAILOFBITS_LIBRARIES}/llvm/bin:${PATH}"
+    vcpkg_libs='/opt/cxx-common/installed/x64-linux-rel'
+    export PATH="$vcpkg_libs/bin:${PATH}"
+    export CC="$vcpkg_libs/bin/clang"
+    export CXX="$vcpkg_libs/bin/clang++"
 
     cd "$srcdir/$pkgname-klee_uclibc_v$pkgver"
-    DEVEL_PREFIX="/usr/share/klee-uclibc/" ./configure --make-llvm-lib --with-cc="${TRAILOFBITS_LIBRARIES}/llvm/bin/clang"
+    DEVEL_PREFIX="/usr/share/klee-uclibc/" ./configure --make-llvm-lib --with-cc="$CC"
     sed -i 's|DEVEL_PREFIX="[^"]*"|DEVEL_PREFIX="/usr/share/klee-uclibc/usr"|' .config
     sed -i 's|RUNTIME_PREFIX="[^"]*"|RUNTIME_PREFIX="/usr/share/klee-uclibc/usr"|' .config
 }

@@ -1,40 +1,31 @@
 pkgname=klee-git
-pkgver=v2.1.r168.g53ace1a1
+pkgver=2.2.r0.g5719d280
 pkgrel=1
-epoch=
 pkgdesc="Symbolic virtual machine built on top of the LLVM compiler infrastructure"
 arch=('x86_64')
 url="https://klee.github.io/"
 license=('custom:UIUC')
 groups=()
-depends=('cxx-common=0.0.14' 'libcap' 'ncurses' 'sqlite' 'gperftools' 'zlib'
-         'python' 'python-tabulate' 'klee-uclibc' 'klee-libc++' 'lib32-glibc'
-         'lib32-gcc-libs')
-makedepends=('git')
+depends=('cxx-common=0.1.1' 'libcap' 'sqlite' 'gperftools' 'zlib' 'klee-uclibc'
+         'klee-libc++' 'python' 'python-tabulate' 'lib32-glibc' 'lib32-gcc-libs')
+makedepends=('git' 'cmake')
 checkdepends=()
 optdepends=()
-provides=('klee=2.1')
+provides=('klee=2.2')
 conflicts=('klee')
-replaces=()
-backup=()
-options=()
-install=
-changelog=
-source=("$pkgname"::"git+https://github.com/klee/klee.git#commit=53ace1a119c5ede520d2e597f9bcdfeece31229a"
-        "git+https://github.com/google/googletest.git#tag=release-1.7.0"
+source=("$pkgname"::"git+https://github.com/klee/klee.git#commit=5719d2803e93252e5d4613f43afc7db0d72332f1"
+        "git+https://github.com/google/googletest.git#tag=release-1.10.0"
         '00-ret-void.patch')
-noextract=()
 sha256sums=('SKIP'
             'SKIP'
-            '6751dcfe91ecfaec975c88ea1ce054ae4b73c10608918a0b1a54fb4884283bc9')
-validpgpkeys=()
+            '79d25bfbc3cf72dd4293ed75c75ae9043a849360708db99654068060585a3147')
 
 prepare() {
-    export TRAILOFBITS_LIBRARIES="/opt/cxx-common/libraries"
-    export Z3_PREFIX="${TRAILOFBITS_LIBRARIES}/z3"
+    vcpkg_libs='/opt/cxx-common/installed/x64-linux-rel'
 
+    ## find Z3 from cxx-common
     sed -i "$srcdir/$pkgname/cmake/find_z3.cmake" \
-        -e "s|find_package(Z3)|find_package(Z3 PATHS ${Z3_PREFIX})|"
+        -e "s|find_package(Z3)|find_package(Z3 PATHS ${vcpkg_libs})|"
 
     cd "$srcdir/$pkgname"
     patch -Np1 -i "$srcdir/00-ret-void.patch"
@@ -42,18 +33,18 @@ prepare() {
 
 pkgver() {
     cd "$srcdir/$pkgname"
-    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+    git describe --long --tags | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
 }
 
 build() {
-    export TRAILOFBITS_LIBRARIES="/opt/cxx-common/libraries"
-    export PATH="${TRAILOFBITS_LIBRARIES}/cmake/bin:${TRAILOFBITS_LIBRARIES}/llvm/bin:${PATH}"
+    vcpkg_libs='/opt/cxx-common/installed/x64-linux-rel'
+    export PATH="$vcpkg_libs/bin:${PATH}"
 
     mkdir -p "$srcdir/build"
     cd "$srcdir/build"
-    "${TRAILOFBITS_LIBRARIES}/cmake/bin/cmake" \
-        -DCMAKE_C_COMPILER="${TRAILOFBITS_LIBRARIES}/llvm/bin/clang" \
-        -DCMAKE_CXX_COMPILER="${TRAILOFBITS_LIBRARIES}/llvm/bin/clang++" \
+    cmake \
+        -DCMAKE_C_COMPILER="$vcpkg_libs/bin/clang" \
+        -DCMAKE_CXX_COMPILER="$vcpkg_libs/bin/clang++" \
         -DENABLE_TCMALLOC=ON \
         -DENABLE_POSIX_RUNTIME=ON \
         -DENABLE_KLEE_UCLIBC=ON \
@@ -65,25 +56,22 @@ build() {
         -DENABLE_SOLVER_Z3=ON \
         -DENABLE_SOLVER_STP=OFF \
         -DENABLE_SOLVER_METASMT=OFF \
-        -DZ3_INCLUDE_DIRS="${TRAILOFBITS_LIBRARIES}/z3/include" \
-        -DZ3_LIBRARIES="${TRAILOFBITS_LIBRARIES}/z3/lib/libz3.a" \
+        -DZ3_INCLUDE_DIRS="$vcpkg_libs/include" \
+        -DZ3_LIBRARIES="$vcpkg_libs/lib/libz3.a" \
         -DCMAKE_INSTALL_PREFIX="/usr" \
         -DCMAKE_INSTALL_LIBDIR="/usr/lib" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DGTEST_SRC_DIR="$srcdir/googletest" \
+        -DGTEST_SRC_DIR="$srcdir/googletest/googletest" \
         -DENABLE_UNIT_TESTS=ON \
         -DENABLE_SYSTEM_TESTS=ON \
+        -DCMAKE_VERBOSE_MAKEFILE=True \
         "$srcdir/$pkgname"
     make
 }
 
 check() {
-    export TRAILOFBITS_LIBRARIES="/opt/cxx-common/libraries"
-    export PATH="${TRAILOFBITS_LIBRARIES}/cmake/bin:${TRAILOFBITS_LIBRARIES}/llvm/bin:${PATH}"
-
     cd "$srcdir/build"
     make systemtests
-    make unittests
 }
 
 package() {

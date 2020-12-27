@@ -1,8 +1,8 @@
 diff --git a/lib/Core/Executor.cpp b/lib/Core/Executor.cpp
-index a0df89f0..d6df27a7 100644
+index e3186bbf..2eca8d91 100644
 --- a/lib/Core/Executor.cpp
 +++ b/lib/Core/Executor.cpp
-@@ -2093,7 +2093,11 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
+@@ -2096,7 +2096,11 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
          // checking the type, since C defaults to returning int for
          // undeclared functions.
          if (!caller->use_empty()) {

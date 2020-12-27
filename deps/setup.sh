@@ -203,7 +203,7 @@ main() {
         exit 1
     fi
 
-    echo '[+] DONE.'
+    echo '[+] DONE'
 }
 
 
