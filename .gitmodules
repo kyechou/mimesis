@@ -10,3 +10,6 @@
 [submodule "mcsema"]
 	path = deps/mcsema
 	url = https://github.com/kyechou/aur-mcsema.git
+[submodule "gllvm-git"]
+	path = deps/gllvm-git
+	url = git@github.com:kyechou/aur-gllvm-git.git
