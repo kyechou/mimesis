@@ -3,8 +3,7 @@
 # Set up the development environment
 #
 
-set -e
-set -o nounset
+set -euo pipefail
 
 SCRIPT_DIR="$(dirname $(realpath ${BASH_SOURCE[0]}))"
 cd "$SCRIPT_DIR"
@@ -184,15 +183,19 @@ main() {
 
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_depends=(build-essential curl git)
-        makedepends=(python3 python3-setuptools ninja-build liblzma-dev
-                     libssl-dev clang build-essential git wget curl libtinfo-dev
-                     lsb-release zlib1g-dev ccache gcc-multilib g++-multilib
-                     golang libunwind-dev libncurses5-dev libncursesw5-dev
-                     libarchive-tools libcap-dev libsqlite3-dev
-                     libgoogle-perftools-dev)
+        depends+=(liblzma-dev libssl-dev curl libtinfo-dev ccache
+                  libncurses5-dev libncursesw5-dev libarchive-tools)
+        depends+=(clang cmake ninja-build git python2) # cxx-common
+        depends+=(gcc-multilib g++-multilib libunwind-dev cmake) # remill
+        depends+=(python3 python3-setuptools libunwind-dev cmake) # anvill
+        depends+=(python3 python3-setuptools python3-protobuf libunwind-dev cmake) # mcsema
+        depends+=(git golang) # gllvm-git
+        depends+=(python3 wget) # klee-uclibc
+        depends+=(python3 cmake ninja-build libunwind-dev) # klee-libc++
+        depends+=(libcap-dev libsqlite3-dev libgoogle-perftools-dev zlib1g-dev
+                  python3 python3-tabulate gcc-multilib g++-multilib git cmake) # klee-git
         sudo apt update -y -qq
         sudo apt install -y -qq ${script_depends[@]}
-        sudo apt install -y -qq ${makedepends[@]}
         sudo apt install -y -qq ${depends[@]}
 
         # local dependencies
