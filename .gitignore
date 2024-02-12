@@ -1,6 +1,0 @@
-klee-last
-klee-out-*
-console.txt
-*.bc
-*.cfg
-*.log
