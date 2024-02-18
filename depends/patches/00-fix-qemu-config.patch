@@ -1,0 +1,12 @@
+diff --git a/Makefile.qemu b/Makefile.qemu
+index 69354bb..fe026de 100644
+--- a/Makefile.qemu
++++ b/Makefile.qemu
+@@ -44,6 +44,7 @@ QEMU_CONFIGURE_FLAGS = --prefix=$(S2E_PREFIX)        \
+                        --disable-libiscsi            \
+                        --disable-docs                \
+                        --disable-spice               \
++                       --disable-werror              \
+                        $(EXTRA_QEMU_FLAGS)
+ 
+ QEMU_DEBUG_FLAGS = --enable-debug

@@ -1,0 +1,12 @@
+diff --git a/guest/common/s2ecmd/CMakeLists.txt b/guest/common/s2ecmd/CMakeLists.txt
+index d6b208e..02f62c7 100644
+--- a/guest/common/s2ecmd/CMakeLists.txt
++++ b/guest/common/s2ecmd/CMakeLists.txt
+@@ -22,6 +22,6 @@
+ # SOFTWARE.
+
+ add_executable(s2ecmd s2ecmd.cpp symfile.cpp s2eget.cpp s2eput.cpp common.cpp)
+-target_link_libraries(s2ecmd atomic)
++target_link_libraries(s2ecmd "/usr/i686-w64-mingw32/lib/libatomic.a")
+
+ install(TARGETS s2ecmd RUNTIME DESTINATION .)
