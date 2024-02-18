@@ -1,57 +1,49 @@
 # Mimesis
 
-Model extraction for network functions.
+Model extraction for stateful network functions.
 
 ## Environment setup
 
-You could probably set up everything needed by running:
+### S2E
+
+You can set up the environment and S2E by running the following command. This
+will set up `s2e-env`, `s2e`, and build VM images required for analysis. The
+results will be inside the `s2e.<distro>/` directory.
 
 ```sh
-$ ./deps/setup.sh
+$ ./depends/setup.sh
 ```
+
+> **Note**<br/>
+> The script will automatically detect your Linux distribution. However, only
+> Arch and Ubuntu 22.04 are currently supported.
+
+### Target programs
+
+To build the example target programs, from which the models are extracted,
+please run:
+
+```sh 
+$ ./scripts/configure.sh
+$ ./scripts/build.sh
+```
+
+The program binaries will be inside `build/targets/` directory.
 
 ## Usage
 
-### Reproduce the experiments
+### Create a new analysis project
 
-In order to reproduce the experiments, one could simply run the script
-`./experiments/run.sh`. It should use McSema, IDA Pro, and KLEE to concolically
-explore the network functions as written in the script, and generate the output
-directories within the `experiments` directory. `./experiments/collect-stats.sh`
-can be used to collect the statistics of all output directories within
-`experiments`.
+(TODO)
 
-### Manual analysis
-
-To analyze each network function individually, one could take a look at the
-`./experiments/run.sh` as a reference or follow these steps.
-
-#### Get network function and driver bitcodes
-
-You can use `Makefile` to build the LLVM IR bitcode of network function
-programs and the driver. For example, the following command will first build the
-target network function binary `targets/router-s1`, and then use McSema to lift
-the binary to get LLVM IR bitcode.
-
-```sh
-$ make router-s1.bc
+```sh 
+$ source ./scripts/activate.sh
+$ s2e new_project -t linux -n <name> -i ubuntu-22.04-x86_64 <target program> [<arguments>]
 ```
 
-And this command would build the driver bitcode from source.
+Later when you finish, you can deactivate the environments by:
 
-```sh
-$ make driver.bc
+```sh 
+$ _deactivate
 ```
 
-Or you could simply use `make` to get all the bitcode files of network functions
-and the driver.
-
-#### Concolic execution with KLEE
-
-Once we have the target program and the driver bitcode files, you can use
-`klee.sh` to concolically execute the network function with the driver. It will
-generate an output directory called `klee-out-*`, pointed to by a symbolic link
-`klee-last`.
-
-You might want to modify KLEE's command-line options specified within `klee.sh`
-to meet your purpose, or to link additional library bitcode files.

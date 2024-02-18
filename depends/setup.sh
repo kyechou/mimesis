@@ -258,6 +258,16 @@ setup_s2e() {
     deactivate
 }
 
+build_s2e_image() {
+    # shellcheck source=/dev/null
+    source "$S2E_ENV_DIR/venv/bin/activate"
+    # shellcheck source=/dev/null
+    source "$S2E_DIR/s2e_activate"
+    s2e image_build ubuntu-22.04-x86_64
+    s2e_deactivate
+    deactivate
+}
+
 main() {
     DISTRO="$(get_distro)"
     PROJECT_DIR="$(dirname "${SCRIPT_DIR}")"
@@ -294,10 +304,11 @@ main() {
             fuse3 python-docutils sdl12-compat lib32-sdl12-compat pxz-git
             python-distro
         )
-        # build_deps=(clang)
-        # style_deps=(clang yapf)
+        build_deps=(clang cmake)
+        style_deps=(clang yapf)
         # depends=(time)
-        depends=("${script_deps[@]}" "${s2e_deps[@]}")
+        depends=("${script_deps[@]}" "${s2e_deps[@]}" "${build_deps[@]}"
+            "${style_deps[@]}")
 
         paru -S --asdeps --needed --noconfirm --removemake "${depends[@]}"
         makepkg_arch mimesis-dev -srcfi --asdeps --noconfirm "$@"
@@ -305,10 +316,11 @@ main() {
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_deps=(build-essential curl git)
         s2e_env_deps=(git gcc python3 python3-dev python3-venv)
-        # build_deps=(clang bison python3-venv cmake pkgconf)
-        # style_deps=(clang-format yapf3)
+        build_deps=(clang python3-venv cmake pkgconf)
+        style_deps=(clang-format yapf3)
         # depends=(time)
-        depends=("${script_deps[@]}" "${s2e_env_deps[@]}")
+        depends=("${script_deps[@]}" "${s2e_env_deps[@]}" "${build_deps[@]}"
+            "${style_deps[@]}")
 
         sudo apt update -y -qq
         sudo apt install -y -qq "${depends[@]}"
@@ -319,6 +331,7 @@ main() {
 
     setup_s2e_env
     setup_s2e
+    build_s2e_image
     msg "Finished"
 }
 
