@@ -1,8 +1,10 @@
 /**
- * Demo Router 1: Stateless forwarding
+ * Demo Router 2: Stateful forwarding.
  *
  * The egress port of an incoming packet is directly determined by the `seed`
  * header field of the packet.
+ * Packets of type 0 are always allowed. Packets of type 1 are only allowed if
+ * another type-0 packet has egressed through the same port.
  */
 
 #include <cstdint>
@@ -10,18 +12,20 @@
 #include <iostream>
 #include <linux/if_tun.h> // TUNSETIFF
 #include <net/if.h>       // struct ifreq
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string>
 #include <sys/ioctl.h> // ioctl
+#include <sys/stat.h>  // read
 #include <unistd.h>
 #include <vector>
 
 #define PAYLOAD_LEN 128u
 
 struct Header {
-    uint16_t seed; // egress port
-    uint16_t len;  // payload length
+    uint8_t type; // packet type. 0: init, 1: follow-up
+    uint8_t seed; // egress port
+    uint16_t len; // payload length
 };
 
 struct Packet {
@@ -64,7 +68,7 @@ int main(int argc, char **argv) {
             close_tapfds(tapfds);
             return -1;
         }
-        std::string ifname = "demo-r1-eth" + std::to_string(i);
+        std::string ifname = "demo-r2-eth" + std::to_string(i);
         memset(&ifr, 0, sizeof(ifr));
         ifr.ifr_flags = IFF_TAP | IFF_NO_PI;
         strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
@@ -76,6 +80,7 @@ int main(int argc, char **argv) {
     }
 
     Packet pkt;
+    std::vector<bool> port_to_type0_map(num_intfs, false);
 
     while (1) {
         // Read from the first interface
@@ -100,6 +105,22 @@ int main(int argc, char **argv) {
         }
 
         // Response
+        if (pkt.hdr.type == 0) {
+            // Type-0 packets are always allowed.
+            // Mark the egress port as initialized.
+            port_to_type0_map.at(out_port) = true;
+        } else if (pkt.hdr.type == 1) {
+            // Type-1 packets are only allowed if the egress port has been
+            // initialized.
+            if (!port_to_type0_map.at(out_port)) {
+                // Port not initialized with a type-0 packet yet.
+                continue;
+            }
+        } else {
+            std::cerr << "Unknown packet type " << pkt.hdr.type << std::endl;
+            continue;
+        }
+
         write(tapfds[out_port], &pkt, nread);
     }
 
