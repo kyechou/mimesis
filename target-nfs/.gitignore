@@ -1,4 +1,0 @@
-router-s[1-3]
-httpd
-lb
-*.o

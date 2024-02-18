@@ -1,3 +1,30 @@
-.Trash*/
+# Compiled objects/libraries
+*.a
+*.o
+*.so
+
+# Executables
+
+# Intermediate build files
 build/
 s2e.*/
+
+# Coverage files
+*.gcov
+*.gcda
+*.gcno
+
+# Python cache files
+__pycache__
+
+# Development environment files
+*.code-workspace
+.vscode/
+.cache/
+.venv/
+
+# Trashed files
+.Trash*/
+
+# Packages
+*.tar.*
