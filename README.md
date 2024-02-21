@@ -24,8 +24,7 @@ To build the example target programs, from which the models are extracted,
 please run:
 
 ```sh 
-$ ./scripts/configure.sh
-$ ./scripts/build.sh
+$ ./scripts/docker-build.sh
 ```
 
 The program binaries will be inside `build/targets/` directory.
