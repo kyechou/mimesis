@@ -1,0 +1,13 @@
+diff --git a/stapbpf/bpfinterp.cxx b/stapbpf/bpfinterp.cxx
+index 4cf4588..41bcab3 100644
+--- a/stapbpf/bpfinterp.cxx
++++ b/stapbpf/bpfinterp.cxx
+@@ -23,6 +23,8 @@
+ #include <cerrno>
+ #include <vector>
+ #include <unordered_set>
++#include <stdexcept>
++#include <string>
+ #include <inttypes.h>
+ #include <unordered_map>
+ #include "bpfinterp.h"
