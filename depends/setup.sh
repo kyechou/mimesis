@@ -232,11 +232,11 @@ setup_s2e() {
             -i "$PATCH_DIR/04-s2e-s2ecmd-atomic.patch")" ||
             echo "$out" | grep -q 'Skipping patch' ||
             die "$out"
+        out="$(patch -d "$S2E_DIR/source/s2e" -Np1 \
+            -i "$PATCH_DIR/05-s2e-s2ebios.patch")" ||
+            echo "$out" | grep -q 'Skipping patch' ||
+            die "$out"
     fi
-    out="$(patch -d "$S2E_DIR/source/s2e" -Np1 \
-        -i "$PATCH_DIR/05-s2e-s2ebios.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
     # NOTE: Remove this patch once https://github.com/S2E/guest-images/pull/45
     # is merged.
     out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
