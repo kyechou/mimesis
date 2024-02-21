@@ -48,4 +48,4 @@ RUN rm -rf systemtap-${STAP_VER}* /kernel-packages
 # Add a user for building without root privileges
 RUN useradd -m -s /bin/bash builder
 
-ENTRYPOINT ["/bin/bash", "-l", "-c"]
+ENTRYPOINT ["/bin/bash", "-l"]

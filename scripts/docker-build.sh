@@ -39,7 +39,7 @@ main() {
     local image='kyechou/target-builder:latest'
     docker pull "$image"
     docker run -it --rm -u builder -v "$PROJECT_DIR:/mimesis" "$image" \
-        "/mimesis/scripts/configure.sh && /mimesis/scripts/build.sh"
+        -c "/mimesis/scripts/configure.sh && /mimesis/scripts/build.sh"
 }
 
 main "$@"
