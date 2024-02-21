@@ -304,7 +304,7 @@ main() {
             fuse3 python-docutils sdl12-compat lib32-sdl12-compat pxz-git
             python-distro
         )
-        build_deps=(clang cmake)
+        build_deps=(clang cmake ninja)
         style_deps=(clang yapf)
         # depends=(time)
         depends=("${script_deps[@]}" "${s2e_deps[@]}" "${build_deps[@]}"
@@ -316,7 +316,7 @@ main() {
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_deps=(build-essential curl git)
         s2e_env_deps=(git gcc python3 python3-dev python3-venv)
-        build_deps=(clang python3-venv cmake pkgconf)
+        build_deps=(clang cmake ninja-build pkgconf)
         style_deps=(clang-format yapf3)
         # depends=(time)
         depends=("${script_deps[@]}" "${s2e_env_deps[@]}" "${build_deps[@]}"

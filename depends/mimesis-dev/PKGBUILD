@@ -25,7 +25,7 @@ depends=(
     # other dependencies
     fuse3 python-docutils sdl12-compat lib32-sdl12-compat pxz-git python-distro
     # target programs dependencies
-    cmake gcc clang yapf
+    cmake ninja gcc clang yapf
 )
 makedepends=()
 checkdepends=()
