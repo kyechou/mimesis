@@ -6,12 +6,14 @@ PUSH_TARGETS = $(TARGETS:%=%-push)
 CONTAINERS := $(shell docker ps -a -q)
 NON_TAGGED_IMGS := $(shell docker images | grep '<none>' | awk -F ' ' '{print $$3}')
 IMAGES := $(shell docker images -q)
+S2E_REPO_DIR := $(shell ls -d ../../s2e.* | head -n1)
 
 all: $(TARGETS)
 
 push: $(PUSH_TARGETS)
 
 $(TARGETS):
+	cp $(S2E_REPO_DIR)/s2e/images/.tmp-output/linux-4.9.3-x86_64/*.deb ./$@/
 	docker build -t kyechou/$@:latest ./$@
 
 $(PUSH_TARGETS):

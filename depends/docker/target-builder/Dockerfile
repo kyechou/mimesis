@@ -13,8 +13,8 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     sudo apt-file texinfo flex bison patch python3 unzip git bc bzip2 wget \
     less g++ gcc file libc6-dev make fakeroot build-essential devscripts \
-    libncurses5-dev libdw-dev elfutils gettext \
-    build-essential curl git clang cmake pkgconf && \
+    libncurses5-dev libdw-dev elfutils gettext apt-utils \
+    build-essential curl git clang cmake ninja-build pkgconf && \
     apt-get clean && \
     apt-file update
 
@@ -37,4 +37,15 @@ RUN curl -LO https://sourceware.org/ftp/systemtap/releases/systemtap-${STAP_VER}
     make -j $(nproc) && \
     sudo make install
 
-ENTRYPOINT ["/bin/bash"]
+COPY *.deb /kernel-packages/
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades \
+    /kernel-packages/*.deb
+
+# Clean up
+RUN rm -rf systemtap-${STAP_VER}* /kernel-packages
+
+# Add a user for building without root privileges
+RUN useradd -m -s /bin/bash builder
+
+ENTRYPOINT ["/bin/bash", "-l", "-c"]
