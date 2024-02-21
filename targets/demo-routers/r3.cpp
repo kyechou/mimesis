@@ -1,10 +1,11 @@
 /**
- * Demo Router 2: Stateful forwarding.
+ * Demo Router 3: Stateful forwarding.
  *
  * The egress port of an incoming packet is directly determined by the `seed`
  * header field of the packet.
  * Packets of type 0 are always allowed. Packets of type 1 are only allowed if
- * another type-0 packet has egressed through the same port.
+ * another type-1 packet has egressed through the same port after some type-0
+ * packets are seen at the same egress port.
  */
 
 #include <cstdint>
@@ -68,7 +69,7 @@ int main(int argc, char **argv) {
             close_tapfds(tapfds);
             return -1;
         }
-        std::string ifname = "demo-r2-eth" + std::to_string(i);
+        std::string ifname = "demo-r3-eth" + std::to_string(i);
         memset(&ifr, 0, sizeof(ifr));
         ifr.ifr_flags = IFF_TAP | IFF_NO_PI;
         strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
@@ -82,6 +83,8 @@ int main(int argc, char **argv) {
     Packet pkt;
     // Whether a type-0 packet has been seen at a given egress port.
     std::vector<bool> port_to_type0_map(num_intfs, false);
+    // Whether a type-1 packet has been seen at a given egress port.
+    std::vector<bool> port_to_type1_map(num_intfs, false);
 
     while (1) {
         // Read from the first interface
@@ -115,6 +118,11 @@ int main(int argc, char **argv) {
             // initialized.
             if (!port_to_type0_map.at(out_port)) {
                 // Port not initialized with a type-0 packet yet.
+                continue;
+            } else if (!port_to_type1_map.at(out_port)) {
+                // This is the first time we receive a type-1 packet after some
+                // type-0 packets. Drop this time, but mark type-1 as seen.
+                port_to_type1_map.at(out_port) = true;
                 continue;
             }
         } else {
