@@ -22,3 +22,6 @@ set(DEMO_RTR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/demo-routers)
 add_executable(demo-router-1 ${DEMO_RTR_DIR}/r1.cpp)
 add_executable(demo-router-2 ${DEMO_RTR_DIR}/r2.cpp)
 add_executable(demo-router-3 ${DEMO_RTR_DIR}/r3.cpp)
+
+set(HELLO_WORLD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hello-world)
+add_executable(hello-world-1 ${HELLO_WORLD_DIR}/hw1.cpp)
