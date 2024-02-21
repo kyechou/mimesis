@@ -23,7 +23,6 @@ usage() {
     --clean             Clean all build files without configuring
     --gcc               Use GCC
     --clang             Use Clang (default)
-    --max-conns N       Maximum number of concurrent connections
 EOF
 }
 
