@@ -1,5 +1,6 @@
 TARGETS = \
-	target-builder
+	target-builder \
+	stp-builder
 
 PUSH_TARGETS = $(TARGETS:%=%-push)
 
@@ -12,7 +13,10 @@ all: $(TARGETS)
 
 push: $(PUSH_TARGETS)
 
-$(TARGETS):
+target-builder:
+	docker build -t kyechou/$@:latest ./$@
+
+stp-builder:
 	cp $(S2E_REPO_DIR)/s2e/images/.tmp-output/linux-4.9.3-x86_64/*.deb ./$@/
 	docker build -t kyechou/$@:latest ./$@
 

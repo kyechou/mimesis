@@ -28,6 +28,6 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 
 #
-# target programs to be analyzed
+# build target programs
 #
 add_subdirectory(targets)

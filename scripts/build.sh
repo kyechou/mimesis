@@ -43,9 +43,17 @@ parse_args() {
     done
 }
 
+check_docker() {
+    if [[ ! -e '/.dockerenv' ]]; then
+        die 'Please run this script inside a container'
+    fi
+}
+
 main() {
     # Parse script arguments
     parse_args "$@"
+    # Only allow building if it's run inside a container
+    check_docker
     # Build
     cmake --build "$BUILD_DIR" -j "$NUM_TASKS"
 }

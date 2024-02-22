@@ -68,6 +68,12 @@ reset_files() {
     fi
 }
 
+check_docker() {
+    if [[ ! -e '/.dockerenv' ]]; then
+        die 'Please run this script inside a container'
+    fi
+}
+
 prepare_flags() {
     CMAKE_ARGS=(
         "-DCMAKE_GENERATOR=Ninja"
@@ -90,6 +96,8 @@ main() {
     parse_args "$@"
     # Reset intermediate files if needed
     reset_files
+    # Only allow configuring if it's run inside a container
+    check_docker
     # Prepare build parameters
     prepare_flags
 

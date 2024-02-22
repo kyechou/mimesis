@@ -1,0 +1,4 @@
+probe vfs.read {
+    log("hello world")
+    exit()
+}
