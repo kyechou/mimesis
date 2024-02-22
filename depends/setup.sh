@@ -237,10 +237,12 @@ setup_s2e() {
             echo "$out" | grep -q 'Skipping patch' ||
             die "$out"
     fi
-    # NOTE: Remove this patch once https://github.com/S2E/guest-images/pull/45
-    # is merged.
     out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
         -i "$PATCH_DIR/06-s2e-guest-images-ubuntu-iso.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+    out="$(patch -d "$S2E_DIR/source/s2e" -Np1 \
+        -i "$PATCH_DIR/07-guest-linux-launch-script.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
 
