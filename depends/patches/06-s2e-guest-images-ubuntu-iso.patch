@@ -7,7 +7,7 @@ index 50a7d1a..6d1107c 100644
        "url": "https://drive.google.com/open?id=102EgrujJE5Pzlg98qe3twLNIeMz5MkJQ",
        "iso": {
 -        "url": "https://releases.ubuntu.com/22.04/ubuntu-22.04.2-live-server-amd64.iso"
-+        "url": "https://releases.ubuntu.com/22.04/ubuntu-22.04.3-live-server-amd64.iso"
++        "url": "https://releases.ubuntu.com/22.04/ubuntu-22.04.4-live-server-amd64.iso"
        },
        "os": {
          "name": "ubuntu",

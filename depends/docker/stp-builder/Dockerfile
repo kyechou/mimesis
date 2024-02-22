@@ -17,7 +17,6 @@ RUN apt-get update && \
     apt-get clean && \
     apt-file update
 
-# ARG STAP_VER=3.2
 ARG STAP_VER=4.7
 
 RUN curl --insecure -LO https://sourceware.org/ftp/systemtap/releases/systemtap-${STAP_VER}.tar.gz && \

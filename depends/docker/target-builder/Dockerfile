@@ -5,7 +5,6 @@ FROM ubuntu:22.04
 
 LABEL org.opencontainers.image.authors="kychou2@illinois.edu"
 
-# g++ gcc libc6-dev apt-utils vim \
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apt-file build-essential curl git clang cmake ninja-build pkgconf sudo && \
