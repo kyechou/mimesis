@@ -1,0 +1,3 @@
+[submodule "s2e"]
+	path = s2e
+	url = git@github.com:kyechou/s2e.git
