@@ -31,11 +31,12 @@ The results will be inside the `build/` directory.
 
 ## Usage
 
-### Analyze a given program
+### Analyze a given program with S2E
 
-(TODO: Add description and explanation here.)
-
-Create a new analysis project.
+Create a new analysis project. It will be located at
+`s2e.<distro>/s2e/projects/mimesis`. Note that this step will also patch the
+`bootstrap.sh` inside the project directory to load *all* compiled systemtap
+kernel modules. You can manually edit the `bootstrap.sh` according to the needs.
 
 ```sh 
 $ ./scripts/s2e.sh -n <target program> [<arguments>]
@@ -44,6 +45,17 @@ $ ./scripts/s2e.sh -n <target program> [<arguments>]
 For example,
 
 ```sh 
-$ ./scripts/s2e.sh -n ./build/targets/hello-world-1
-$ ./scripts/s2e.sh -n ./build/targets/demo-router-1 8
+$ ./scripts/s2e.sh -n ./build/targets/hello-world-1 
+```
+
+Once an S2E project is created, you can run the analysis:
+
+```sh 
+$ ./scripts/s2e.sh -c -r
+```
+
+To remove *all* S2E projects, run:
+
+```sh 
+$ ./scripts/s2e.sh --rm
 ```
