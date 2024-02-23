@@ -62,8 +62,8 @@ main() {
         cat <<-EOM
         mkdir -p /mimesis/build/src
         cd /mimesis/build/src
-        stap -r 4.9.3-s2e -g -m hello_world /mimesis/src/hello_world.stp &
-        stap -r 4.9.3-s2e -g -m netif_receive_skb /mimesis/src/netif_receive_skb.stp &
+        stap -r 4.9.3-s2e -g -p4 -m hello_world /mimesis/src/hello_world.stp &
+        stap -r 4.9.3-s2e -g -p4 -m netif_receive_skb /mimesis/src/netif_receive_skb.stp &
         wait
         chown -R $(id -u):$(id -g) /mimesis/build/src
 EOM
