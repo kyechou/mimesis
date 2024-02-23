@@ -1,6 +1,7 @@
 TARGETS = \
 	target-builder \
-	stp-builder
+	stp-builder \
+	s2e-builder
 
 PUSH_TARGETS = $(TARGETS:%=%-push)
 
@@ -13,7 +14,7 @@ all: $(TARGETS)
 
 push: $(PUSH_TARGETS)
 
-target-builder:
+target-builder s2e-builder:
 	docker build -t kyechou/$@:latest ./$@
 
 stp-builder:
