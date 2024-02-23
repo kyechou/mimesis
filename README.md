@@ -7,7 +7,7 @@ Model extraction for stateful network functions.
 ### S2E
 
 You can set up the environment and S2E by running the following command. This
-will set up `s2e-env`, `s2e`, and build VM images required for analysis. The
+will set up `s2e-env`, `s2e`, and build the VM images required for analysis. The
 results will be inside the `s2e.<distro>/` directory.
 
 ```sh
