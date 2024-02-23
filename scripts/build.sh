@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Build Mimesis and the target programs
+#
 
 set -euo pipefail
 

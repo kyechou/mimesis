@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Enforce style formatting
+#
 
 set -euo pipefail
 

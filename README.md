@@ -18,31 +18,32 @@ $ ./depends/setup.sh
 > The script will automatically detect your Linux distribution. However, only
 > Arch and Ubuntu 22.04 are currently supported.
 
-### Target programs
+### Mimesis & Target programs
 
-To build the example target programs, from which the models are extracted,
-please run:
+To build Mimesis and the example target programs, from which the models are
+extracted, please run:
 
 ```sh 
 $ ./scripts/docker-build.sh
 ```
 
-The program binaries will be inside `build/targets/` directory.
+The results will be inside the `build/` directory.
 
 ## Usage
 
-### Create a new analysis project
+### Analyze a given program
 
-(TODO)
+(TODO: Add description and explanation here.)
 
-```sh 
-$ source ./scripts/activate.sh
-$ s2e new_project -t linux -n <name> -i ubuntu-22.04-x86_64 <target program> [<arguments>]
-```
-
-Later when you finish, you can deactivate the environments by:
+Create a new analysis project.
 
 ```sh 
-$ _deactivate
+$ ./scripts/s2e.sh -n <target program> [<arguments>]
 ```
 
+For example,
+
+```sh 
+$ ./scripts/s2e.sh -n ./build/targets/hello-world-1
+$ ./scripts/s2e.sh -n ./build/targets/demo-router-1 8
+```
