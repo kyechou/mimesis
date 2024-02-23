@@ -9,6 +9,7 @@ function s2e_message(message:string) %{
 %}
 
 probe vfs.read {
-    s2e_message("Hello, world!\n")
-    exit()
+    log("[log] Hello, world!")
+    println("[println] Hello, world!")
+    s2e_message("[s2e_message] Hello, world!\n")
 }

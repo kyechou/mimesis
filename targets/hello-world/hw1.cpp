@@ -14,7 +14,7 @@ int main() {
 
     cout << "List /:" << endl;
     for (auto &entry : fs::directory_iterator("/")) {
-        cout << "  " << entry.path() << endl;
+        cout << "  " << entry.path().string() << endl;
     }
 
     return 0;

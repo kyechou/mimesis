@@ -128,14 +128,23 @@ main() {
             "${TARGET_PROGRAM[@]}"
         _deactivate
 
-        # Link all compiled kernel modules
         for mod in "$build_dir"/src/*.ko; do
+            # Link all compiled kernel modules
             local target_path
+            local mod_name
             local link_path
             target_path="$(realpath "$mod")"
-            link_path="$s2e_proj_dir/$(basename "$mod")"
+            mod_name="$(basename "$mod")"
+            link_path="$s2e_proj_dir/$mod_name"
             ln -s "$target_path" "$link_path"
+
+            # Patch bootstrap.sh to load systemtap kernel modules
+            local stap_cmds="\${S2ECMD} get $mod_name\n"
+            stap_cmds+="sudo staprun -o /dev/ttyS0 -D $mod_name\n"
+            sed -i "$s2e_proj_dir/bootstrap.sh" \
+                -e "s,^\(execute \"\${TARGET_PATH}\"\),$stap_cmds\1,"
         done
+
     fi
 
     if [[ $CLEAN -eq 1 ]]; then
