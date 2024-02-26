@@ -111,7 +111,7 @@ get_distro() {
 build_target_programs() {
     local image='kyechou/target-builder:latest'
     local build_cmd=''
-    if [[ $RECONF -eq 1 ]]; then
+    if [[ $RECONF -eq 1 ]] || [[ ! -e "$BUILD_DIR" ]]; then
         build_cmd+="$PROJECT_DIR/scripts/configure.sh && "
     fi
     build_cmd+="cmake --build '$BUILD_DIR' -j $NUM_TASKS"
