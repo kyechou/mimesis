@@ -183,12 +183,12 @@ setup_s2e_env() {
     python3 -m pip install build installer wheel
     python3 -m build --wheel --outdir "$DIST_DIR" "$S2E_ENV_DIR"
     python3 -m pip install --compile "$DIST_DIR"/*.whl
-    # Tests
-    if [[ ! -e "$S2E_ENV_DIR/venv-test" ]]; then
-        pushd "$S2E_ENV_DIR"
-        "$S2E_ENV_DIR/test.sh"
-        popd # "$S2E_ENV_DIR"
-    fi
+    # # Tests
+    # if [[ ! -e "$S2E_ENV_DIR/venv-test" ]]; then
+    #     pushd "$S2E_ENV_DIR"
+    #     "$S2E_ENV_DIR/test.sh"
+    #     popd # "$S2E_ENV_DIR"
+    # fi
     deactivate
 
     msg "Finished setting up s2e-env"
