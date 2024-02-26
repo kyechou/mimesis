@@ -7,11 +7,18 @@ Model extraction for stateful network functions.
 ### S2E
 
 You can set up the environment and S2E by running the following command. This
-will set up `s2e-env`, `s2e`, and build the VM images required for analysis. The
+will set up `s2e-env`, `s2e`, and build the VM image required for analysis. The
 results will be inside the `s2e.<distro>/` directory.
 
 ```sh
 $ ./depends/setup.sh
+```
+
+If the S2E source code in `src/s2e/` is modified, you can rebuild S2E with
+
+```sh 
+$ ./scripts/build.sh --s2e      # This only builds the changed sources.
+$ ./scripts/build.sh -r --s2e   # This rebuild most things.
 ```
 
 > **Note**<br/>
@@ -24,7 +31,7 @@ To build Mimesis and the example target programs, from which the models are
 extracted, please run:
 
 ```sh 
-$ ./scripts/docker-build.sh
+$ ./scripts/build.sh --target --stap
 ```
 
 The results will be inside the `build/` directory.
