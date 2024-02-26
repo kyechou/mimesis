@@ -242,19 +242,9 @@ setup_s2e() {
     "$PROJECT_DIR/scripts/build.sh" --s2e
 }
 
-build_s2e_image() {
-    # shellcheck source=/dev/null
-    source "$S2E_ENV_DIR/venv/bin/activate"
-    # shellcheck source=/dev/null
-    source "$S2E_DIR/s2e_activate"
-    s2e image_build ubuntu-22.04-x86_64
-    s2e_deactivate
-    deactivate
-}
-
 main() {
     DISTRO="$(get_distro)"
-    PROJECT_DIR="$(dirname "${SCRIPT_DIR}")"
+    PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     S2E_ENV_DIR="$PROJECT_DIR/s2e.$DISTRO/s2e-env"
     S2E_DIR="$PROJECT_DIR/s2e.$DISTRO/s2e"
 
@@ -315,7 +305,7 @@ main() {
 
     setup_s2e_env
     setup_s2e
-    build_s2e_image
+    "$PROJECT_DIR/scripts/build.sh" --s2e-image
     msg "Finished"
 }
 

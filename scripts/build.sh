@@ -24,7 +24,7 @@ usage() {
     --target            Build the target programs (default: off)
     --stap              Build the systemtap scripts (default: off)
     --s2e               Build the S2E with plugins (default: off)
-    --s2e-image         (TODO)
+    --s2e-image         Build the S2E VM image (default: off)
 EOF
 }
 
@@ -34,6 +34,7 @@ parse_args() {
     TARGET=0
     STAP=0
     S2E=0
+    S2E_IMAGE=0
 
     while :; do
         case "${1-}" in
@@ -61,6 +62,9 @@ parse_args() {
             ;;
         --s2e)
             S2E=1
+            ;;
+        --s2e-image)
+            S2E_IMAGE=1
             ;;
         -?*) die "Unknown option: $1\n$(usage)" ;;
         *) break ;;
@@ -162,6 +166,16 @@ build_s2e() {
     deactivate
 }
 
+build_s2e_image() {
+    # shellcheck source=/dev/null
+    source "$S2E_ENV_DIR/venv/bin/activate"
+    # shellcheck source=/dev/null
+    source "$S2E_DIR/s2e_activate"
+    s2e image_build ubuntu-22.04-x86_64
+    s2e_deactivate
+    deactivate
+}
+
 main() {
     parse_args "$@"
 
@@ -182,6 +196,10 @@ main() {
 
     if [[ $S2E -eq 1 ]]; then
         build_s2e
+    fi
+
+    if [[ $S2E_IMAGE -eq 1 ]]; then
+        build_s2e_image
     fi
 }
 
