@@ -53,6 +53,7 @@ parse_args() {
             TARGET=1
             STAP=1
             S2E=1
+            S2E_IMAGE=1
             ;;
         --target)
             TARGET=1
