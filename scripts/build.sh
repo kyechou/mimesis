@@ -18,7 +18,7 @@ usage() {
 
     Options:
     -h, --help          Print this message and exit
-    -r, --reconfigure   Reconfigure the build for target programs
+    -r, --reconfigure   Reconfigure the build
     -j, --parallel N    Number of parallel build tasks
     -a, --all           Build everything
     --target            Build the target programs (default: off)
@@ -161,7 +161,12 @@ build_s2e() {
     source "$S2E_ENV_DIR/venv/bin/activate"
     # shellcheck source=/dev/null
     source "$S2E_DIR/s2e_activate"
-    s2e build
+    if [[ $RECONF -eq 1 ]] || [[ ! -e "$S2E_DIR/build" ]]; then
+        s2e build
+    else
+        S2E_PREFIX="$S2E_DIR/install" \
+            make -C "$S2E_DIR/build" -f "$S2E_DIR/source/s2e/Makefile" install
+    fi
     s2e_deactivate
     deactivate
 }

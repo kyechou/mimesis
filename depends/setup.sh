@@ -239,7 +239,7 @@ setup_s2e() {
     # See https://github.com/s2e/s2e-env#prerequisites and
     # https://github.com/S2E/s2e-env#configuring
 
-    "$PROJECT_DIR/scripts/build.sh" --s2e
+    "$PROJECT_DIR/scripts/build.sh" -r --s2e
 }
 
 main() {
