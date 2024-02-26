@@ -4,8 +4,6 @@ FROM ubuntu:22.04
 
 LABEL org.opencontainers.image.authors="kychou2@illinois.edu"
 
-# Removed packages: file apt-utils
-
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -38,6 +36,12 @@ RUN dpkg --add-architecture i386 && \
     apt-file update
 
 RUN python3 -m pip install --upgrade pip setuptools wheel
+
+# In libtcg/CMakeLists.txt, pkg-config (pkg_check_modules) fails the find the
+# correct include directories. This is a workaround.
+RUN mkdir -p /usr/lib/glib-2.0/include && \
+    ln -s /usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h \
+    /usr/lib/glib-2.0/include/glibconfig.h
 
 # Add a user for building without root privileges
 RUN useradd -m -s /bin/bash builder

@@ -195,17 +195,18 @@ setup_s2e_env() {
 }
 
 setup_s2e() {
-    # shellcheck source=/dev/null
-    source "$S2E_ENV_DIR/venv/bin/activate"
     # If the s2e directory already exists, assume the initialization step was
     # done successfully last time, so skip the initialization. Alternatively, we
     # may pass `-f` to `s2e init` to force re-init the s2e directory.
     if [[ ! -e "$S2E_DIR" ]]; then
+        # shellcheck source=/dev/null
+        source "$S2E_ENV_DIR/venv/bin/activate"
         if [[ "$DISTRO" == "arch" ]]; then
             s2e init --skip-dependencies "$S2E_DIR"
         else
             s2e init "$S2E_DIR"
         fi
+        deactivate
     fi
 
     # Apply patches
@@ -227,22 +228,8 @@ setup_s2e() {
         -i "$PATCH_DIR/03-qemu-x11-window-type.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
-    if [ "$DISTRO" = "arch" ]; then
-        out="$(patch -d "$S2E_DIR/source/s2e" -Np1 \
-            -i "$PATCH_DIR/04-s2e-s2ecmd-atomic.patch")" ||
-            echo "$out" | grep -q 'Skipping patch' ||
-            die "$out"
-        out="$(patch -d "$S2E_DIR/source/s2e" -Np1 \
-            -i "$PATCH_DIR/05-s2e-s2ebios.patch")" ||
-            echo "$out" | grep -q 'Skipping patch' ||
-            die "$out"
-    fi
     out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
-        -i "$PATCH_DIR/06-s2e-guest-images-ubuntu-iso.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
-    out="$(patch -d "$S2E_DIR/source/s2e" -Np1 \
-        -i "$PATCH_DIR/07-guest-linux-launch-script.patch")" ||
+        -i "$PATCH_DIR/04-s2e-guest-images-ubuntu-iso.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
 
@@ -252,12 +239,7 @@ setup_s2e() {
     # See https://github.com/s2e/s2e-env#prerequisites and
     # https://github.com/S2E/s2e-env#configuring
 
-    # shellcheck source=/dev/null
-    source "$S2E_DIR/s2e_activate"
-    s2e build
-
-    s2e_deactivate
-    deactivate
+    "$PROJECT_DIR/scripts/build.sh" --s2e
 }
 
 build_s2e_image() {
