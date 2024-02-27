@@ -188,10 +188,6 @@ EOM
         -i "$PATCH_DIR/04-s2e-guest-images-ubuntu-iso.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
-    out="$(patch -d "$S2E_DIR/source/s2e-env" -Np1 \
-        -i "$PATCH_DIR/05-s2e-env-show-target-output.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
 
     # TODO:
     # Some commands (e.g., basic block coverage) requrie a disassembler, in
