@@ -1,2 +1,2 @@
 CompileFlags:
-  CompilationDatabase: s2e.arch/s2e/build/libs2e-release/x86_64-s2e-softmmu/libs2eplugins/
+  CompilationDatabase: s2e/s2e/build/libs2e-release/x86_64-s2e-softmmu/libs2eplugins/
