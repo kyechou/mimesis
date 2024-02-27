@@ -20,9 +20,10 @@ usage() {
     -h, --help          Print this message and exit
     -r, --reconfigure   Reconfigure the build
     -j, --parallel N    Number of parallel build tasks
-    -a, --all           Build everything
     --targets           Build the target programs (default: off)
     --stap              Build the systemtap scripts (default: off)
+    --s2e-env           Build s2e-env (default: off)
+    --s2e-init          Initialize S2E (default: off)
     --s2e               Build the S2E with plugins (default: off)
     --s2e-image         Build the S2E VM image (default: off)
 EOF
@@ -33,6 +34,8 @@ parse_args() {
     NUM_TASKS=$(nproc)
     TARGETS=0
     STAP=0
+    S2E_ENV=0
+    S2E_INIT=0
     S2E=0
     S2E_IMAGE=0
 
@@ -49,17 +52,17 @@ parse_args() {
         -r | --reconfigure)
             RECONF=1
             ;;
-        -a | --all)
-            TARGETS=1
-            STAP=1
-            S2E=1
-            S2E_IMAGE=1
-            ;;
         --targets)
             TARGETS=1
             ;;
         --stap)
             STAP=1
+            ;;
+        --s2e-env)
+            S2E_ENV=1
+            ;;
+        --s2e-init)
+            S2E_INIT=1
             ;;
         --s2e)
             S2E=1
@@ -72,41 +75,6 @@ parse_args() {
         esac
         shift
     done
-}
-
-#
-# Output a short name of the Linux distribution
-#
-get_distro() {
-    if test -f /etc/os-release; then # freedesktop.org and systemd
-        . /etc/os-release
-        echo "$NAME" | cut -f 1 -d ' ' | tr '[:upper:]' '[:lower:]'
-    elif type lsb_release >/dev/null 2>&1; then # linuxbase.org
-        lsb_release -si | tr '[:upper:]' '[:lower:]'
-    elif test -f /etc/lsb-release; then
-        # shellcheck source=/dev/null
-        source /etc/lsb-release
-        echo "$DISTRIB_ID" | tr '[:upper:]' '[:lower:]'
-    elif test -f /etc/arch-release; then
-        echo "arch"
-    elif test -f /etc/debian_version; then
-        # Older Debian, Ubuntu
-        echo "debian"
-    elif test -f /etc/SuSe-release; then
-        # Older SuSE
-        echo "opensuse"
-    elif test -f /etc/fedora-release; then
-        # Older Fedora
-        echo "fedora"
-    elif test -f /etc/redhat-release; then
-        # Older Red Hat, CentOS
-        echo "centos"
-    elif type uname >/dev/null 2>&1; then
-        # Fall back to uname
-        uname -s
-    else
-        echo -e "[!] Unrecognizable distribution" >&2
-    fi
 }
 
 build_target_programs() {
@@ -126,6 +94,7 @@ build_systemtap_programs() {
     local build_cmd
     build_cmd="$(
         cat <<-EOM
+        set -euo pipefail
         mkdir -p $PROJECT_DIR/build/src
         cd $PROJECT_DIR/build/src
         for stp_file in $PROJECT_DIR/src/*.stp; do 
@@ -140,54 +109,150 @@ EOM
         -c "$build_cmd"
 }
 
-build_s2e() {
-    # Use our own S2E in place of the manifest S2E repo.
-    rsync -a --delete-after "$PROJECT_DIR/src/s2e/" "$S2E_DIR/source/s2e"
+build_s2e_env() {
+    local S2E_ENV_URL='https://github.com/s2e/s2e-env.git'
+    local S2E_ENV_REV='81aeeaa58b827f0464530232a3e417d214d85dcb'
+
+    if [[ ! -e "$S2E_ENV_DIR" ]]; then
+        mkdir -p "$(dirname "$S2E_ENV_DIR")"
+        git clone "$S2E_ENV_URL" "$S2E_ENV_DIR"
+    fi
+    git -C "$S2E_ENV_DIR" reset --hard "$S2E_ENV_REV"
+
+    local image='kyechou/s2e-builder:latest'
+    local build_cmd
+    build_cmd="$(
+        cat <<-EOM
+        set -euo pipefail
+        python3 -m venv --upgrade-deps $S2E_ENV_DIR/venv
+        source $S2E_ENV_DIR/venv/bin/activate
+        python3 -m pip install build installer wheel
+        python3 -m build --wheel --outdir $S2E_ENV_DIR/dist $S2E_ENV_DIR
+        python3 -m pip install --compile $S2E_ENV_DIR/dist/*.whl
+        deactivate
+EOM
+    )"
+
+    docker pull "$image"
+    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+        -c "$build_cmd"
+}
+
+s2e_init() {
+    local image='kyechou/s2e-builder:latest'
+    local build_cmd=
+    if [[ $RECONF -eq 1 ]]; then
+        build_cmd="$(
+            cat <<-EOM
+            set -euo pipefail
+            source $S2E_ENV_DIR/venv/bin/activate
+            s2e init -f --skip-dependencies $S2E_DIR
+            deactivate
+EOM
+        )"
+    elif [[ ! -e "$S2E_DIR" ]]; then
+        build_cmd="$(
+            cat <<-EOM
+            set -euo pipefail
+            source $S2E_ENV_DIR/venv/bin/activate
+            s2e init --skip-dependencies $S2E_DIR
+            deactivate
+EOM
+        )"
+    fi
+
+    docker pull "$image"
+    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+        -c "$build_cmd"
 
     # Apply patches
     local PATCH_DIR="$PROJECT_DIR/depends/patches"
     local out
-    if [ "$DISTRO" = "arch" ]; then
-        out="$(patch -d "$S2E_DIR/source/s2e" -Np1 \
-            -i "$PATCH_DIR/05-s2e-s2ebios.patch")" ||
-            echo "$out" | grep -q 'Skipping patch' ||
-            die "$out"
-        out="$(patch -d "$S2E_DIR/source/s2e" -Np1 \
-            -i "$PATCH_DIR/06-s2e-s2ecmd-atomic.patch")" ||
-            echo "$out" | grep -q 'Skipping patch' ||
-            die "$out"
-    fi
+    out="$(patch -d "$S2E_DIR/source/scripts" -Np1 \
+        -i "$PATCH_DIR/00-fix-qemu-config.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+    out="$(patch -d "$S2E_DIR/source/qemu" -Np1 \
+        -i "$PATCH_DIR/01-qemu-glfs_ftruncate.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+    out="$(patch -d "$S2E_DIR/source/qemu" -Np1 \
+        -i "$PATCH_DIR/02-qemu-glfs_io_cbk.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+    out="$(patch -d "$S2E_DIR/source/qemu" -Np1 \
+        -i "$PATCH_DIR/03-qemu-x11-window-type.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+    out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
+        -i "$PATCH_DIR/04-s2e-guest-images-ubuntu-iso.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+    out="$(patch -d "$S2E_DIR/source/s2e-env" -Np1 \
+        -i "$PATCH_DIR/05-s2e-env-show-target-output.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
 
-    # shellcheck source=/dev/null
-    source "$S2E_ENV_DIR/venv/bin/activate"
-    # shellcheck source=/dev/null
-    source "$S2E_DIR/s2e_activate"
-    s2e build
-    # Alternative command:
-    # S2E_PREFIX="$S2E_DIR/install" make -C "$S2E_DIR/build" -f "$S2E_DIR/source/s2e/Makefile" install
-    s2e_deactivate
-    deactivate
+    # TODO:
+    # Some commands (e.g., basic block coverage) requrie a disassembler, in
+    # which case we need to configure ida or binary ninja in $S2E_DIR/s2e.yaml.
+    # See https://github.com/s2e/s2e-env#prerequisites and
+    # https://github.com/S2E/s2e-env#configuring
+}
+
+build_s2e() {
+    local image='kyechou/s2e-builder:latest'
+    local build_cmd
+    build_cmd="$(
+        cat <<-EOM
+        set -euo pipefail
+
+        # Use our own S2E in place of the manifest S2E repo.
+        rsync -a --delete-after $PROJECT_DIR/src/s2e/ $S2E_DIR/source/s2e
+
+        source $S2E_ENV_DIR/venv/bin/activate
+        source $S2E_DIR/s2e_activate
+        s2e build
+        s2e_deactivate
+        deactivate
+EOM
+    )"
+    docker pull "$image"
+    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+        -c "$build_cmd"
 }
 
 build_s2e_image() {
-    # shellcheck source=/dev/null
-    source "$S2E_ENV_DIR/venv/bin/activate"
-    # shellcheck source=/dev/null
-    source "$S2E_DIR/s2e_activate"
-    s2e image_build ubuntu-22.04-x86_64
-    s2e_deactivate
-    deactivate
+    local image='kyechou/s2e-builder:latest'
+    local build_cmd
+    build_cmd="$(
+        cat <<-EOM
+        set -euo pipefail
+        source $S2E_ENV_DIR/venv/bin/activate
+        source $S2E_DIR/s2e_activate
+        s2e image_build ubuntu-22.04-x86_64
+        s2e_deactivate
+        deactivate
+EOM
+    )"
+    docker pull "$image"
+    docker run -it --rm --privileged \
+        -u builder \
+        --group-add "$(getent group docker | cut -d: -f3)" \
+        -v "$PROJECT_DIR:$PROJECT_DIR" \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        "$image" \
+        -c "$build_cmd"
 }
 
 main() {
     parse_args "$@"
 
-    DISTRO="$(get_distro)"
     SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     BUILD_DIR="$PROJECT_DIR/build"
-    S2E_ENV_DIR="$PROJECT_DIR/s2e.$DISTRO/s2e-env"
-    S2E_DIR="$PROJECT_DIR/s2e.$DISTRO/s2e"
+    S2E_ENV_DIR="$PROJECT_DIR/s2e/s2e-env"
+    S2E_DIR="$PROJECT_DIR/s2e/s2e"
 
     if [[ $TARGETS -eq 1 ]]; then
         build_target_programs
@@ -195,6 +260,14 @@ main() {
 
     if [[ $STAP -eq 1 ]]; then
         build_systemtap_programs
+    fi
+
+    if [[ $S2E_ENV -eq 1 ]]; then
+        build_s2e_env
+    fi
+
+    if [[ $S2E_INIT -eq 1 ]]; then
+        s2e_init
     fi
 
     if [[ $S2E -eq 1 ]]; then

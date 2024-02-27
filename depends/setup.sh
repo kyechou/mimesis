@@ -168,87 +168,15 @@ aur_install() {
     rm -rf "$TARGET"
 }
 
-setup_s2e_env() {
-    local S2E_ENV_URL='https://github.com/s2e/s2e-env.git'
-    local S2E_ENV_REV='81aeeaa58b827f0464530232a3e417d214d85dcb'
-    local DIST_DIR="$S2E_ENV_DIR/dist"
-
-    if [[ ! -e "$S2E_ENV_DIR" ]]; then
-        git clone "$S2E_ENV_URL" "$S2E_ENV_DIR"
-    fi
-    git -C "$S2E_ENV_DIR" reset --hard "$S2E_ENV_REV"
-    python3 -m venv --upgrade-deps "$S2E_ENV_DIR/venv"
-    # shellcheck source=/dev/null
-    source "$S2E_ENV_DIR/venv/bin/activate"
-    python3 -m pip install build installer wheel
-    python3 -m build --wheel --outdir "$DIST_DIR" "$S2E_ENV_DIR"
-    python3 -m pip install --compile "$DIST_DIR"/*.whl
-    # # Tests
-    # if [[ ! -e "$S2E_ENV_DIR/venv-test" ]]; then
-    #     pushd "$S2E_ENV_DIR"
-    #     "$S2E_ENV_DIR/test.sh"
-    #     popd # "$S2E_ENV_DIR"
-    # fi
-    deactivate
-
-    msg "Finished setting up s2e-env"
-}
-
-setup_s2e() {
-    # If the s2e directory already exists, assume the initialization step was
-    # done successfully last time, so skip the initialization. Alternatively, we
-    # may pass `-f` to `s2e init` to force re-init the s2e directory.
-    if [[ ! -e "$S2E_DIR" ]]; then
-        # shellcheck source=/dev/null
-        source "$S2E_ENV_DIR/venv/bin/activate"
-        if [[ "$DISTRO" == "arch" ]]; then
-            s2e init --skip-dependencies "$S2E_DIR"
-        else
-            s2e init "$S2E_DIR"
-        fi
-        deactivate
-    fi
-
-    # Apply patches
-    local PATCH_DIR="$SCRIPT_DIR/patches"
-    local out
-    out="$(patch -d "$S2E_DIR/source/scripts" -Np1 \
-        -i "$PATCH_DIR/00-fix-qemu-config.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
-    out="$(patch -d "$S2E_DIR/source/qemu" -Np1 \
-        -i "$PATCH_DIR/01-qemu-glfs_ftruncate.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
-    out="$(patch -d "$S2E_DIR/source/qemu" -Np1 \
-        -i "$PATCH_DIR/02-qemu-glfs_io_cbk.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
-    out="$(patch -d "$S2E_DIR/source/qemu" -Np1 \
-        -i "$PATCH_DIR/03-qemu-x11-window-type.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
-    out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
-        -i "$PATCH_DIR/04-s2e-guest-images-ubuntu-iso.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
-
-    # TODO:
-    # Some commands (e.g., basic block coverage) requrie a disassembler, in
-    # which case we need to configure ida or binary ninja in $S2E_DIR/s2e.yaml.
-    # See https://github.com/s2e/s2e-env#prerequisites and
-    # https://github.com/S2E/s2e-env#configuring
-
-    "$PROJECT_DIR/scripts/build.sh" --s2e
-}
-
 main() {
+    #
+    # See the following places for required dependencies.
+    #   https://github.com/S2E/s2e-env/blob/master/s2e_env/dat/config.yaml
+    #   https://github.com/S2E/s2e/blob/master/Dockerfile
+    #   https://github.com/S2E/scripts/blob/master/Dockerfile.dist
+    #
     DISTRO="$(get_distro)"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-    S2E_ENV_DIR="$PROJECT_DIR/s2e.$DISTRO/s2e-env"
-    S2E_DIR="$PROJECT_DIR/s2e.$DISTRO/s2e"
-
-    mkdir -p "$PROJECT_DIR/s2e.$DISTRO"
 
     if [ "$DISTRO" = "arch" ]; then
         if ! pacman -Q paru >/dev/null 2>&1; then
@@ -290,7 +218,28 @@ main() {
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_deps=(build-essential curl git)
         s2e_env_deps=(git gcc python3 python3-dev python3-venv)
-        build_deps=(clang cmake ninja-build pkgconf)
+        s2e_deps=(
+            # Build dependencies
+            build-essential cmake wget curl git texinfo flex bison python3
+            python3-dev python3-pip unzip autoconf libtool automake
+            # Image build dependencies
+            libguestfs-tools genisoimage xz-utils docker.io p7zip-full
+            libhivex-bin jigdo-file cloud-image-utils
+            # S2E dependencies
+            libdwarf-dev libelf-dev libelf-dev:i386 libiberty-dev binutils-dev
+            libreadline-dev libboost-dev zlib1g-dev libjemalloc-dev nasm
+            pkg-config libmemcached-dev libvdeplug-dev libpq-dev libc6-dev-i386
+            libboost-system-dev libboost-serialization-dev libboost-regex-dev
+            libprotobuf-dev protobuf-compiler libbsd-dev libsigc++-2.0-dev
+            libglib2.0-dev libglib2.0-dev:i386 libglib2.0-0:i386 qemu mingw-w64
+            gcc-multilib g++-multilib libpixman-1-dev libtinfo5 libpng-dev
+            # s2e-env dependencies
+            lcov jq
+            # Testing dependencies
+            wine-stable
+            # Ubuntu 22
+            fuse3 python3-docutils libsdl1.2-dev
+        )
         style_deps=(clang-format yapf3)
         # depends=(time)
         depends=("${script_deps[@]}" "${s2e_env_deps[@]}" "${build_deps[@]}"
@@ -303,8 +252,9 @@ main() {
         die "Unsupported distribution: $DISTRO"
     fi
 
-    setup_s2e_env
-    setup_s2e
+    "$PROJECT_DIR/scripts/build.sh" --s2e-env
+    "$PROJECT_DIR/scripts/build.sh" --s2e-init
+    "$PROJECT_DIR/scripts/build.sh" --s2e
     "$PROJECT_DIR/scripts/build.sh" --s2e-image
     msg "Finished"
 }

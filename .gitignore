@@ -8,7 +8,7 @@
 
 # Intermediate build files
 build/
-s2e.*/
+s2e/
 
 # Coverage files
 *.gcov

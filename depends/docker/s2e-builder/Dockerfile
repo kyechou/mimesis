@@ -16,6 +16,10 @@ RUN dpkg --add-architecture i386 && \
     libc6-dev-i386 binutils-dev libboost-system-dev libboost-serialization-dev \
     libboost-regex-dev libbsd-dev libpixman-1-dev libglib2.0-dev \
     libglib2.0-dev:i386 python3-docutils libpng-dev gcc-multilib g++-multilib \
+    fuse3 wine-stable \
+    # S2E image build dependencies
+    libguestfs-tools genisoimage xz-utils docker.io p7zip-full libhivex-bin \
+    jigdo-file cloud-image-utils linux-image-generic \
     # S2E Z3 dependencies
     libgomp1 unzip \
     # python dependencies
@@ -23,11 +27,10 @@ RUN dpkg --add-architecture i386 && \
     python3-matplotlib python3-lxml python3-pip python-is-python3 \
     python3-setuptools python3-wheel \
     # other dependencies
-    netcat vim apport psmisc p7zip-full unzip libsvn1 libcurl4 gdb libssl-dev \
-    libstdc++6:i386 libpixman-1-0 libxml2-dev libicu-dev libxslt1-dev \
-    libffi-dev lsof libgettextpo0 libpcre3 libpcre3-dev libpcre3:i386 \
-    liblua5.1-0 liblua5.2-0 libsigc++-2.0-dev jq libpng16-16 time \
-    libsdl1.2-dev libmagic1 \
+    netcat vim apport psmisc libsvn1 libcurl4 gdb libssl-dev libstdc++6:i386 \
+    libpixman-1-0 libxml2-dev libicu-dev libxslt1-dev libffi-dev lsof \
+    libgettextpo0 libpcre3 libpcre3-dev libpcre3:i386 liblua5.1-0 liblua5.2-0 \
+    libsigc++-2.0-dev jq libpng16-16 time libsdl1.2-dev libmagic1 lcov rsync \
     # qemu dependencies
     $(apt-cache depends qemu-system-x86 | grep Depends | sed "s/.*ends:\ //" \
     | grep -v '<' | tr '\n' ' ') \
@@ -44,35 +47,11 @@ RUN mkdir -p /usr/lib/glib-2.0/include && \
     /usr/lib/glib-2.0/include/glibconfig.h
 
 # Add a user for building without root privileges
-RUN useradd -m -s /bin/bash builder
+RUN useradd -m -s /bin/bash builder && \
+    gpasswd -a builder kvm && \
+    gpasswd -a builder docker
+
+# Make sure the kernel image is readable. This is for building S2E images.
+RUN sudo chmod a+r /boot/vmlinu*
 
 ENTRYPOINT ["/bin/bash"]
-
-# # Build LLVM first (to avoid rebuilding it for every change)
-# RUN mkdir s2e
-# RUN mkdir s2e-build
-# COPY Makefile s2e/
-# COPY scripts/determine_clang_binary_suffix.py s2e/scripts/
-#
-# RUN cd s2e-build && \
-#     make -f ../s2e/Makefile S2E_PREFIX=/opt/s2e stamps/llvm-release-make
-#
-# # Build S2E dependencies
-# RUN cd s2e-build && \
-#     make -f ../s2e/Makefile S2E_PREFIX=/opt/s2e stamps/soci-make
-#
-# RUN cd s2e-build && \
-#     make -f ../s2e/Makefile S2E_PREFIX=/opt/s2e stamps/z3
-#
-# RUN cd s2e-build && \
-#     make -f ../s2e/Makefile S2E_PREFIX=/opt/s2e stamps/protobuf-make
-#
-# RUN cd s2e-build && \
-#     make -f ../s2e/Makefile S2E_PREFIX=/opt/s2e stamps/libdwarf-make
-#
-# RUN cd s2e-build && \
-#     make -f ../s2e/Makefile S2E_PREFIX=/opt/s2e stamps/rapidjson-make
-#
-# # Build and install everything else
-# RUN cd s2e-build && \
-#     make -f ../s2e/Makefile S2E_PREFIX=/opt/s2e install
