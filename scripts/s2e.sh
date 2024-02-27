@@ -103,6 +103,10 @@ EOM
         sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
             -e "s,^\(execute \"\${TARGET_PATH}\"\),$stap_cmds\1,"
     done
+
+    # Allow the analysis targets standard output/error
+    sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
+        -e 's,\(> */dev/null \+2> */dev/null\),# \1,'
 }
 
 run_s2e() {
