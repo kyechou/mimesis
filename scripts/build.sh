@@ -21,7 +21,7 @@ usage() {
     -r, --reconfigure   Reconfigure the build
     -j, --parallel N    Number of parallel build tasks
     -a, --all           Build everything
-    --target            Build the target programs (default: off)
+    --targets           Build the target programs (default: off)
     --stap              Build the systemtap scripts (default: off)
     --s2e               Build the S2E with plugins (default: off)
     --s2e-image         Build the S2E VM image (default: off)
@@ -31,7 +31,7 @@ EOF
 parse_args() {
     RECONF=0
     NUM_TASKS=$(nproc)
-    TARGET=0
+    TARGETS=0
     STAP=0
     S2E=0
     S2E_IMAGE=0
@@ -50,13 +50,13 @@ parse_args() {
             RECONF=1
             ;;
         -a | --all)
-            TARGET=1
+            TARGETS=1
             STAP=1
             S2E=1
             S2E_IMAGE=1
             ;;
-        --target)
-            TARGET=1
+        --targets)
+            TARGETS=1
             ;;
         --stap)
             STAP=1
@@ -189,7 +189,7 @@ main() {
     S2E_ENV_DIR="$PROJECT_DIR/s2e.$DISTRO/s2e-env"
     S2E_DIR="$PROJECT_DIR/s2e.$DISTRO/s2e"
 
-    if [[ $TARGET -eq 1 ]]; then
+    if [[ $TARGETS -eq 1 ]]; then
         build_target_programs
     fi
 
