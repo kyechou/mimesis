@@ -24,8 +24,8 @@ depends=(
     wine-stable
     # other dependencies
     fuse3 python-docutils sdl12-compat lib32-sdl12-compat pxz-git python-distro
-    # target programs dependencies
-    cmake ninja gcc clang yapf
+    # mimesis dependencies
+    cmake ninja gcc clang docker yapf
 )
 makedepends=()
 checkdepends=()

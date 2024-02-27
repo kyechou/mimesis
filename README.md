@@ -51,7 +51,7 @@ $ ./scripts/s2e.sh -n <target program> [<arguments>]
 For example,
 
 ```sh 
-$ ./scripts/s2e.sh -n ./build/targets/hello-world-1 
+$ ./scripts/s2e.sh -n ./build/targets/hello-world-1
 $ ./scripts/s2e.sh -n ./build/targets/demo-router-1 10
 ```
 

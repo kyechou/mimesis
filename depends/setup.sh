@@ -206,7 +206,7 @@ main() {
             fuse3 python-docutils sdl12-compat lib32-sdl12-compat pxz-git
             python-distro
         )
-        build_deps=(clang cmake ninja)
+        build_deps=(clang cmake ninja docker)
         style_deps=(clang yapf)
         # depends=(time)
         depends=("${script_deps[@]}" "${s2e_deps[@]}" "${build_deps[@]}"
@@ -240,6 +240,7 @@ main() {
             # Ubuntu 22
             fuse3 python3-docutils libsdl1.2-dev
         )
+        build_deps=(clang cmake ninja-build pkgconf docker.io)
         style_deps=(clang-format yapf3)
         # depends=(time)
         depends=("${script_deps[@]}" "${s2e_env_deps[@]}" "${build_deps[@]}"
