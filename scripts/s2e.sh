@@ -138,11 +138,11 @@ main() {
             link_path="$s2e_proj_dir/$mod_name"
             ln -s "$target_path" "$link_path"
 
-            # Patch bootstrap.sh to load systemtap kernel modules
-            local stap_cmds="\${S2ECMD} get $mod_name\n"
-            stap_cmds+="sudo staprun -o /dev/ttyS0 -D $mod_name\n"
-            sed -i "$s2e_proj_dir/bootstrap.sh" \
-                -e "s,^\(execute \"\${TARGET_PATH}\"\),$stap_cmds\1,"
+            # # Patch bootstrap.sh to load systemtap kernel modules
+            # local stap_cmds="\${S2ECMD} get $mod_name\n"
+            # stap_cmds+="sudo staprun -o /dev/ttyS0 -D $mod_name\n"
+            # sed -i "$s2e_proj_dir/bootstrap.sh" \
+            #     -e "s,^\(execute \"\${TARGET_PATH}\"\),$stap_cmds\1,"
         done
 
     fi
