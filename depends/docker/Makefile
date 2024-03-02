@@ -8,7 +8,7 @@ PUSH_TARGETS = $(TARGETS:%=%-push)
 CONTAINERS := $(shell docker ps -a -q)
 NON_TAGGED_IMGS := $(shell docker images | grep '<none>' | awk -F ' ' '{print $$3}')
 IMAGES := $(shell docker images -q)
-S2E_REPO_DIR := $(shell ls -d ../../s2e.* | head -n1)
+S2E_REPO_DIR := $(shell realpath ../../s2e)
 
 all: $(TARGETS)
 

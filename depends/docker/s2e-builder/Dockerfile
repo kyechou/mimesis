@@ -49,9 +49,10 @@ RUN mkdir -p /usr/lib/glib-2.0/include && \
 # Add a user for building without root privileges
 RUN useradd -m -s /bin/bash builder && \
     gpasswd -a builder kvm && \
-    gpasswd -a builder docker
+    gpasswd -a builder docker && \
+    echo 'builder ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Make sure the kernel image is readable. This is for building S2E images.
-RUN sudo chmod a+r /boot/vmlinu*
+RUN chmod a+r /boot/vmlinu*
 
 ENTRYPOINT ["/bin/bash"]

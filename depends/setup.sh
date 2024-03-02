@@ -168,6 +168,20 @@ aur_install() {
     rm -rf "$TARGET"
 }
 
+build_s2e_builder() {
+    pushd "$SCRIPT_DIR/docker" >/dev/null
+    make s2e-builder
+    make clean
+    popd >/dev/null
+}
+
+build_docker_images() {
+    pushd "$SCRIPT_DIR/docker" >/dev/null
+    make
+    make clean
+    popd >/dev/null
+}
+
 main() {
     #
     # See the following places for required dependencies.
@@ -253,10 +267,12 @@ main() {
         die "Unsupported distribution: $DISTRO"
     fi
 
+    build_s2e_builder
     "$PROJECT_DIR/scripts/build.sh" --s2e-env
     "$PROJECT_DIR/scripts/build.sh" --s2e-init
     "$PROJECT_DIR/scripts/build.sh" --s2e
     "$PROJECT_DIR/scripts/build.sh" --s2e-image
+    build_docker_images
     msg "Finished"
 }
 

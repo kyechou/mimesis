@@ -84,7 +84,6 @@ build_target_programs() {
         build_cmd+="$PROJECT_DIR/scripts/configure.sh && "
     fi
     build_cmd+="cmake --build '$BUILD_DIR' -j $NUM_TASKS"
-    docker pull "$image"
     docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
@@ -104,7 +103,6 @@ build_systemtap_programs() {
         chown -R $(id -u):$(id -g) $PROJECT_DIR/build/src
 EOM
     )"
-    docker pull "$image"
     docker run -it --rm -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
@@ -127,13 +125,10 @@ build_s2e_env() {
         python3 -m venv --upgrade-deps $S2E_ENV_DIR/venv
         source $S2E_ENV_DIR/venv/bin/activate
         python3 -m pip install build installer wheel
-        python3 -m build --wheel --outdir $S2E_ENV_DIR/dist $S2E_ENV_DIR
-        python3 -m pip install --compile $S2E_ENV_DIR/dist/*.whl
+        python3 -m pip install --compile $S2E_ENV_DIR
         deactivate
 EOM
     )"
-
-    docker pull "$image"
     docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
@@ -160,8 +155,6 @@ EOM
 EOM
         )"
     fi
-
-    docker pull "$image"
     docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 
@@ -186,6 +179,10 @@ EOM
         die "$out"
     out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
         -i "$PATCH_DIR/04-s2e-guest-images-ubuntu-iso.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+    out="$(patch -d "$S2E_DIR/source/s2e-linux-kernel" -Np1 \
+        -i "$PATCH_DIR/05-s2e-kernel-config.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
 
@@ -213,7 +210,6 @@ build_s2e() {
         deactivate
 EOM
     )"
-    docker pull "$image"
     docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
@@ -231,7 +227,6 @@ build_s2e_image() {
         deactivate
 EOM
     )"
-    docker pull "$image"
     docker run -it --rm --privileged \
         -u builder \
         --group-add "$(getent group docker | cut -d: -f3)" \
