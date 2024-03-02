@@ -12,6 +12,9 @@ die() {
 
 [ $UID -eq 0 ] && die 'Please run this script without root privilege'
 
+# This must be consistent with the variable in scripts/build.sh.
+MAX_INTFS=128
+
 usage() {
     cat <<EOF
 [!] Usage: $(basename "${BASH_SOURCE[0]}") [options] [<target program> [<arguments>]]
@@ -21,6 +24,7 @@ usage() {
     -n, --new           (Re)Create a new S2E project (followed by target program and arguments)
     -c, --clean         Clean up all analysis output
     -r, --run           Run the S2E analysis
+    -i, --intfs <N>     Number of interfaces to be spawned (default: 16)
     --rm                Remove all S2E projects
 EOF
 }
@@ -29,6 +33,7 @@ parse_args() {
     NEW=0
     CLEAN=0
     RUN=0
+    INTERFACES=16
     RM=0
 
     while :; do
@@ -46,6 +51,10 @@ parse_args() {
         -r | --run)
             RUN=1
             ;;
+        -i | --intfs)
+            INTERFACES="${2-}"
+            shift
+            ;;
         --rm)
             RM=1
             ;;
@@ -61,6 +70,10 @@ parse_args() {
         TARGET_PROGRAM=("$(realpath "$1")")
         shift
         TARGET_PROGRAM+=("$@")
+    fi
+
+    if [[ $INTERFACES -gt $MAX_INTFS ]]; then
+        die "The number of interfaces exceeds the current maximum $MAX_INTFS"
     fi
 }
 
@@ -82,7 +95,6 @@ new_project() {
         _deactivate
 EOM
     )"
-    docker pull "$image"
     docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$new_project_cmd"
 
@@ -107,20 +119,45 @@ EOM
     # Allow the analysis targets standard output/error
     sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
         -e 's,\(> */dev/null \+2> */dev/null\),# \1,'
+
+    # Disable QEMU snapshot
+    sed -i "$S2E_PROJ_DIR/launch-s2e.sh" \
+        -e 's,^QEMU_SNAPSHOT=.*$,QEMU_SNAPSHOT=,' \
+        -e 's,^QEMU_EXTRA_FLAGS=.*$,QEMU_EXTRA_FLAGS=,'
+
+    # TODO: Consider creating a snapshot to reduce the VM startup time for
+    # analyses. Example snapshotting command from s2e/guest-images:
+    # LD_PRELOAD=/home/kyc/cs/projects/mimesis/s2e/s2e/install/share/libs2e/libs2e-x86_64.so /home/kyc/cs/projects/mimesis/s2e/s2e/install/bin/qemu-system-x86_64 -enable-kvm -drive if=ide,index=0,file=/home/kyc/cs/projects/mimesis/s2e/s2e/images/ubuntu-22.04-x86_64/image.raw.s2e,format=s2e,cache=writeback -serial file:/home/kyc/cs/projects/mimesis/s2e/s2e/images/ubuntu-22.04-x86_64/serial_ready.txt -enable-serial-commands -net none -net nic,model=e1000 -m 256M -nographic -monitor null
+
 }
 
 run_s2e() {
     local image='kyechou/s2e-builder:latest'
+    local qemu_flags=()
+    for ((i = 1; i <= INTERFACES; ++i)); do
+        qemu_flags+=("-nic tap,ifname=tap$i,script=no,downscript=no,model=virtio-net-pci")
+    done
     local run_cmd
     run_cmd="$(
         cat <<-EOM
         set -euo pipefail
         pushd $S2E_PROJ_DIR >/dev/null
-        ./launch-s2e.sh
+        echo '==> Creating tap interfaces...'
+        for i in {1..$INTERFACES}; do
+            sudo ip tuntap add mode tap tap\$i
+        done
+
+        echo '==> Launching S2E...'
+        ./launch-s2e.sh ${qemu_flags[@]}
+
+        echo '==> Deleting tap interfaces...'
+        for i in {1..$INTERFACES}; do
+            sudo ip tuntap del mode tap tap\$i
+        done
         popd >/dev/null
 EOM
     )"
-    docker pull "$image"
+
     docker run -it --rm --privileged -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         "$image" \
@@ -146,7 +183,7 @@ main() {
     fi
 
     if [[ $CLEAN -eq 1 ]]; then
-        rm -rf "$S2E_PROJ_DIR/s2e-last" "$S2E_PROJ_DIR"/s2e-out-*
+        sudo rm -rf "$S2E_PROJ_DIR/s2e-last" "$S2E_PROJ_DIR"/s2e-out-*
     fi
 
     if [[ $RUN -eq 1 ]]; then

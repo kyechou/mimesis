@@ -12,6 +12,9 @@ die() {
 
 [ $UID -eq 0 ] && die 'Please run this script without root privilege'
 
+# This must be consistent with the variable in scripts/s2e.sh.
+MAX_INTFS=128
+
 usage() {
     cat <<EOF
 [!] Usage: $(basename "${BASH_SOURCE[0]}") [options]
@@ -185,6 +188,9 @@ EOM
         -i "$PATCH_DIR/05-s2e-kernel-config.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
+    # Change the maximum number of interfaces allowed in QEMU.
+    sed -i "$S2E_DIR/source/qemu/include/net/net.h" \
+        -e "s,^#define \+MAX_NICS .*$,#define MAX_NICS $MAX_INTFS,"
 
     # TODO:
     # Some commands (e.g., basic block coverage) requrie a disassembler, in
