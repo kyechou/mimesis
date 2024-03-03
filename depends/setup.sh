@@ -273,6 +273,7 @@ main() {
     "$PROJECT_DIR/scripts/build.sh" --s2e
     "$PROJECT_DIR/scripts/build.sh" --s2e-image
     build_docker_images
+    "$PROJECT_DIR/scripts/build.sh" --s2e
     msg "Finished"
 }
 
