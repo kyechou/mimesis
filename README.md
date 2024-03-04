@@ -45,14 +45,14 @@ directory to load *all* compiled systemtap kernel modules. You can manually edit
 the `bootstrap.sh` according to the needs.
 
 ```sh 
-$ ./scripts/s2e.sh -n <target program> [<arguments>]
+$ ./scripts/s2e.sh [-i <num_intfs>] -n <target program> [<arguments>]
 ```
 
 For example,
 
 ```sh 
 $ ./scripts/s2e.sh -n ./build/targets/hello-world-1
-$ ./scripts/s2e.sh -n ./build/targets/demo-router-1 10
+$ ./scripts/s2e.sh -n ./build/targets/demo-router-1
 ```
 
 Once an S2E project is created, you can run the analysis:
