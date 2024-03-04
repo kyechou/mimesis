@@ -79,11 +79,12 @@ function s2e_inject_symbolic_ip_optionlength(ipheader:long) %{
 # Probes.
 #
 
-# Instruct SystemTap to intercept the netif_receive_skb kernel function.
+# Intercept the netif_receive_skb kernel function.
 # NIC drivers call this function when they are ready to give the received packet
 # to the kernel.
+# See https://blog.packagecloud.io/monitoring-tuning-linux-networking-stack-receiving-data/
 probe kernel.function("netif_receive_skb") {
-    msg = sprintf("%s: len=%d datalen=%d\n", probefunc(), $skb->len, $skb->data_len)
+    msg = sprintf("[symbolic_ingress] %s: len=%d datalen=%d\n", probefunc(), $skb->len, $skb->data_len)
     s2e_message(msg)
     # s2e_inject_symbolic_ip_optionlength($skb->data)
 }
