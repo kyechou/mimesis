@@ -1,0 +1,91 @@
+#
+# See https://s2e.systems/docs/Tutorials/SystemTap/index.html
+#
+
+#
+# We use the embedded C support of SystemTap to access the S2E custom
+# instructions. A comprehensive set of such instructions can be found in
+# src/s2e/guest/common/include/s2e/s2e.h.
+#
+
+# Print a message to the S2E log.
+function s2e_message(message:string) %{
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x10, 0x00, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : : "a" (THIS->l_message));
+%}
+
+# Print a warning message to the S2E log and S2E stdout.
+function s2e_warning(message:string) %{
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x10, 0x01, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : : "a" (THIS->l_message));
+%}
+
+%{
+// Fill a buffer with unconstrained symbolic values.
+static inline void s2e_make_symbolic(void *buf, int size, const char *name) {
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x03, 0x00, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : : "a" (buf), "b" (size), "c" (name));
+}
+%}
+
+%{
+// Returns 1 if the given pointer points to symbolic memory, or 0 otherwise.
+static inline int s2e_is_symbolic(void *ptr, size_t size) {
+    int result;
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x04, 0x00, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : "=a" (result) : "a" (size), "c" (ptr)
+    );
+    return result;
+}
+%}
+
+# Terminate current state.
+function s2e_kill_state(status:long, message:string) %{
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x06, 0x00, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : : "a" ((uint32_t)THIS->status), "d" (THIS->message));
+%}
+
+
+#
+# Helper functions.
+#
+
+# Take a pointer to the IP header, and make the options length field symbolic.
+function s2e_inject_symbolic_ip_optionlength(ipheader:long) %{
+    uint8_t *data = (uint8_t*)((uintptr_t)(THIS->l_ipheader + 0));
+    uint8_t len;
+    s2e_make_symbolic(&len, 1, "ip_headerlength");
+    *data = *data & 0xF0;
+    *data = *data | ((len) & 0xF);
+%}
+
+
+#
+# Probes.
+#
+
+# Instruct SystemTap to intercept the netif_receive_skb kernel function.
+# NIC drivers call this function when they are ready to give the received packet
+# to the kernel.
+probe kernel.function("netif_receive_skb") {
+    msg = sprintf("%s: len=%d datalen=%d\n", probefunc(), $skb->len, $skb->data_len)
+    s2e_message(msg)
+    # s2e_inject_symbolic_ip_optionlength($skb->data)
+}
+
+# vim: ts=4 sw=4 et cms=#%s :
