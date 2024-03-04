@@ -16,10 +16,10 @@
 using namespace std;
 
 int open_existing_interface(const string &if_name) {
-    // We support IP packets for now. It is possible to change it to
+    // We support IP packets for now (ETH_P_IP). It is possible to change it to
     // `ETH_P_ALL` for sending/receiving all raw packets. Remember to make it
     // consistent with the `sockaddr_ll` structure below for `bind()`.
-    int sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_IP));
+    int sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sock == -1) {
         error("socket()", errno);
     }
@@ -35,7 +35,7 @@ int open_existing_interface(const string &if_name) {
     struct sockaddr_ll saddr;
     memset(&saddr, 0, sizeof(saddr));
     saddr.sll_family = AF_PACKET;
-    saddr.sll_protocol = htons(ETH_P_IP);
+    saddr.sll_protocol = htons(ETH_P_ALL);
     saddr.sll_ifindex = ifr.ifr_ifindex;
     saddr.sll_pkttype = PACKET_HOST;
 
