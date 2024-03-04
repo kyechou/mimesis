@@ -188,6 +188,13 @@ EOM
         -e "s,^\( *S2E_SYM_ARGS=\".*\"\),    sudo setcap \"$capabilities\" \"\${TARGET}\"\n\1," \
         -e "s,^\(execute \"\${TARGET_PATH}\"\),${systemtap_cmds}${if_cmds}\1,"
 
+    # Enable the custom plugin in s2e-config.lua
+    local plugin_cfg=
+    plugin_cfg+='add_plugin("Mimesis")\n'
+    plugin_cfg+='pluginsConfig.Mimesis = {}\n'
+    sed -i "$S2E_PROJ_DIR/s2e-config.lua" \
+        -e "s,^\(-- .* User-specific scripts begin here .*\)$,\1\n$plugin_cfg,"
+
     # Set the number of interfaces
     echo "$INTERFACES" >"$NUM_INTFS_FILE"
     chmod 400 "$NUM_INTFS_FILE"
