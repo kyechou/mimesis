@@ -92,8 +92,19 @@ create_qemu_snapshot() {
 
     local s2e_image_dir="$S2E_DIR/images/ubuntu-22.04-x86_64"
     local s2e_image="$s2e_image_dir/image.raw.s2e"
+    local snapshot_intfs_file="$s2e_image_dir/snapshot_interfaces.txt"
     local image='kyechou/s2e-builder:latest'
     local snapshot_cmd
+
+    # No need to create a snapshot if the number of interfaces is the same.
+    if [[ -e "$snapshot_intfs_file" ]]; then
+        local snapshot_intfs
+        snapshot_intfs=$(<"$snapshot_intfs_file")
+        if [[ $interfaces -eq $snapshot_intfs ]]; then
+            return 0
+        fi
+    fi
+
     snapshot_cmd="$(
         cat <<-EOM
         set -euo pipefail
@@ -118,6 +129,10 @@ EOM
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         "$image" \
         -c "$snapshot_cmd"
+
+    # Set the number of interfaces for the snapshot.
+    echo "$interfaces" >"$snapshot_intfs_file"
+    chmod 400 "$snapshot_intfs_file"
 }
 
 new_project() {
