@@ -188,12 +188,35 @@ EOM
         -e "s,^\( *S2E_SYM_ARGS=\".*\"\),    sudo setcap \"$capabilities\" \"\${TARGET}\"\n\1," \
         -e "s,^\(execute \"\${TARGET_PATH}\"\),${systemtap_cmds}${if_cmds}\1,"
 
-    # Enable the custom plugin in s2e-config.lua
+    # 1. Enable the custom plugin for Mimesis.
+    # 2. Disable unused Lua plugins.
     local plugin_cfg=
     plugin_cfg+='add_plugin("Mimesis")\n'
     plugin_cfg+='pluginsConfig.Mimesis = {}\n'
     sed -i "$S2E_PROJ_DIR/s2e-config.lua" \
-        -e "s,^\(-- .* User-specific scripts begin here .*\)$,\1\n$plugin_cfg,"
+        -e "s,^\(-- .* User-specific scripts begin here .*\)$,\1\n$plugin_cfg," \
+        -e 's,^\(.*add_plugin("Lua\(Bindings\|CoreEvents\)").*\)$,-- \1,'
+
+    # TODO: kleeArgs:
+    # --simplify-sym-indices \
+    # --solver-backend=z3 \
+    # --solver-optimize-divides \
+    # --use-forked-solver \
+    # --use-independent-solver \
+    # --external-calls=concrete \
+    # --suppress-external-warnings \
+    # \
+    # --libc=none \
+    # --search=dfs \
+    # --exit-on-error-type=ReportError \
+    # --max-memory=$((100 * 1024)) --max-time=1h \
+    # \
+    # --write-cov \
+    # --write-kqueries \
+    # --write-smt2s \
+    # --write-paths \
+    # --write-sym-paths \
+    # --write-test-info \
 
     # Set the number of interfaces
     echo "$INTERFACES" >"$NUM_INTFS_FILE"
