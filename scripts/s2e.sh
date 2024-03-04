@@ -142,8 +142,9 @@ EOM
         -c "$new_project_cmd"
 
     # Prepare systemtap kernel modules
+    local systemtap_cmds=
     for mod in "$BUILD_DIR"/src/*.ko; do
-        # Link all compiled kernel modules
+        # Soft-link all compiled kernel modules
         local target_path
         local mod_name
         local link_path
@@ -153,27 +154,30 @@ EOM
         ln -s "$target_path" "$link_path"
 
         # Patch bootstrap.sh to load systemtap kernel modules
-        local stap_cmds="\${S2ECMD} get $mod_name\n"
-        stap_cmds+="sudo staprun -o /dev/ttyS0 -D $mod_name\n"
-        sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
-            -e "s,^\(execute \"\${TARGET_PATH}\"\),$stap_cmds\1,"
+        systemtap_cmds+="\${S2ECMD} get $mod_name\n"
+        systemtap_cmds+="sudo staprun -o /dev/ttyS0 -D $mod_name\n"
     done
-
-    # Allow the analysis targets standard output/error
-    sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
-        -e 's,\(> */dev/null \+2> */dev/null\),# \1,'
 
     # Disable the default NIC flags. We will populate our NIC flags instead.
     sed -i "$S2E_PROJ_DIR/launch-s2e.sh" \
         -e 's,^QEMU_EXTRA_FLAGS=.*$,QEMU_EXTRA_FLAGS=,'
+
+    # 1. Allow the analysis target output to standard output/error.
+    # 2. Enable privileges for the target program. (Alternative: setuid)
+    # 3. Load systemtap kernel modules before the target program.
+    # 4. Turn on the interfaces before the target program.
+    local capabilities='cap_sys_admin+pe cap_net_admin+pe cap_net_raw+pe cap_sys_ptrace+pe'
+    local if_cmds="ip link | grep '^[0-9]\\\\+' | cut -d: -f2 | sed 's/ //g' | grep -v '^lo' | grep -v '^sit' | xargs -I{} sudo ip link set {} up\n"
+    sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
+        -e 's,\(> */dev/null \+2> */dev/null\),# \1,' \
+        -e "s,^\( *S2E_SYM_ARGS=\".*\"\),    sudo setcap \"$capabilities\" \"\${TARGET}\"\n\1," \
+        -e "s,^\(execute \"\${TARGET_PATH}\"\),${systemtap_cmds}${if_cmds}\1,"
 
     # Set the number of interfaces
     echo "$INTERFACES" >"$NUM_INTFS_FILE"
     chmod 400 "$NUM_INTFS_FILE"
     # Create a QEMU snapshot to reduce VM startup time.
     create_qemu_snapshot
-
-    # TODO: In bootstrap.sh, turn up the interfaces. This may not be necessary.
 }
 
 run_s2e() {
