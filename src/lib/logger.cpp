@@ -23,10 +23,10 @@ void error(const string &msg) {
     exit(-1);
 }
 
-void error(const string &msg, int err_num) {
+void error(const string &msg, int errnum) {
     locale_t locale = newlocale(LC_ALL_MASK, "", 0);
-    string err_str = strerror_l(err_num, locale);
+    string err_str = strerror_l(errnum, locale);
     freelocale(locale);
     cerr << "[error] " << msg << ": " << err_str << endl;
-    exit(err_num);
+    exit(errnum);
 }

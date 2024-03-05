@@ -1,5 +1,5 @@
-#ifndef MIMESIS_TARGETS_LIBS_NET_HPP
-#define MIMESIS_TARGETS_LIBS_NET_HPP
+#ifndef MIMESIS_SRC_LIBS_NET_HPP
+#define MIMESIS_SRC_LIBS_NET_HPP
 
 #include <string>
 #include <vector>
@@ -30,4 +30,4 @@ std::vector<Interface> open_existing_interfaces();
  */
 void close_interface_fds(const std::vector<Interface> &interfaces);
 
-#endif // MIMESIS_TARGETS_LIBS_NET_HPP
+#endif // MIMESIS_SRC_LIBS_NET_HPP
