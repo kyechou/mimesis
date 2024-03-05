@@ -198,65 +198,18 @@ main() {
         fi
 
         script_deps=(base-devel curl git)
-        s2e_deps=(
-            # s2e build dependencies
-            base-devel cmake wget curl git texinfo flex bison python python-pip
-            unzip autoconf libtool automake
-            # s2e dependencies
-            libdwarf libelf lib32-libelf binutils readline boost zlib jemalloc
-            nasm pkgconf memcached libmemcached-awesome vde2 postgresql glibc
-            lib32-glibc protobuf libbsd libsigc++ glib2 lib32-glib2 qemu-full
-            mingw-w64-binutils mingw-w64-crt mingw-w64-gcc mingw-w64-headers
-            mingw-w64-winpthreads gcc pixman ncurses lib32-ncurses
-            ncurses5-compat-libs lib32-ncurses5-compat-libs libpng
-            # s2e dependencies for building images
-            cloud-image-utils libguestfs
-            # (qemu): librbd xfsprogs rdma-core
-            # s2e-env dependencies
-            git gcc python lcov jq
-            # testing dependencies
-            wine-stable
-            # other dependencies
-            fuse3 python-docutils sdl12-compat lib32-sdl12-compat pxz-git
-            python-distro
-        )
         build_deps=(clang cmake ninja docker)
         style_deps=(clang yapf)
-        depends=("${script_deps[@]}" "${s2e_deps[@]}" "${build_deps[@]}"
-            "${style_deps[@]}")
+        depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
         paru -S --asdeps --needed --noconfirm --removemake "${depends[@]}"
         makepkg_arch mimesis-dev -srcfi --asdeps --noconfirm "$@"
 
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_deps=(build-essential curl git)
-        s2e_env_deps=(git gcc python3 python3-dev python3-venv)
-        s2e_deps=(
-            # Build dependencies
-            build-essential cmake wget curl git texinfo flex bison python3
-            python3-dev python3-pip unzip autoconf libtool automake
-            # Image build dependencies
-            libguestfs-tools genisoimage xz-utils docker.io p7zip-full
-            libhivex-bin jigdo-file cloud-image-utils
-            # S2E dependencies
-            libdwarf-dev libelf-dev libelf-dev:i386 libiberty-dev binutils-dev
-            libreadline-dev libboost-dev zlib1g-dev libjemalloc-dev nasm
-            pkg-config libmemcached-dev libvdeplug-dev libpq-dev libc6-dev-i386
-            libboost-system-dev libboost-serialization-dev libboost-regex-dev
-            libprotobuf-dev protobuf-compiler libbsd-dev libsigc++-2.0-dev
-            libglib2.0-dev libglib2.0-dev:i386 libglib2.0-0:i386 qemu mingw-w64
-            gcc-multilib g++-multilib libpixman-1-dev libtinfo5 libpng-dev
-            # s2e-env dependencies
-            lcov jq
-            # Testing dependencies
-            wine-stable
-            # Ubuntu 22
-            fuse3 python3-docutils libsdl1.2-dev
-        )
         build_deps=(clang cmake ninja-build pkgconf docker.io)
         style_deps=(clang-format yapf3)
-        depends=("${script_deps[@]}" "${s2e_env_deps[@]}" "${build_deps[@]}"
-            "${style_deps[@]}")
+        depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
         sudo apt update -y -qq
         sudo apt install -y -qq "${depends[@]}"

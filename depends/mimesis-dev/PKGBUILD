@@ -6,26 +6,7 @@ arch=('any')
 url="https://github.com/kyechou/mimesis"
 license=()
 depends=(
-    # s2e build dependencies
-    base-devel cmake wget curl git texinfo flex bison python python-pip unzip
-    autoconf libtool automake
-    # s2e dependencies
-    libdwarf libelf lib32-libelf binutils readline boost zlib jemalloc nasm
-    pkgconf memcached libmemcached-awesome vde2 postgresql glibc lib32-glibc
-    protobuf libbsd libsigc++ glib2 lib32-glib2 qemu-full mingw-w64-binutils
-    mingw-w64-crt mingw-w64-gcc mingw-w64-headers mingw-w64-winpthreads gcc
-    pixman ncurses lib32-ncurses ncurses5-compat-libs lib32-ncurses5-compat-libs
-    libpng
-    # s2e dependencies for building images
-    cloud-image-utils libguestfs
-    # s2e-env dependencies
-    git gcc python lcov jq
-    # testing dependencies
-    wine-stable
-    # other dependencies
-    fuse3 python-docutils sdl12-compat lib32-sdl12-compat pxz-git python-distro
-    # mimesis dependencies
-    cmake ninja gcc clang docker yapf
+    gcc clang cmake ninja docker yapf
 )
 makedepends=()
 checkdepends=()
