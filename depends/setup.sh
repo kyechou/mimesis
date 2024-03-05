@@ -168,9 +168,9 @@ aur_install() {
     rm -rf "$TARGET"
 }
 
-build_s2e_builder() {
+build_s2e_docker_image() {
     pushd "$SCRIPT_DIR/docker" >/dev/null
-    make s2e-builder
+    make s2e
     make clean
     popd >/dev/null
 }
@@ -222,7 +222,6 @@ main() {
         )
         build_deps=(clang cmake ninja docker)
         style_deps=(clang yapf)
-        # depends=(time)
         depends=("${script_deps[@]}" "${s2e_deps[@]}" "${build_deps[@]}"
             "${style_deps[@]}")
 
@@ -256,7 +255,6 @@ main() {
         )
         build_deps=(clang cmake ninja-build pkgconf docker.io)
         style_deps=(clang-format yapf3)
-        # depends=(time)
         depends=("${script_deps[@]}" "${s2e_env_deps[@]}" "${build_deps[@]}"
             "${style_deps[@]}")
 
@@ -267,7 +265,7 @@ main() {
         die "Unsupported distribution: $DISTRO"
     fi
 
-    build_s2e_builder
+    build_s2e_docker_image
     "$PROJECT_DIR/scripts/build.sh" --s2e-env
     "$PROJECT_DIR/scripts/build.sh" --s2e-init
     "$PROJECT_DIR/scripts/build.sh" --s2e

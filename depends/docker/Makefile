@@ -1,7 +1,6 @@
 TARGETS = \
-	target-builder \
-	stp-builder \
-	s2e-builder
+	s2e \
+	systemtap
 
 PUSH_TARGETS = $(TARGETS:%=%-push)
 
@@ -14,10 +13,10 @@ all: $(TARGETS)
 
 push: $(PUSH_TARGETS)
 
-target-builder s2e-builder:
+s2e:
 	docker build -t kyechou/$@:latest ./$@
 
-stp-builder:
+systemtap:
 	cp $(S2E_REPO_DIR)/s2e/images/.tmp-output/linux-4.9.3-x86_64/*.deb ./$@/
 	docker build -t kyechou/$@:latest ./$@
 

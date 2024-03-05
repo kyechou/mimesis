@@ -81,7 +81,7 @@ parse_args() {
 }
 
 build_target_programs() {
-    local image='kyechou/target-builder:latest'
+    local image='kyechou/s2e:latest'
     local build_cmd=''
     if [[ $RECONF -eq 1 ]] || [[ ! -e "$BUILD_DIR" ]]; then
         build_cmd+="$PROJECT_DIR/scripts/configure.sh && "
@@ -92,7 +92,7 @@ build_target_programs() {
 }
 
 build_systemtap_programs() {
-    local image='kyechou/stp-builder:latest'
+    local image='kyechou/systemtap:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -120,7 +120,7 @@ build_s2e_env() {
     fi
     git -C "$S2E_ENV_DIR" reset --hard "$S2E_ENV_REV"
 
-    local image='kyechou/s2e-builder:latest'
+    local image='kyechou/s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -137,7 +137,7 @@ EOM
 }
 
 s2e_init() {
-    local image='kyechou/s2e-builder:latest'
+    local image='kyechou/s2e:latest'
     local build_cmd=
     if [[ $RECONF -eq 1 ]]; then
         build_cmd="$(
@@ -196,7 +196,7 @@ EOM
 }
 
 build_s2e() {
-    local image='kyechou/s2e-builder:latest'
+    local image='kyechou/s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -217,7 +217,7 @@ EOM
 }
 
 build_s2e_image() {
-    local image='kyechou/s2e-builder:latest'
+    local image='kyechou/s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
