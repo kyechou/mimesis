@@ -21,9 +21,10 @@ int open_existing_interface(const std::string &if_name);
  * @brief Open a file descriptor for each existing interface, except for
  * loopback and SIT devices.
  *
+ * @param tap_only True to open only interfaces whose name starts with "tap".
  * @return A map of file descriptors to the corresponding interface names.
  */
-std::vector<Interface> open_existing_interfaces();
+std::vector<Interface> open_existing_interfaces(bool tap_only = false);
 
 /**
  * @brief Close the given interface file descriptors.

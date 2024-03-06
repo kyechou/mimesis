@@ -47,7 +47,7 @@ int open_existing_interface(const string &if_name) {
     return sock;
 }
 
-vector<Interface> open_existing_interfaces() {
+vector<Interface> open_existing_interfaces(bool tap_only) {
     vector<Interface> interfaces;
     struct if_nameindex *intfs = if_nameindex();
     if (!intfs) {
@@ -58,6 +58,9 @@ vector<Interface> open_existing_interfaces() {
          ++intf) {
         string if_name{intf->if_name};
         if (if_name.starts_with("lo") || if_name.starts_with("sit")) {
+            continue;
+        }
+        if (tap_only && !if_name.starts_with("tap")) {
             continue;
         }
         int fd = open_existing_interface(if_name);

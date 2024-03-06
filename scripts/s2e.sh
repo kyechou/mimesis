@@ -115,6 +115,9 @@ EOM
         systemtap_cmds+="sudo staprun -o /dev/ttyS0 -D $mod_name\n"
     done
 
+    # Soft-link the packet sender daemon.
+    ln -s "$(realpath "$BUILD_DIR/src/sender")" "$S2E_PROJ_DIR/"
+
     # Disable the default NIC flags. We will populate our NIC flags instead.
     sed -i "$S2E_PROJ_DIR/launch-s2e.sh" \
         -e 's,^QEMU_EXTRA_FLAGS=.*$,QEMU_EXTRA_FLAGS=,'
@@ -243,19 +246,19 @@ run_s2e() {
     local run_cmd
     run_cmd="$(
         cat <<-EOM
-        set -euo pipefail
+        set -uo pipefail
         pushd $S2E_PROJ_DIR >/dev/null
         for i in {1..$interfaces}; do
             sudo ip tuntap add mode tap tap\$i
+            sudo ip link set dev tap\$i up
         done
 
         mkdir $HOST_SHARE_DIR
-        set +e
+        ./sender &>$S2E_PROJ_DIR/sender.log &
         ./launch-s2e.sh ${qemu_flags[@]}
-        set -e
-        mv $HOST_SHARE_DIR/* $S2E_PROJ_DIR/
 
         for i in {1..$interfaces}; do
+            sudo ip link set dev tap\$i down
             sudo ip tuntap del mode tap tap\$i
         done
         popd >/dev/null
