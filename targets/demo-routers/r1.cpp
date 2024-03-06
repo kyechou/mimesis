@@ -20,14 +20,14 @@
 #include "lib/logger.hpp"
 #include "lib/net.hpp"
 
-#define PAYLOAD_LEN 128u
-
 using namespace std;
 
 struct Header {
     uint16_t seed; // egress port
     uint16_t len;  // payload length
 };
+
+#define PAYLOAD_LEN 128u
 
 struct Packet {
     Header hdr;
