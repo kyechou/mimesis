@@ -28,6 +28,25 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 
 #
+# third-party libraries
+#
+set(BUILD_EXAMPLE OFF)
+set(BUILD_TEST OFF)
+set(BUILD_SHARED_LIBS OFF)
+set(BUILD_STATIC_LIBS ON)
+set(USE_BOOST_FILESYSTEM OFF)
+add_subdirectory(third_party/inotify-cpp)
+get_target_property(inotify_compile_options inotify-cpp-static COMPILE_OPTIONS)
+list(APPEND inotify_compile_options -Wno-unused-private-field)
+set_target_properties(inotify-cpp-static PROPERTIES COMPILE_OPTIONS "${inotify_compile_options}")
+unset(BUILD_EXAMPLE)
+unset(BUILD_TEST)
+unset(BUILD_SHARED_LIBS)
+unset(BUILD_STATIC_LIBS)
+unset(USE_BOOST_FILESYSTEM)
+find_package(Threads)
+
+#
 # configure the sources and directories
 #
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -43,7 +62,11 @@ target_include_directories(mimesis_libs PUBLIC ${SRC_DIR})
 # build sender
 #
 add_executable(sender $<TARGET_OBJECTS:mimesis_libs> ${SRC_DIR}/sender.cpp)
-target_link_libraries(sender PRIVATE mimesis_libs)
+target_link_libraries(sender PRIVATE
+    mimesis_libs
+    Threads::Threads
+    inotify-cpp-static
+)
 
 #
 # build target programs

@@ -23,7 +23,7 @@ usage() {
     -h, --help          Print this message and exit
     -r, --reconfigure   Reconfigure the build
     -j, --parallel N    Number of parallel build tasks
-    --targets           Build the target programs (default: off)
+    --targets           Build the target and sender programs (default: off)
     --stap              Build the systemtap scripts (default: off)
     --s2e-env           Build s2e-env (default: off)
     --s2e-init          Initialize S2E (default: off)

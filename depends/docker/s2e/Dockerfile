@@ -10,6 +10,7 @@ RUN dpkg --add-architecture i386 && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     # Mimesis build dependencies
     apt-file build-essential curl git clang cmake ninja-build pkg-config sudo \
+    libboost-all-dev \
     # build dependencies
     ca-certificates sudo apt-file build-essential curl wget flex bison \
     lsb-release autoconf automake libtool gcc g++ cmake git mingw-w64 \

@@ -207,7 +207,7 @@ main() {
 
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_deps=(build-essential curl git)
-        build_deps=(clang cmake ninja-build pkgconf docker.io libboost-dev)
+        build_deps=(clang cmake ninja-build pkgconf docker.io libboost-all-dev)
         style_deps=(clang-format yapf3)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
