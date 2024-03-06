@@ -1,5 +1,4 @@
+!s2e/
 src/
 pkg/
 *.tar.*
-.coverage
-htmlcov
