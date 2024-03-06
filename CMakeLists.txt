@@ -28,11 +28,14 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 
 #
-# build library sources
+# configure the sources and directories
 #
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/lib)
-FILE(GLOB_RECURSE LIB_SRCS CONFIGURE_DEPENDS ${LIB_DIR}/*.cpp)
+
+#
+# build library sources
+#
+FILE(GLOB_RECURSE LIB_SRCS CONFIGURE_DEPENDS ${SRC_DIR}/lib/*.cpp)
 add_library(mimesis_libs OBJECT ${LIB_SRCS})
 target_include_directories(mimesis_libs PUBLIC ${SRC_DIR})
 
