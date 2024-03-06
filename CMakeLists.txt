@@ -30,6 +30,7 @@ endif()
 #
 # third-party libraries
 #
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # option() honors normal variables.
 set(BUILD_EXAMPLE OFF)
 set(BUILD_TEST OFF)
 set(BUILD_SHARED_LIBS OFF)
@@ -59,16 +60,7 @@ add_library(mimesis_libs OBJECT ${LIB_SRCS})
 target_include_directories(mimesis_libs PUBLIC ${SRC_DIR})
 
 #
-# build sender
+# build src and target programs
 #
-add_executable(sender $<TARGET_OBJECTS:mimesis_libs> ${SRC_DIR}/sender.cpp)
-target_link_libraries(sender PRIVATE
-    mimesis_libs
-    Threads::Threads
-    inotify-cpp-static
-)
-
-#
-# build target programs
-#
+add_subdirectory(src)
 add_subdirectory(targets)
