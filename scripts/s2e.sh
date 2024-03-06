@@ -250,7 +250,9 @@ run_s2e() {
         done
 
         mkdir $HOST_SHARE_DIR
+        set +e
         ./launch-s2e.sh ${qemu_flags[@]}
+        set -e
         mv $HOST_SHARE_DIR/* $S2E_PROJ_DIR/
 
         for i in {1..$interfaces}; do
