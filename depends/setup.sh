@@ -198,7 +198,7 @@ main() {
         fi
 
         script_deps=(base-devel curl git)
-        build_deps=(clang cmake ninja docker)
+        build_deps=(clang cmake ninja docker boost)
         style_deps=(clang yapf)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
@@ -207,7 +207,7 @@ main() {
 
     elif [ "$DISTRO" = "ubuntu" ]; then
         script_deps=(build-essential curl git)
-        build_deps=(clang cmake ninja-build pkgconf docker.io)
+        build_deps=(clang cmake ninja-build pkgconf docker.io libboost-dev)
         style_deps=(clang-format yapf3)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
@@ -224,7 +224,6 @@ main() {
     "$PROJECT_DIR/scripts/build.sh" --s2e
     "$PROJECT_DIR/scripts/build.sh" --s2e-image
     build_docker_images
-    "$PROJECT_DIR/scripts/build.sh" --s2e
     msg "Finished"
 }
 

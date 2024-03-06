@@ -6,7 +6,7 @@ arch=('any')
 url="https://github.com/kyechou/mimesis"
 license=()
 depends=(
-    gcc clang cmake ninja docker yapf
+    gcc clang cmake ninja docker boost yapf
 )
 makedepends=()
 checkdepends=()
