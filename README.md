@@ -30,7 +30,7 @@ To build Mimesis and the example target programs, from which the models are
 extracted, please run:
 
 ```sh 
-$ ./scripts/build.sh --targets --stap
+$ ./scripts/build.sh --targets --stap --s2e
 ```
 
 The results will be inside the `build/` directory.
