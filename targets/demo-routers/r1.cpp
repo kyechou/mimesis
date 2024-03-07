@@ -52,7 +52,7 @@ int main() {
 
     while (1) {
         // Read from the first interface
-        info("Reading a packet");
+        info("Reading a packet from " + interfaces.at(0).if_name);
         ssize_t nread = read(first_intf_fd, &pkt, sizeof(pkt));
         if (nread < 0) {
             close_interface_fds(interfaces);
