@@ -188,6 +188,10 @@ EOM
         -i "$PATCH_DIR/05-s2e-kernel-config.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
+    out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
+        -i "$PATCH_DIR/06-s2e-guest-images-additional-pkgs.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
     # Change the maximum number of interfaces allowed in QEMU.
     sed -i "$S2E_DIR/source/qemu/include/net/net.h" \
         -e "s,^#define \+MAX_NICS .*$,#define MAX_NICS $MAX_INTFS,"

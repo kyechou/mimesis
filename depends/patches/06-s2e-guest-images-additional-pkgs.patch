@@ -1,0 +1,12 @@
+diff --git a/Linux/ubuntu-preseed/user-data b/Linux/ubuntu-preseed/user-data
+index 3ec6352..4326b04 100644
+--- a/Linux/ubuntu-preseed/user-data
++++ b/Linux/ubuntu-preseed/user-data
+@@ -35,6 +35,7 @@ autoinstall:
+     - gettext
+     - libelf1
+     - tmux
++    - tcpdump
+ 
+ 
+   late-commands:
