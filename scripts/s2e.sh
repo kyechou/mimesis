@@ -84,7 +84,7 @@ new_project() {
     fi
 
     # Create a new s2e project
-    local image='kyechou/s2e-builder:latest'
+    local image='kyechou/s2e:latest'
     local new_project_cmd
     new_project_cmd="$(
         cat <<-EOM
@@ -191,7 +191,7 @@ create_qemu_snapshot() {
     local s2e_image_dir="$S2E_DIR/images/ubuntu-22.04-x86_64"
     local s2e_image="$s2e_image_dir/image.raw.s2e"
     local snapshot_intfs_file="$s2e_image_dir/snapshot_interfaces.txt"
-    local image='kyechou/s2e-builder:latest'
+    local image='kyechou/s2e:latest'
     local snapshot_cmd
 
     # No need to create a snapshot if the number of interfaces is the same.
@@ -237,7 +237,7 @@ EOM
 run_s2e() {
     local interfaces
     interfaces=$(<"$NUM_INTFS_FILE")
-    local image='kyechou/s2e-builder:latest'
+    local image='kyechou/s2e:latest'
     local qemu_flags=()
     for ((i = 1; i <= interfaces; ++i)); do
         qemu_flags+=("-nic tap,ifname=tap$i,script=no,downscript=no,model=e1000")
