@@ -245,6 +245,7 @@ run_s2e() {
         qemu_flags+=("-nic tap,ifname=tap$i,script=no,downscript=no,model=e1000")
     done
     qemu_flags+=("-virtfs local,path=$HOST_SHARE_DIR,mount_tag=host0,security_model=passthrough,id=host0")
+    local capabilities='cap_sys_admin+pe cap_net_admin+pe cap_net_raw+pe cap_sys_ptrace+pe'
     local run_cmd
     run_cmd="$(
         cat <<-EOM
@@ -255,8 +256,9 @@ run_s2e() {
             sudo ip link set dev tap\$i up
         done
 
-        mkdir $HOST_SHARE_DIR
+        sudo setcap '$capabilities' \$(realpath sender)
         ./sender &>$S2E_PROJ_DIR/sender.log &
+        sleep 1 # Wait for the sender to create the shared folder and file
         ./launch-s2e.sh ${qemu_flags[@]}
 
         for i in {1..$interfaces}; do
