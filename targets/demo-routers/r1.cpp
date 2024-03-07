@@ -12,6 +12,7 @@
 #include <linux/if_packet.h>
 #include <linux/if_tun.h>
 #include <net/if.h>
+#include <sstream>
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -34,6 +35,12 @@ struct Packet {
     char payload[PAYLOAD_LEN];
 };
 
+string to_string(const Packet &pkt) {
+    stringstream ss;
+    ss << "[Packet] seed: " << pkt.hdr.seed << ", len: " << pkt.hdr.len;
+    return ss.str();
+}
+
 int main() {
     vector<Interface> interfaces = open_existing_interfaces();
     if (interfaces.empty()) {
@@ -51,7 +58,7 @@ int main() {
             close_interface_fds(interfaces);
             error("Failed to read from " + interfaces.at(0).if_name, errno);
         }
-        info("Read " + to_string(nread) + " bytes");
+        info("Read " + to_string(nread) + " bytes - " + to_string(pkt));
 
         // Validate packet
         info("Validating packet");
