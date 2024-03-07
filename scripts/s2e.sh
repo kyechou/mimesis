@@ -133,10 +133,12 @@ EOM
     local mount_cmds=
     mount_cmds+="mkdir -p $guest_share_dir\n"
     mount_cmds+="sudo mount -t 9p -o trans=virtio -o version=9p2000.L host0 $guest_share_dir\n"
+    local ipv6_disable_cmd='sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 net.ipv6.conf.default.disable_ipv6=1'
     sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
         -e 's,\(> */dev/null \+2> */dev/null\),# \1,' \
         -e "s,^\( *S2E_SYM_ARGS=\".*\"\),    sudo setcap \"$capabilities\" \"\${TARGET}\"\n\1," \
-        -e "s,^\(execute \"\${TARGET_PATH}\"\),${systemtap_cmds}${if_cmds}${mount_cmds}\1,"
+        -e "s,^\(execute \"\${TARGET_PATH}\"\),${systemtap_cmds}${if_cmds}${mount_cmds}\1," \
+        -e "s,^\(.*sysctl -w debug.exception-trace.*\)$,\1\n$ipv6_disable_cmd,"
 
     # 1. Enable the custom plugin for Mimesis.
     # 2. Disable unused Lua plugins.
