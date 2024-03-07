@@ -21,7 +21,7 @@ usage() {
 
     Options:
     -h, --help          Print this message and exit
-    -i, --intfs <N>     Number of interfaces (default: 16) (only effective with --new)
+    -i, --intfs <N>     Number of interfaces (default: 8) (only effective with --new)
     -n, --new           (Re)Create a new S2E project (followed by target program and arguments)
     -c, --clean         Clean up all analysis output
     -r, --run           Run the S2E analysis
@@ -30,7 +30,7 @@ EOF
 }
 
 parse_args() {
-    INTERFACES=16
+    INTERFACES=8
     NEW=0
     CLEAN=0
     RUN=0
