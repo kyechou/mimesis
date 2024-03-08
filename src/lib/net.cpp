@@ -9,6 +9,7 @@
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <unordered_map>
 
 #include <PcapLiveDevice.h>
 #include <PcapLiveDeviceList.h>
@@ -48,6 +49,16 @@ vector<pcpp::PcapLiveDevice *> open_interfaces(bool tap_only) {
     }
 
     if_freenameindex(intfs);
+    return res;
+}
+
+unordered_map<string, pcpp::PcapLiveDevice *>
+open_interfaces_as_map(bool tap_only) {
+    unordered_map<string, pcpp::PcapLiveDevice *> res;
+    auto interfaces = open_interfaces(tap_only);
+    for (auto interface : interfaces) {
+        res.insert({interface->getName(), interface});
+    }
     return res;
 }
 
