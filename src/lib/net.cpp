@@ -15,36 +15,53 @@
 
 using namespace std;
 
-int open_existing_interface(const string &if_name) {
-    // We support IP packets for now (ETH_P_IP). It is possible to change it to
-    // `ETH_P_ALL` for sending/receiving all raw packets. Remember to make it
-    // consistent with the `sockaddr_ll` structure below for `bind()`.
+Interface open_interface(const string &if_name, unsigned int if_index) {
+    Interface intf;
+    struct ifreq ifr;
+
+    // We support all raw packets for now (ETH_P_ALL). It is possible to change
+    // it to `ETH_P_IP` for sending/receiving only IP packets. Remember to make
+    // it consistent with the `sockaddr_ll` structure below for `bind()`.
     int sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sock == -1) {
         error("socket()", errno);
     }
 
-    struct ifreq ifr;
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, if_name.c_str(), IFNAMSIZ - 1);
-    if (ioctl(sock, SIOCGIFINDEX, &ifr) == -1) {
-        close(sock);
-        error(if_name, errno);
+    // Get the interface index if it's not provided.
+    if (if_index == 0) {
+        memset(&ifr, 0, sizeof(ifr));
+        strncpy(ifr.ifr_name, if_name.c_str(), IFNAMSIZ - 1);
+        if (ioctl(sock, SIOCGIFINDEX, &ifr) == -1) {
+            close(sock);
+            error("Failed to get the interface index of " + if_name, errno);
+        }
+        if_index = ifr.ifr_ifindex;
     }
 
+    // Get the Ethernet address of the interface.
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, if_name.c_str(), IFNAMSIZ - 1);
+    if (ioctl(sock, SIOCGIFHWADDR, &ifr) == -1) {
+        close(sock);
+        error("Failed to get the mac address of " + if_name, errno);
+    }
+    memcpy(intf.hw_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
+
+    // Bind the socket fd to the interface.
     struct sockaddr_ll saddr;
     memset(&saddr, 0, sizeof(saddr));
     saddr.sll_family = AF_PACKET;
     saddr.sll_protocol = htons(ETH_P_ALL);
-    saddr.sll_ifindex = ifr.ifr_ifindex;
+    saddr.sll_ifindex = if_index;
     saddr.sll_pkttype = PACKET_HOST;
-
     if (bind(sock, (struct sockaddr *)&saddr, sizeof(saddr)) == -1) {
         close(sock);
         error("bind()", errno);
     }
 
-    return sock;
+    intf.fd = sock;
+    intf.if_name = if_name;
+    return intf;
 }
 
 vector<Interface> open_existing_interfaces(bool tap_only) {
@@ -63,8 +80,7 @@ vector<Interface> open_existing_interfaces(bool tap_only) {
         if (tap_only && !if_name.starts_with("tap")) {
             continue;
         }
-        int fd = open_existing_interface(if_name);
-        interfaces.push_back({fd, if_name});
+        interfaces.push_back(open_interface(if_name, intf->if_index));
     }
 
     if_freenameindex(intfs);
@@ -72,7 +88,7 @@ vector<Interface> open_existing_interfaces(bool tap_only) {
 }
 
 void close_interface_fds(const vector<Interface> &interfaces) {
-    for (const auto &[fd, if_name] : interfaces) {
+    for (const auto &[fd, if_name, hw_addr] : interfaces) {
         close(fd);
     }
 }

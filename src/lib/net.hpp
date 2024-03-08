@@ -1,21 +1,25 @@
 #ifndef MIMESIS_SRC_LIBS_NET_HPP
 #define MIMESIS_SRC_LIBS_NET_HPP
 
+#include <linux/if_ether.h>
 #include <string>
 #include <vector>
 
 struct Interface {
     int fd;
     std::string if_name;
+    unsigned char hw_addr[ETH_ALEN];
 };
 
 /**
  * @brief Bind an fd to the given existing interface.
  *
  * @param if_name Name of the interface to be opened.
+ * @param if_index Interface index of `if_name`. If it's not provided, it will
+ *                 be automatically derived from `if_name`.
  * @return The file descriptor bound to the device.
  */
-int open_existing_interface(const std::string &if_name);
+Interface open_interface(const std::string &if_name, unsigned int if_index = 0);
 
 /**
  * @brief Open a file descriptor for each existing interface, except for
