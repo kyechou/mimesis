@@ -1,16 +1,19 @@
 #include "sender.hpp"
 
 #include <algorithm>
-#include <cerrno>
 #include <chrono>
 #include <condition_variable>
-#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <mutex>
 #include <string>
 #include <unistd.h>
 #include <vector>
+
+#include <EthLayer.h>
+#include <MacAddress.h>
+#include <Packet.h>
+#include <RawPacket.h>
 
 #include "inotify-cpp/Event.h"
 #include "inotify-cpp/Notification.h"
@@ -21,51 +24,83 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-int main() {
-    // Variables for synchronization between threads.
+// Variables for synchronization between threads.
+class SyncVars {
+public:
     string dst_if_name;    // the interface to which packets are sent
     mutex mtx;             // lock for dst_if_name
     condition_variable cv; // for reading dst_if_name
+} vars;
 
-    // Packet sender.
-    auto packet_sender = [&dst_if_name, &mtx,
-                          &cv](chrono::milliseconds period) {
-        unique_lock<mutex> lck(mtx);
-        Packet packet;
-        memset(&packet, 0, sizeof(packet));
-        vector<Interface> interfaces =
-            open_existing_interfaces(/*tap_only=*/true);
+// Packet sender.
+void packet_sender(const chrono::milliseconds period) {
+    unique_lock<mutex> lck(vars.mtx);
+    auto interfaces = open_interfaces(/*tap_only=*/true);
 
-        if (interfaces.empty()) {
-            error("No interfaces available");
+    if (interfaces.empty()) {
+        error("No interfaces available");
+    }
+
+    info("Found " + to_string(interfaces.size()) + " interfaces");
+
+    while (1) {
+        vars.cv.wait_for(lck, period);
+        if (vars.dst_if_name.empty()) {
+            continue;
         }
 
-        info("Found " + to_string(interfaces.size()) + " interfaces");
-
-        while (1) {
-            cv.wait_for(lck, period);
-            if (dst_if_name.empty()) {
-                continue;
-            }
-
-            // Find the interface file descriptor.
-            auto if_it = find_if(interfaces.begin(), interfaces.end(),
-                                 [&dst_if_name](const Interface &i) {
-                                     return i.if_name == dst_if_name;
-                                 });
-            if (if_it == interfaces.end()) {
-                warn("Interface not found: " + dst_if_name);
-                continue;
-            }
-
-            info("Sending a packet to " + dst_if_name);
-            ssize_t nwrite = write(if_it->fd, &packet, sizeof(packet));
-            if (nwrite < 0) {
-                error("Failed to send packet", errno);
-            }
+        // Find the interface.
+        auto dev_it = find_if(interfaces.begin(), interfaces.end(),
+                              [](pcpp::PcapLiveDevice *const &dev) {
+                                  return dev->getName() == vars.dst_if_name;
+                              });
+        if (dev_it == interfaces.end()) {
+            warn("Interface not found: " + vars.dst_if_name);
+            continue;
         }
-    };
-    std::thread sending_thread(packet_sender, chrono::milliseconds(1000));
+        auto dev = *dev_it;
+
+        // Create a demo packet
+        pcpp::EthLayer eth_layer(
+            /*sourceMac=*/dev->getMacAddress(),
+            /*destMac=*/pcpp::MacAddress("aa:bb:cc:dd:ee:ff"),
+            /*etherType=*/0xdead);
+        pcpp::Packet packet;
+        packet.addLayer(&eth_layer);
+        packet.computeCalculateFields();
+        DemoHeader demo = {.seed = 1, .len = 42};
+        packet.getRawPacket()->reallocateData(
+            packet.getRawPacket()->getRawDataLen() + sizeof(demo));
+        packet.getRawPacket()->appendData((const unsigned char *)&demo,
+                                          sizeof(demo));
+
+        // TODO: Log the packet.
+
+        // Send the packet to the specified interface.
+        info("Sending a packet to " + dev->getName() + "\n" +
+             packet.toString());
+        if (!dev->sendPacket(*packet.getRawPacketReadOnly(),
+                             /*checkMtu=*/false)) {
+            error("Failed to send packet");
+        }
+    }
+}
+
+// File notification handler.
+void notification_handler(inotify::Notification notification) {
+    string if_name;
+    ifstream send_packet_file(notification.path);
+    send_packet_file >> if_name;
+    send_packet_file.close();
+    info("Notification handler read '" + if_name + "' interface name");
+
+    lock_guard<mutex> lck(vars.mtx);
+    vars.dst_if_name = if_name;
+    vars.cv.notify_all();
+};
+
+int main() {
+    thread sending_thread(packet_sender, chrono::milliseconds(1000));
 
     // Create the send_packet file.
     const fs::path send_packet_fn("/dev/shm/send_packet");
@@ -75,20 +110,6 @@ int main() {
     }
     send_packet.close();
 
-    // File notification handler.
-    auto notification_handler = [&dst_if_name, &mtx,
-                                 &cv](inotify::Notification notification) {
-        string if_name;
-        ifstream send_packet_file(notification.path);
-        send_packet_file >> if_name;
-        send_packet_file.close();
-        info("Notification handler read '" + if_name + "' interface name");
-
-        lock_guard<mutex> lck(mtx);
-        dst_if_name = if_name;
-        cv.notify_all();
-    };
-
     // Monitor the send_packet file on modification.
     auto events = {
         inotify::Event::modify, // File was modified.
@@ -97,8 +118,9 @@ int main() {
                         .watchFile(send_packet_fn)
                         .onEvents(events, notification_handler);
     info("Monitoring " + send_packet_fn.string());
-    std::thread monitor_thread([&notifier]() { notifier.run(); });
+    thread monitor_thread([&notifier]() { notifier.run(); });
 
+    // Join all threads.
     if (sending_thread.joinable()) {
         sending_thread.join();
     }

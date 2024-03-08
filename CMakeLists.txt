@@ -62,6 +62,9 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 FILE(GLOB_RECURSE LIB_SRCS CONFIGURE_DEPENDS ${SRC_DIR}/lib/*.cpp)
 add_library(mimesis_libs OBJECT ${LIB_SRCS})
 target_include_directories(mimesis_libs PUBLIC ${SRC_DIR})
+target_link_libraries(mimesis_libs PUBLIC
+    pcapplusplus::pcapplusplus
+)
 
 #
 # build src and target programs

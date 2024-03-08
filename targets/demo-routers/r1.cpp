@@ -5,81 +5,97 @@
  * header field of the packet.
  */
 
+#include <EthLayer.h>
 #include <arpa/inet.h>
-#include <cerrno>
 #include <cstdint>
 #include <fcntl.h>
 #include <linux/if_packet.h>
 #include <linux/if_tun.h>
 #include <net/if.h>
-#include <sstream>
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <vector>
+
+#include <PcapLiveDevice.h>
+#include <ProtocolType.h>
+#include <RawPacket.h>
 
 #include "lib/logger.hpp"
 #include "lib/net.hpp"
 
 using namespace std;
 
-struct Header {
+struct DemoHeader {
     uint16_t seed; // egress port
     uint16_t len;  // payload length
 };
 
-#define PAYLOAD_LEN 128u
+bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
+                             pcpp::PcapLiveDevice *dev,
+                             void *user_data) {
+    pcpp::Packet packet(raw_packet);
+    info("----------------------------------------");
+    info("Read " + to_string(raw_packet->getRawDataLen()) + " bytes from " +
+         dev->getName() + "\n" + packet.toString());
 
-struct Packet {
-    Header hdr;
-    char payload[PAYLOAD_LEN];
-};
+    // Validate packet
+    info("Validating packet...");
+    bool ill_formed = false;
+    if (packet.getFirstLayer()->getProtocol() != pcpp::Ethernet) {
+        warn("First protocol is not Ethernet");
+        ill_formed = true;
+    }
+    auto eth_layer = static_cast<pcpp::EthLayer *>(packet.getFirstLayer());
+    auto eth_payload_len = eth_layer->getLayerPayloadSize();
+    if (eth_payload_len < sizeof(DemoHeader)) {
+        warn("Ethernet payload len: " + to_string(eth_payload_len) +
+             " < DemoHeader size: " + to_string(sizeof(DemoHeader)));
+        ill_formed = true;
+    }
+    if (ill_formed) {
+        warn("Drop ill-formed packet");
+        return false; // continue capturing.
+    }
 
-string to_string(const Packet &pkt) {
-    stringstream ss;
-    ss << "[Packet] seed: " << pkt.hdr.seed << ", len: " << pkt.hdr.len;
-    return ss.str();
+    // Show the demo header
+    DemoHeader demo;
+    memcpy(&demo, packet.getFirstLayer()->getLayerPayload(), sizeof(demo));
+    info("Demo:: seed: " + to_string(demo.seed) +
+         ", len: " + to_string(demo.len));
+
+    // Derive the output port.
+    const auto &interfaces =
+        *static_cast<vector<pcpp::PcapLiveDevice *> *>(user_data);
+    uint16_t out_port = demo.seed;
+    if (out_port >= interfaces.size()) {
+        warn("Drop packet destined to non-existent port");
+        return false; // continue capturing.
+    }
+
+    // Response
+    info("Forward packet to egress port " + to_string(out_port) + ": " +
+         interfaces.at(out_port)->getName());
+    if (!interfaces.at(out_port)->sendPacket(*raw_packet,
+                                             /*checkMtu=*/false)) {
+        error("Failed to send packet");
+    }
+
+    return false; // Don't stop capturing.
 }
 
 int main() {
-    vector<Interface> interfaces = open_existing_interfaces();
+    auto interfaces = open_interfaces();
     if (interfaces.empty()) {
         error("No interfaces available");
     }
 
-    Packet pkt;
-    int first_intf_fd = interfaces.at(0).fd;
-
-    while (1) {
-        // Read from the first interface
-        info("Reading packets from " + interfaces.at(0).if_name);
-        ssize_t nread = read(first_intf_fd, &pkt, sizeof(pkt));
-        if (nread < 0) {
-            close_interface_fds(interfaces);
-            error("Failed to read from " + interfaces.at(0).if_name, errno);
-        }
-        info("Read " + to_string(nread) + " bytes - " + to_string(pkt));
-
-        // Validate packet
-        info("Validating packet");
-        if (static_cast<unsigned long>(nread) < sizeof(Header) ||
-            static_cast<unsigned long>(nread) != sizeof(Header) + pkt.hdr.len) {
-            warn("Drop ill-formed packet");
-            continue;
-        }
-
-        uint16_t out_port = pkt.hdr.seed;
-        if (out_port >= interfaces.size()) {
-            warn("Drop packet to non-existent port");
-            continue;
-        }
-
-        // Response
-        info("Forward packet to egress port " + to_string(out_port));
-        write(interfaces[out_port].fd, &pkt, nread);
-    }
+    // Read from the first interface
+    pcpp::PcapLiveDevice *dev = interfaces.at(0); // receiving device
+    info("Reading packets from " + dev->getName());
+    dev->startCaptureBlockingMode(onPacketArrivesBlocking,
+                                  /*userCookie=*/&interfaces, /*timeout=*/0);
 
     info("Bye");
-    close_interface_fds(interfaces);
+    close_interfaces(interfaces);
     return 0;
 }
