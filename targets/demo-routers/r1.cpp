@@ -15,6 +15,7 @@
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <vector>
 
 #include <PcapLiveDevice.h>
 #include <ProtocolType.h>
@@ -64,19 +65,19 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
          ", len: " + to_string(demo.len));
 
     // Derive the output port.
-    const auto &interfaces =
+    const auto &intfs =
         *static_cast<vector<pcpp::PcapLiveDevice *> *>(user_data);
     uint16_t out_port = demo.seed;
-    if (out_port >= interfaces.size()) {
+    if (out_port >= intfs.size()) {
         warn("Drop packet destined to non-existent port");
         return false; // continue capturing.
     }
 
     // Response
     info("Forward packet to egress port " + to_string(out_port) + ": " +
-         interfaces.at(out_port)->getName());
-    if (!interfaces.at(out_port)->sendPacket(*raw_packet,
-                                             /*checkMtu=*/false)) {
+         intfs.at(out_port)->getName());
+    if (!intfs.at(out_port)->sendPacket(*raw_packet,
+                                        /*checkMtu=*/false)) {
         error("Failed to send packet");
     }
 
@@ -84,18 +85,18 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
 }
 
 int main() {
-    auto interfaces = open_interfaces();
-    if (interfaces.empty()) {
+    vector<pcpp::PcapLiveDevice *> intfs = open_interfaces();
+    if (intfs.empty()) {
         error("No interfaces available");
     }
 
     // Read from the first interface
-    pcpp::PcapLiveDevice *dev = interfaces.at(0); // receiving device
+    pcpp::PcapLiveDevice *dev = intfs.at(0); // receiving device
     info("Reading packets from " + dev->getName());
     dev->startCaptureBlockingMode(onPacketArrivesBlocking,
-                                  /*userCookie=*/&interfaces, /*timeout=*/0);
+                                  /*userCookie=*/&intfs, /*timeout=*/0);
 
     info("Bye");
-    close_interfaces(interfaces);
+    close_interfaces(intfs);
     return 0;
 }
