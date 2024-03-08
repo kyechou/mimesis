@@ -1,18 +1,21 @@
 #include "sender.hpp"
 
-#include <algorithm>
 #include <chrono>
 #include <condition_variable>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unistd.h>
+#include <unordered_map>
 #include <vector>
 
 #include <EthLayer.h>
 #include <MacAddress.h>
 #include <Packet.h>
+#include <PcapFileDevice.h>
+#include <PcapLiveDevice.h>
 #include <RawPacket.h>
 
 #include "inotify-cpp/Event.h"
@@ -35,13 +38,19 @@ public:
 // Packet sender.
 void packet_sender(const chrono::milliseconds period) {
     unique_lock<mutex> lck(vars.mtx);
-    auto interfaces = open_interfaces(/*tap_only=*/true);
 
-    if (interfaces.empty()) {
+    // Open interfaces.
+    auto intfs = open_interfaces_as_map(/*tap_only=*/true);
+    if (intfs.empty()) {
         error("No interfaces available");
     }
+    info("Found " + to_string(intfs.size()) + " interfaces");
 
-    info("Found " + to_string(interfaces.size()) + " interfaces");
+    // Create pcap file for recording packets.
+    pcpp::PcapFileWriterDevice pcap("sender.pcap");
+    if (!pcap.open()) {
+        error("Failed to open " + pcap.getFileName());
+    }
 
     while (1) {
         vars.cv.wait_for(lck, period);
@@ -50,15 +59,12 @@ void packet_sender(const chrono::milliseconds period) {
         }
 
         // Find the interface.
-        auto dev_it = find_if(interfaces.begin(), interfaces.end(),
-                              [](pcpp::PcapLiveDevice *const &dev) {
-                                  return dev->getName() == vars.dst_if_name;
-                              });
-        if (dev_it == interfaces.end()) {
+        auto dev_it = intfs.find(vars.dst_if_name);
+        if (dev_it == intfs.end()) {
             warn("Interface not found: " + vars.dst_if_name);
             continue;
         }
-        auto dev = *dev_it;
+        auto dev = dev_it->second;
 
         // Create a demo packet
         pcpp::EthLayer eth_layer(
@@ -74,7 +80,9 @@ void packet_sender(const chrono::milliseconds period) {
         packet.getRawPacket()->appendData((const unsigned char *)&demo,
                                           sizeof(demo));
 
-        // TODO: Log the packet.
+        // Log the packet.
+        pcap.writePacket(*packet.getRawPacketReadOnly());
+        pcap.flush();
 
         // Send the packet to the specified interface.
         info("Sending a packet to " + dev->getName() + "\n" +

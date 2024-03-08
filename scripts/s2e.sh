@@ -259,8 +259,10 @@ run_s2e() {
         sudo setcap '$capabilities' \$(realpath sender)
         ./sender &>$S2E_PROJ_DIR/sender.log &
         sleep 1 # Wait for the sender to create the shared file
+
         mkdir -p $HOST_SHARE_DIR
         ./launch-s2e.sh ${qemu_flags[@]}
+        tcpdump -e -xx -r sender.pcap &>$S2E_PROJ_DIR/sender-pcap.log
 
         for i in {1..$interfaces}; do
             sudo ip link set dev tap\$i down
