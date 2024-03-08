@@ -46,6 +46,10 @@ unset(BUILD_SHARED_LIBS)
 unset(BUILD_STATIC_LIBS)
 unset(USE_BOOST_FILESYSTEM)
 find_package(Threads)
+find_package(Boost REQUIRED
+    program_options
+)
+find_package(pcapplusplus REQUIRED)
 
 #
 # configure the sources and directories

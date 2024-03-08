@@ -33,6 +33,7 @@ parse_args() {
     DEBUG=0
     CLEAN=0
     COMPILER=clang
+    BOOTSTRAP_FLAGS=()
 
     while :; do
         case "${1-}" in
@@ -42,6 +43,7 @@ parse_args() {
             ;;
         -d | --debug)
             DEBUG=1
+            BOOTSTRAP_FLAGS+=("-d")
             ;;
         --clean)
             CLEAN=1
@@ -57,6 +59,8 @@ parse_args() {
         esac
         shift
     done
+
+    BOOTSTRAP_FLAGS+=("--compiler" "$COMPILER")
 }
 
 reset_files() {
@@ -72,12 +76,17 @@ reset_files() {
 }
 
 prepare_flags() {
+    local toolchain_file
+    toolchain_file="$(get_generators_dir)/conan_toolchain.cmake"
     CMAKE_ARGS=(
+        "-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
         "-DCMAKE_GENERATOR=Ninja"
     )
 
     if [[ $DEBUG -ne 0 ]]; then
         CMAKE_ARGS+=('-DCMAKE_BUILD_TYPE=Debug')
+    else
+        CMAKE_ARGS+=('-DCMAKE_BUILD_TYPE=Release')
     fi
     if [[ "$COMPILER" = 'clang' ]]; then
         CMAKE_ARGS+=('-DCMAKE_C_COMPILER=clang' '-DCMAKE_CXX_COMPILER=clang++')
@@ -93,6 +102,12 @@ main() {
     parse_args "$@"
     # Reset intermediate files if needed
     reset_files
+    # Bootstrap the python and conan environment
+    set +u
+    source "$SCRIPT_DIR/bootstrap.sh"
+    bootstrap "${BOOTSTRAP_FLAGS[@]}"
+    # Activate the conan environment
+    activate_conan_env
     # Prepare build parameters
     prepare_flags
 

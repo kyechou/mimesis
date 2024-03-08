@@ -1,0 +1,16 @@
+[requires]
+boost/1.82.0
+pcapplusplus/22.11
+# libnet/1.2
+
+[tool_requires]
+cmake/[>=3.26]
+ninja/1.11.1
+pkgconf/1.9.3
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout

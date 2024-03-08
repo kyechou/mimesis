@@ -86,6 +86,8 @@ build_target_programs() {
     if [[ $RECONF -eq 1 ]] || [[ ! -e "$BUILD_DIR" ]]; then
         build_cmd+="$PROJECT_DIR/scripts/configure.sh && "
     fi
+    build_cmd+="source '$SCRIPT_DIR/bootstrap.sh' && "
+    build_cmd+="activate_conan_env && "
     build_cmd+="cmake --build '$BUILD_DIR' -j $NUM_TASKS"
     docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
