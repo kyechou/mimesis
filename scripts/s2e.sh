@@ -127,6 +127,7 @@ EOM
     # 3. Load systemtap kernel modules before the target program.
     # 4. Turn on the interfaces before the target program.
     # 5. Mount the 9P_FS virtio file system.
+    # 6. Disable IPv6.
     local capabilities='cap_sys_admin+pe cap_net_admin+pe cap_net_raw+pe cap_sys_ptrace+pe'
     local if_cmds="ip link | grep '^[0-9]\\\\+' | cut -d: -f2 | sed 's/ //g' | grep -v '^lo' | grep -v '^sit' | xargs -I{} sudo ip link set {} up\n"
     local guest_share_dir='/dev/shm/mimesis'
@@ -212,7 +213,6 @@ create_qemu_snapshot() {
             sudo ip tuntap add mode tap tap\$i
         done
 
-        mkdir $HOST_SHARE_DIR
         LD_PRELOAD=$S2E_INSTALL_DIR/share/libs2e/libs2e-x86_64.so \
             $S2E_INSTALL_DIR/bin/qemu-system-x86_64 \
             -enable-kvm -m 256M -nographic -monitor null \
@@ -258,7 +258,8 @@ run_s2e() {
 
         sudo setcap '$capabilities' \$(realpath sender)
         ./sender &>$S2E_PROJ_DIR/sender.log &
-        sleep 1 # Wait for the sender to create the shared folder and file
+        sleep 1 # Wait for the sender to create the shared file
+        mkdir -p $HOST_SHARE_DIR
         ./launch-s2e.sh ${qemu_flags[@]}
 
         for i in {1..$interfaces}; do
