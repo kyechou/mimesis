@@ -262,7 +262,11 @@ run_s2e() {
 
         mkdir -p $HOST_SHARE_DIR
         ./launch-s2e.sh ${qemu_flags[@]}
-        tcpdump -e -xx -r sender.pcap &>$S2E_PROJ_DIR/sender-pcap.log
+
+        # Dump all pcap files into text form
+        for pcap in *.pcap; do
+            tcpdump -e -xx -r \$pcap &>$S2E_PROJ_DIR/\$pcap.log
+        done
 
         for i in {1..$interfaces}; do
             sudo ip link set dev tap\$i down
