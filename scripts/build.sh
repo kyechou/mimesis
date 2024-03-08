@@ -82,14 +82,23 @@ parse_args() {
 
 build_target_programs() {
     local image='kyechou/s2e:latest'
-    local build_cmd=''
-    if [[ $RECONF -eq 1 ]] || [[ ! -e "$BUILD_DIR" ]]; then
-        build_cmd+="$PROJECT_DIR/scripts/configure.sh && "
-    fi
-    build_cmd+="source '$SCRIPT_DIR/bootstrap.sh' && "
-    build_cmd+="activate_conan_env && "
-    build_cmd+="cmake --build '$BUILD_DIR' -j $NUM_TASKS"
-    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+    local build_cmd
+    build_cmd="$(
+        cat <<-EOM
+        set -eo pipefail
+        export CONAN_HOME='$HOME/.conan2'
+        if [[ $RECONF -eq 1 ]] || [[ ! -e '$BUILD_DIR' ]]; then
+            '$PROJECT_DIR/scripts/configure.sh'
+        fi
+        source '$SCRIPT_DIR/bootstrap.sh'
+        activate_conan_env
+        cmake --build '$BUILD_DIR' -j $NUM_TASKS
+EOM
+    )"
+    docker run -it --rm -u builder \
+        -v "$PROJECT_DIR:$PROJECT_DIR" \
+        -v "$HOME/.conan2:$HOME/.conan2" \
+        "$image" \
         -c "$build_cmd"
 }
 
