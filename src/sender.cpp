@@ -35,6 +35,25 @@ public:
     condition_variable cv; // for reading dst_if_name
 } vars;
 
+// Create a demo packet.
+pcpp::Packet create_demo_packet(pcpp::PcapLiveDevice *egress_intf) {
+    auto eth_layer = new pcpp::EthLayer(
+        /*sourceMac=*/egress_intf->getMacAddress(),
+        /*destMac=*/pcpp::MacAddress("aa:bb:cc:dd:ee:ff"),
+        /*etherType=*/0xdead);
+    pcpp::Packet packet;
+    if (!packet.addLayer(eth_layer, /*ownInPacket=*/true)) {
+        error("Failed to add the Ethernet layer");
+    }
+    packet.computeCalculateFields();
+    DemoHeader demo = {.seed = htons(1), .len = htons(42)};
+    packet.getRawPacket()->reallocateData(
+        packet.getRawPacket()->getRawDataLen() + sizeof(demo));
+    packet.getRawPacket()->appendData((const unsigned char *)&demo,
+                                      sizeof(demo));
+    return packet;
+}
+
 // Packet sender.
 void packet_sender(const chrono::milliseconds period) {
     unique_lock<mutex> lck(vars.mtx);
@@ -66,19 +85,8 @@ void packet_sender(const chrono::milliseconds period) {
         }
         auto dev = dev_it->second;
 
-        // Create a demo packet
-        pcpp::EthLayer eth_layer(
-            /*sourceMac=*/dev->getMacAddress(),
-            /*destMac=*/pcpp::MacAddress("aa:bb:cc:dd:ee:ff"),
-            /*etherType=*/0xdead);
-        pcpp::Packet packet;
-        packet.addLayer(&eth_layer);
-        packet.computeCalculateFields();
-        DemoHeader demo = {.seed = htons(1), .len = htons(42)};
-        packet.getRawPacket()->reallocateData(
-            packet.getRawPacket()->getRawDataLen() + sizeof(demo));
-        packet.getRawPacket()->appendData((const unsigned char *)&demo,
-                                          sizeof(demo));
+        // Craft the packet to send.
+        auto packet = create_demo_packet(dev);
 
         // Log the packet.
         pcap.writePacket(*packet.getRawPacketReadOnly());
