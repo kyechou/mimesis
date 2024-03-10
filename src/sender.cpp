@@ -4,8 +4,8 @@
 #include <condition_variable>
 #include <filesystem>
 #include <fstream>
-#include <memory>
 #include <mutex>
+#include <netinet/in.h>
 #include <string>
 #include <unistd.h>
 #include <unordered_map>
@@ -74,7 +74,7 @@ void packet_sender(const chrono::milliseconds period) {
         pcpp::Packet packet;
         packet.addLayer(&eth_layer);
         packet.computeCalculateFields();
-        DemoHeader demo = {.seed = 1, .len = 42};
+        DemoHeader demo = {.seed = htons(1), .len = htons(42)};
         packet.getRawPacket()->reallocateData(
             packet.getRawPacket()->getRawDataLen() + sizeof(demo));
         packet.getRawPacket()->appendData((const unsigned char *)&demo,

@@ -5,18 +5,19 @@
  * header field of the packet.
  */
 
-#include <EthLayer.h>
 #include <arpa/inet.h>
 #include <cstdint>
 #include <fcntl.h>
 #include <linux/if_packet.h>
 #include <linux/if_tun.h>
 #include <net/if.h>
+#include <netinet/in.h>
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <vector>
 
+#include <EthLayer.h>
 #include <PcapLiveDevice.h>
 #include <ProtocolType.h>
 #include <RawPacket.h>
@@ -37,7 +38,7 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     pcpp::Packet packet(raw_packet);
     info("----------------------------------------");
     info("Read " + to_string(raw_packet->getRawDataLen()) + " bytes from " +
-         dev->getName() + "\n" + packet.toString());
+         dev->getName());
 
     // Validate packet
     info("Validating packet...");
@@ -47,6 +48,12 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
         ill_formed = true;
     }
     auto eth_layer = static_cast<pcpp::EthLayer *>(packet.getFirstLayer());
+    auto ethertype = eth_layer->getEthHeader()->etherType;
+    if (ethertype != 0xdead) {
+        warn("Ethertype does not match 0xdead (57005): " +
+             to_string(ethertype));
+        ill_formed = true;
+    }
     auto eth_payload_len = eth_layer->getLayerPayloadSize();
     if (eth_payload_len < sizeof(DemoHeader)) {
         warn("Ethernet payload len: " + to_string(eth_payload_len) +
@@ -58,9 +65,11 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
         return false; // continue capturing.
     }
 
-    // Show the demo header
+    // Read the demo header
     DemoHeader demo;
     memcpy(&demo, packet.getFirstLayer()->getLayerPayload(), sizeof(demo));
+    demo.seed = ntohs(demo.seed);
+    demo.len = ntohs(demo.len);
     info("Demo:: seed: " + to_string(demo.seed) +
          ", len: " + to_string(demo.len));
 
