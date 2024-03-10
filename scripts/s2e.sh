@@ -126,19 +126,14 @@ EOM
     # 2. Enable privileges for the target program. (Alternative: setuid)
     # 3. Load systemtap kernel modules before the target program.
     # 4. Turn on the interfaces before the target program.
-    # 5. Mount the 9P_FS virtio file system.
-    # 6. Disable IPv6.
+    # 5. Disable IPv6.
     local capabilities='cap_sys_admin+pe cap_net_admin+pe cap_net_raw+pe cap_sys_ptrace+pe'
     local if_cmds="ip link | grep '^[0-9]\\\\+' | cut -d: -f2 | sed 's/ //g' | grep -v '^lo' | grep -v '^sit' | xargs -I{} sudo ip link set {} up\n"
-    local guest_share_dir='/dev/shm/mimesis'
-    local mount_cmds=
-    mount_cmds+="mkdir -p $guest_share_dir\n"
-    mount_cmds+="sudo mount -t 9p -o trans=virtio -o version=9p2000.L host0 $guest_share_dir\n"
     local ipv6_disable_cmd='sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 net.ipv6.conf.default.disable_ipv6=1'
     sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
         -e 's,\(> */dev/null \+2> */dev/null\),# \1,' \
         -e "s,^\( *S2E_SYM_ARGS=\".*\"\),    sudo setcap \"$capabilities\" \"\${TARGET}\"\n\1," \
-        -e "s,^\(execute \"\${TARGET_PATH}\"\),${systemtap_cmds}${if_cmds}${mount_cmds}\1," \
+        -e "s,^\(execute \"\${TARGET_PATH}\"\),${systemtap_cmds}${if_cmds}\1," \
         -e "s,^\(.*sysctl -w debug.exception-trace.*\)$,\1\n$ipv6_disable_cmd,"
 
     # 1. Enable the custom plugin for Mimesis.
@@ -244,7 +239,6 @@ run_s2e() {
     for ((i = 1; i <= interfaces; ++i)); do
         qemu_flags+=("-nic tap,ifname=tap$i,script=no,downscript=no,model=e1000")
     done
-    qemu_flags+=("-virtfs local,path=$HOST_SHARE_DIR,mount_tag=host0,security_model=passthrough,id=host0")
     local capabilities='cap_sys_admin+pe cap_net_admin+pe cap_net_raw+pe cap_sys_ptrace+pe'
     local run_cmd
     run_cmd="$(
@@ -258,9 +252,8 @@ run_s2e() {
 
         sudo setcap '$capabilities' \$(realpath sender)
         ./sender &>$S2E_PROJ_DIR/sender.log &
-        sleep 1 # Wait for the sender to create the shared file
+        sleep 1 # Wait for the sender to create the command file
 
-        mkdir -p $HOST_SHARE_DIR
         ./launch-s2e.sh ${qemu_flags[@]}
 
         # Dump all pcap files into text form
@@ -294,7 +287,6 @@ main() {
     S2E_PROJ_DIR="$S2E_DIR/projects/$S2E_PROJ_NAME"
     S2E_INSTALL_DIR="$S2E_DIR/install"
     NUM_INTFS_FILE="$S2E_PROJ_DIR/num_interfaces.txt"
-    HOST_SHARE_DIR='/dev/shm/mimesis'
 
     if [[ $RM -eq 1 ]]; then
         rm -rf "$PROJECT_DIR/s2e/s2e/projects"/*

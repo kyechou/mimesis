@@ -195,12 +195,8 @@ EOM
         -i "$PATCH_DIR/04-s2e-guest-images-ubuntu-iso.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
-    out="$(patch -d "$S2E_DIR/source/s2e-linux-kernel" -Np1 \
-        -i "$PATCH_DIR/05-s2e-kernel-config.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
     out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
-        -i "$PATCH_DIR/06-s2e-guest-images-additional-pkgs.patch")" ||
+        -i "$PATCH_DIR/05-s2e-guest-images-additional-pkgs.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
     # Change the maximum number of interfaces allowed in QEMU.
