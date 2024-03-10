@@ -17,6 +17,7 @@
 #include <PcapFileDevice.h>
 #include <PcapLiveDevice.h>
 #include <RawPacket.h>
+#include <SystemUtils.h>
 
 #include "inotify-cpp/Event.h"
 #include "inotify-cpp/Notification.h"
@@ -46,7 +47,10 @@ pcpp::Packet create_demo_packet(pcpp::PcapLiveDevice *egress_intf) {
         error("Failed to add the Ethernet layer");
     }
     packet.computeCalculateFields();
-    DemoHeader demo = {.seed = htons(1), .len = htons(42)};
+    DemoHeader demo = {
+        .seed = pcpp::hostToNet16(1),
+        .len = pcpp::hostToNet16(42),
+    };
     packet.getRawPacket()->reallocateData(
         packet.getRawPacket()->getRawDataLen() + sizeof(demo));
     packet.getRawPacket()->appendData((const unsigned char *)&demo,
@@ -93,8 +97,7 @@ void packet_sender(const chrono::milliseconds period) {
         pcap.flush();
 
         // Send the packet to the specified interface.
-        info("Sending a packet to " + dev->getName() + "\n" +
-             packet.toString());
+        info("Sending a packet to " + dev->getName());
         if (!dev->sendPacket(*packet.getRawPacketReadOnly(),
                              /*checkMtu=*/false)) {
             error("Failed to send packet");
