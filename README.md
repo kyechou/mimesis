@@ -66,3 +66,21 @@ To remove *all* S2E projects, run:
 ```sh 
 $ ./scripts/s2e.sh --rm
 ```
+
+## Improvements
+
+Functional to-do items.
+
+- [ ] Parse the SMT constraints into BDD-based packet sets.
+- [ ] Build the library for BDD-based packet sets.
+- [ ] Create the NF model class/module.
+
+Performance to-do items.
+
+- [ ] [Parallelize the analysis.](https://s2e.systems/docs/Howtos/Parallel.html)
+- [ ] [Concolic execution.](https://s2e.systems/docs/Howtos/Concolic.html)
+- [ ] [State merging.](https://s2e.systems/docs/StateMerging.html)
+- [ ] [Fork profiling.](https://s2e.systems/docs/Tools/ForkProfiler.html)
+- [ ] [(FAQ) Handling path explostion.](https://s2e.systems/docs/FAQ.html#how-do-i-deal-with-path-explosion)
+- [ ] [(FAQ) Logging for constraint solving queries.](https://s2e.systems/docs/FAQ.html#how-much-time-is-the-constraint-solver-taking-to-solve-constraints)
+- [ ] [Profiling CPU and memory usage.](https://s2e.systems/docs/Profiling/ProfilingS2E.html)
