@@ -7,6 +7,7 @@
 #include <mutex>
 #include <netinet/in.h>
 #include <string>
+#include <thread>
 #include <unistd.h>
 #include <unordered_map>
 #include <vector>
@@ -31,9 +32,10 @@ namespace fs = std::filesystem;
 // Variables for synchronization between threads.
 class SyncVars {
 public:
-    string dst_if_name;    // the interface to which packets are sent
-    mutex mtx;             // lock for dst_if_name
-    condition_variable cv; // for reading dst_if_name
+    string dst_if_name;     // the interface to which packets are sent
+    bool first_time = true; // whether this is the first packet ever sent
+    mutex mtx;              // lock for dst_if_name
+    condition_variable cv;  // for reading dst_if_name
 } vars;
 
 // Create a demo packet.
@@ -92,6 +94,17 @@ void packet_sender(const chrono::milliseconds period) {
         // Craft the packet to send.
         auto packet = create_demo_packet(dev);
 
+        if (vars.first_time) {
+            // Wait after the program is loaded (when the Mimesis plugin
+            // notifying the sender through the shared file), and before
+            // actually sending the first packet, for the target program to have
+            // enough time to be ready to "boot up" and to be in the right state
+            // for processing packets.
+            info("Wait for 5 seconds before the first send");
+            this_thread::sleep_for(chrono::seconds(5));
+            vars.first_time = false;
+        }
+
         // Log the packet.
         pcap.writePacket(*packet.getRawPacketReadOnly());
         pcap.flush();
@@ -107,13 +120,13 @@ void packet_sender(const chrono::milliseconds period) {
 
 // File notification handler.
 void notification_handler(inotify::Notification notification) {
+    lock_guard<mutex> lck(vars.mtx);
     string if_name;
     ifstream send_packet_file(notification.path);
     send_packet_file >> if_name;
     send_packet_file.close();
     info("Notification handler read '" + if_name + "' interface name");
 
-    lock_guard<mutex> lck(vars.mtx);
     vars.dst_if_name = if_name;
     vars.cv.notify_all();
 };
