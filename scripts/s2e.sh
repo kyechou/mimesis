@@ -124,17 +124,17 @@ EOM
 
     # 1. Allow the analysis target output to standard output/error.
     # 2. Enable privileges for the target program. (Alternative: setuid)
-    # 3. Load systemtap kernel modules before the target program.
+    # 3. Disable IPv6.
     # 4. Turn on the interfaces before the target program.
-    # 5. Disable IPv6.
+    # 5. Load systemtap kernel modules before the target program.
     local capabilities='cap_sys_admin+pe cap_net_admin+pe cap_net_raw+pe cap_sys_ptrace+pe'
     local if_cmds="ip link | grep '^[0-9]\\\\+' | cut -d: -f2 | sed 's/ //g' | grep -v '^lo' | grep -v '^sit' | xargs -I{} sudo ip link set {} up\n"
     local ipv6_disable_cmd='sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 net.ipv6.conf.default.disable_ipv6=1'
     sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
         -e 's,\(> */dev/null \+2> */dev/null\),# \1,' \
         -e "s,^\( *S2E_SYM_ARGS=\".*\"\),    sudo setcap \"$capabilities\" \"\${TARGET}\"\n\1," \
-        -e "s,^\(execute \"\${TARGET_PATH}\"\),${systemtap_cmds}${if_cmds}\1," \
-        -e "s,^\(.*sysctl -w debug.exception-trace.*\)$,\1\n$ipv6_disable_cmd,"
+        -e "s,^\(.*sysctl -w debug.exception-trace.*\)$,\1\n$ipv6_disable_cmd," \
+        -e "s,^\(execute \"\${TARGET_PATH}\"\),${if_cmds}${systemtap_cmds}\1,"
 
     # 1. Enable the custom plugin for Mimesis.
     # 2. Disable unused Lua plugins.
@@ -252,7 +252,7 @@ run_s2e() {
 
         sudo setcap '$capabilities' \$(realpath sender)
         ./sender &>$S2E_PROJ_DIR/sender.log &
-        sleep 1 # Wait for the sender to create the command file
+        sleep 0.5 # Wait for the sender to create the command file
 
         ./launch-s2e.sh ${qemu_flags[@]}
 

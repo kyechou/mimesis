@@ -1,92 +1,225 @@
+#!/usr/bin/env stap
 #
-# See https://s2e.systems/docs/Tutorials/SystemTap/index.html
+# https://s2e.systems/docs/Tutorials/SystemTap/index.html
+# https://sourceware.org/systemtap/documentation.html
 #
 
+%{
+#include <linux/skbuff.h>
+
+struct DemoHeader {
+    uint16_t seed; // egress port
+    uint16_t len;  // payload length
+};
+%}
+
 #
+# S2E functions.
 # We use the embedded C support of SystemTap to access the S2E custom
 # instructions. A comprehensive set of such instructions can be found in
 # src/s2e/guest/common/include/s2e/s2e.h.
 #
 
-# Print a message to the S2E log.
-function s2e_message(message:string) %{
+/**
+ * Print a message to the S2E log.
+ */
+private function s2e_message(message:string) %{ /* unprivileged */
     __asm__ __volatile__(
             ".byte 0x0f, 0x3f\n"
             ".byte 0x00, 0x10, 0x00, 0x00\n"
             ".byte 0x00, 0x00, 0x00, 0x00\n"
-            : : "a" (THIS->l_message));
+            : : "a" (STAP_ARG_message));
 %}
 
-# Print a warning message to the S2E log and S2E stdout.
-function s2e_warning(message:string) %{
-    __asm__ __volatile__(
-            ".byte 0x0f, 0x3f\n"
-            ".byte 0x00, 0x10, 0x01, 0x00\n"
-            ".byte 0x00, 0x00, 0x00, 0x00\n"
-            : : "a" (THIS->l_message));
-%}
+# /**
+#  * Print a warning message to the S2E log and S2E stdout.
+#  */
+# private function s2e_warning(message:string) %{
+#     __asm__ __volatile__(
+#             ".byte 0x0f, 0x3f\n"
+#             ".byte 0x00, 0x10, 0x01, 0x00\n"
+#             ".byte 0x00, 0x00, 0x00, 0x00\n"
+#             : : "a" (STAP_ARG_message));
+# %}
 
-%{
-// Fill a buffer with unconstrained symbolic values.
-static inline void s2e_make_symbolic(void *buf, int size, const char *name) {
+/**
+ * Fill a buffer with unconstrained symbolic values.
+ */
+private function s2e_make_symbolic(buf:long, size:long, name:string) %{
+    void *_buf = (void *)STAP_ARG_buf;
+    int _size = STAP_ARG_size;
     __asm__ __volatile__(
             ".byte 0x0f, 0x3f\n"
             ".byte 0x00, 0x03, 0x00, 0x00\n"
             ".byte 0x00, 0x00, 0x00, 0x00\n"
-            : : "a" (buf), "b" (size), "c" (name));
-}
+            : : "a" (_buf), "b" (_size), "c" (STAP_ARG_name));
 %}
 
-%{
-// Returns 1 if the given pointer points to symbolic memory, or 0 otherwise.
-static inline int s2e_is_symbolic(void *ptr, size_t size) {
-    int result;
-    __asm__ __volatile__(
-            ".byte 0x0f, 0x3f\n"
-            ".byte 0x00, 0x04, 0x00, 0x00\n"
-            ".byte 0x00, 0x00, 0x00, 0x00\n"
-            : "=a" (result) : "a" (size), "c" (ptr)
-    );
-    return result;
-}
-%}
+# /**
+#  * Returns 1 if the given pointer points to symbolic memory, or 0 otherwise.
+#  */
+# %{
+# static inline int s2e_is_symbolic(void *ptr, size_t size) {
+#     int result;
+#     __asm__ __volatile__(
+#             ".byte 0x0f, 0x3f\n"
+#             ".byte 0x00, 0x04, 0x00, 0x00\n"
+#             ".byte 0x00, 0x00, 0x00, 0x00\n"
+#             : "=a" (result) : "a" (size), "c" (ptr)
+#     );
+#     return result;
+# }
+# %}
 
-# Terminate current state.
-function s2e_kill_state(status:long, message:string) %{
-    __asm__ __volatile__(
-            ".byte 0x0f, 0x3f\n"
-            ".byte 0x00, 0x06, 0x00, 0x00\n"
-            ".byte 0x00, 0x00, 0x00, 0x00\n"
-            : : "a" ((uint32_t)THIS->status), "d" (THIS->message));
-%}
+# /**
+#  * Terminate the current state.
+#  */
+# private function s2e_kill_state(status:long, message:string) %{
+#     __asm__ __volatile__(
+#             ".byte 0x0f, 0x3f\n"
+#             ".byte 0x00, 0x06, 0x00, 0x00\n"
+#             ".byte 0x00, 0x00, 0x00, 0x00\n"
+#             : : "a" ((uint32_t)STAP_ARG_status), "d" (STAP_ARG_message));
+# %}
 
 
 #
 # Helper functions.
 #
 
-# Take a pointer to the IP header, and make the options length field symbolic.
-function s2e_inject_symbolic_ip_optionlength(ipheader:long) %{
-    uint8_t *data = (uint8_t*)((uintptr_t)(THIS->l_ipheader + 0));
-    uint8_t len;
-    s2e_make_symbolic(&len, 1, "ip_headerlength");
-    *data = *data & 0xF0;
-    *data = *data | ((len) & 0xF);
+/**
+ * Print the given message to both the standard output and S2E log.
+ */
+private function info(message:string) {
+    printf("%s: %s\n", probefunc(), message);
+    msg = sprintf("%s: %s\n", probefunc(), message);
+    s2e_message(msg);
+}
+
+/**
+ * Check whether the mac_header field of the given sk_buff is set.
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L2172
+ */
+private function skb_mac_header_was_set:long(skb:long) %{ /* pure */
+    struct sk_buff *skb = (struct sk_buff *)STAP_ARG_skb;
+    uint16_t mac_header = kread(&(skb->mac_header));
+    STAP_RETURN(mac_header != (typeof(mac_header))~0U);
 %}
+
+/**
+ * Get the Ethernet header of the given sk_buff.
+ */
+private function skb_mac_header:long(skb:long) { /* pure */
+    return @cast(skb, "sk_buff")->head + @cast(skb, "sk_buff")->mac_header;
+}
+
+/**
+ * Check whether the given Ethernet address is magical.
+ */
+private function check_eth_addr:long(eth_addr:long) %{ /* pure */
+    uint8_t id_mac[6] = { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+    STAP_RETURN(memcmp((uint8_t *)STAP_ARG_eth_addr, id_mac, 6) == 0);
+%}
+
+# # Take a pointer to the IP header, and make the options length field symbolic.
+# private function s2e_inject_symbolic_ip_optionlength(ipheader:long) %{
+#     uint8_t *data = (uint8_t*)((uintptr_t)(THIS->l_ipheader + 0));
+#     uint8_t len;
+#     s2e_make_symbolic(&len, 1, "ip_headerlength");
+#     *data = *data & 0xF0;
+#     *data = *data | ((len) & 0xF);
+# %}
 
 
 #
 # Probes.
 #
 
-# Intercept the netif_receive_skb kernel function.
-# NIC drivers call this function when they are ready to give the received packet
-# to the kernel.
-# See https://blog.packagecloud.io/monitoring-tuning-linux-networking-stack-receiving-data/
-probe kernel.function("netif_receive_skb") {
-    msg = sprintf("[symbolic_ingress] %s: len=%d datalen=%d\n", probefunc(), $skb->len, $skb->data_len)
-    s2e_message(msg)
+/**
+ * static int __netif_receive_skb(struct sk_buff *skb);
+ *
+ * https://elixir.bootlin.com/linux/v4.9.3/source/net/core/dev.c#L4225
+ *
+ * NIC drivers call this function when they are ready to give the received
+ * packet to the kernel. At this moment, `skb->data` points to the end of the
+ * Ethernet header.
+ *
+ * (struct sk_buff):
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L633
+ */
+probe kernel.function("__netif_receive_skb") {
+    if (!skb_mac_header_was_set($skb)) {
+        info("mac_header is not set. skipping the sk_buff...");
+        next; // returns immediately from the enclosing probe handler.
+    }
+
+    // L2
+    eth_hdr = skb_mac_header($skb)
+    eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
+    ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
+    if (!check_eth_addr(eth_dst_addr)) {
+        info("dst_mac_address is not magical. skipping the sk_buff...");
+        next;
+    }
+
+    # msg = sprintf("[%s] len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x",
+    #     execname(), $skb->len, $skb->data_len, $skb->dev->ifindex, $skb->head, eth_dst_addr, ethertype, $skb->data);
+    # info(msg);
+
+    // L3
+    if (ethertype == 0xdead) {
+        // Demo
+        eth_len = $skb->data - eth_hdr;
+        demo_len = %{ sizeof(struct DemoHeader) %};
+        // Option 1: Make the whole packet one symbolic variable. (current)
+        // Option 2: Make separate symbolic variables for each header field.
+        info("Received a demo packet. Creating the symbolic input...");
+        s2e_make_symbolic(eth_hdr, eth_len + demo_len, "ingress_packet");
+    } else if (ethertype == 0x0800) {
+        // IPv4
+        info("IPv4 protocol");
+    } else {
+        // Unsupported
+        info("Unsupported ethertype");
+        next;
+    }
+
+    # msg = sprintf("[symbolic_ingress] %s: len=%d datalen=%d\n", probefunc(), $skb->len, $skb->data_len)
+    # s2e_message(msg)
     # s2e_inject_symbolic_ip_optionlength($skb->data)
+}
+
+/**
+ * struct sk_buff *dev_hard_start_xmit(
+ *      struct sk_buff *first,
+ *      struct net_device *dev,
+ *      struct netdev_queue *txq,
+ *      int *ret
+ * );
+ *
+ * https://elixir.bootlin.com/linux/v4.9.3/source/net/core/dev.c#L2920
+ *
+ * Kernel calls this function to invoke the corresponding NIC drivers to start
+ * transmitting packets.
+ *
+ * (struct sk_buff):
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L633
+ * (struct net_device):
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/netdevice.h#L1641
+ */
+probe kernel.function("dev_hard_start_xmit") {
+    if (!skb_mac_header_was_set($first)) {
+        info("mac_header is not set. skipping the sk_buff...");
+        next; // returns immediately from the enclosing probe handler.
+    }
+
+    // TODO: Implement.
+    // eth_hdr = skb_mac_header($first)
+    // eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
+    // ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
+    // msg = sprintf("len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x",
+    //     $first->len, $first->data_len, $first->dev->ifindex, $first->head, eth_dst_addr, ethertype, $first->data);
+    // info(msg);
 }
 
 # vim: ts=4 sw=4 et cms=#%s :
