@@ -30,6 +30,7 @@ endif()
 #
 # third-party libraries
 #
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # option() honors normal variables.
 set(BUILD_EXAMPLE OFF)
 set(BUILD_TEST OFF)
@@ -50,6 +51,9 @@ find_package(Boost REQUIRED
     program_options
 )
 find_package(pcapplusplus REQUIRED)
+find_package(KLEE REQUIRED)
+find_package(LLVM REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/s2e/build/llvm-release/lib/cmake/llvm NO_DEFAULT_PATH)
+find_package(Clang REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/s2e/build/llvm-release/lib/cmake/clang NO_DEFAULT_PATH)
 
 #
 # configure the sources and directories
