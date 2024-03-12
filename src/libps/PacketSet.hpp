@@ -1,5 +1,5 @@
-#ifndef MIMESIS_SRC_PACKET_SET_HPP
-#define MIMESIS_SRC_PACKET_SET_HPP
+#ifndef MIMESIS_SRC_PACKETSET_HPP
+#define MIMESIS_SRC_PACKETSET_HPP
 
 #include <klee/Expr.h>
 #include <klee/util/Ref.h>
@@ -16,4 +16,4 @@ public:
     void testfn() const;
 };
 
-#endif // MIMESIS_SRC_PACKET_SET_HPP
+#endif // MIMESIS_SRC_PACKETSET_HPP

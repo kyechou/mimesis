@@ -19,16 +19,4 @@ add_custom_target(setcap_sender ALL
 #
 # libps
 #
-add_library(ps $<TARGET_OBJECTS:mimesis_libs> ${SRC_DIR}/packet_set.cpp)
-target_include_directories(ps PUBLIC ${SRC_DIR})
-target_include_directories(ps PRIVATE ${LLVM_INCLUDE_DIRS})
-target_link_libraries(ps PRIVATE
-    mimesis_libs
-    klee
-)
-
-#
-# install libps (to be used for S2E)
-#
-install(TARGETS ps DESTINATION lib)
-install(FILES ${SRC_DIR}/packet_set.hpp DESTINATION include)
+add_subdirectory(libps)
