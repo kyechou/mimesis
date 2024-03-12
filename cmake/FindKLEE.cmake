@@ -28,7 +28,6 @@ This will define the following variables:
 
 find_package(KLEE REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/s2e/build/klee-release NO_DEFAULT_PATH)
 
-set(KLEE_FOUND ON)
 set(KLEE_VERSION ${KLEE_PACKAGE_VERSION})
 set(KLEE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/src/s2e/klee/include")
 set(KLEE_INCLUDE_DIRS ${KLEE_INCLUDE_DIR})
