@@ -1,6 +1,6 @@
 [requires]
-boost/1.82.0
 pcapplusplus/22.11
+# boost/1.82.0
 # libnet/1.2
 
 [tool_requires]

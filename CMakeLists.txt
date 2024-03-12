@@ -33,9 +33,6 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 add_subdirectory(third_party/inotify-cpp EXCLUDE_FROM_ALL)
 find_package(Threads)
-find_package(Boost REQUIRED
-    program_options
-)
 find_package(pcapplusplus REQUIRED)
 find_package(KLEE REQUIRED)
 find_package(LLVM REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/s2e/build/llvm-release/lib/cmake/llvm NO_DEFAULT_PATH)
