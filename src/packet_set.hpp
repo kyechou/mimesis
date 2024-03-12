@@ -10,10 +10,10 @@ private:
     ;
 
 public:
-    // std::set<klee::ref<klee::Expr>>
-
     PacketSet();
     PacketSet(const std::set<klee::ref<klee::Expr>> &);
+
+    void testfn() const;
 };
 
 #endif // MIMESIS_SRC_PACKET_SET_HPP

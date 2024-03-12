@@ -26,3 +26,9 @@ target_link_libraries(ps PRIVATE
     mimesis_libs
     klee
 )
+
+#
+# install libps (to be used for S2E)
+#
+install(TARGETS ps DESTINATION lib)
+install(FILES ${SRC_DIR}/packet_set.hpp DESTINATION include)

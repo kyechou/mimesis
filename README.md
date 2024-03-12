@@ -26,14 +26,12 @@ $ ./scripts/build.sh --s2e
 
 ### Mimesis
 
-To build Mimesis, including the example target programs, packet sender, and
-libps, please run:
+To build Mimesis, including the example target programs, packet sender, libps,
+SystemTap modules, and the S2E plugins, please run:
 
 ```sh 
 $ ./scripts/build.sh --mimesis --stap --s2e
 ```
-
-The results will be inside the `build/` directory.
 
 ## Usage
 

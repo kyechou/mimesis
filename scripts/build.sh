@@ -27,6 +27,7 @@ usage() {
     --stap              Build the systemtap scripts (default: off)
     --s2e-env           Build s2e-env (default: off)
     --s2e-init          Initialize S2E (default: off)
+    --s2e-libps-deps    Build only S2E LLVM and KLEE for libps (default: off)
     --s2e               Build S2E (default: off)
     --s2e-local         Build S2E locally without s2e-env (default: off)
     --s2e-image         Build the S2E VM image (default: off)
@@ -40,6 +41,7 @@ parse_args() {
     STAP=0
     S2E_ENV=0
     S2E_INIT=0
+    S2E_LIBPS_DEPS=0
     S2E=0
     S2E_LOCAL=0
     S2E_IMAGE=0
@@ -68,6 +70,9 @@ parse_args() {
             ;;
         --s2e-init)
             S2E_INIT=1
+            ;;
+        --s2e-libps-deps)
+            S2E_LIBPS_DEPS=1
             ;;
         --s2e)
             S2E=1
@@ -98,6 +103,7 @@ build_mimesis_programs() {
         source '$SCRIPT_DIR/bootstrap.sh'
         activate_conan_env
         cmake --build '$BUILD_DIR' -j $NUM_TASKS
+        cmake --install '$BUILD_DIR' --prefix '$S2E_DIR/install'
 EOM
     )"
     docker run -it --rm -u builder \
@@ -215,6 +221,24 @@ EOM
     # https://github.com/S2E/s2e-env#configuring
 }
 
+build_s2e_libps_deps() {
+    local image='kyechou/s2e:latest'
+    local build_cmd
+    build_cmd="$(
+        cat <<-EOM
+        set -euo pipefail
+        export S2EDIR=$S2E_DIR
+        export S2E_PREFIX=$S2E_DIR/install
+        export BUILD_SCRIPTS_SRC=$S2E_DIR/scripts
+        export S2E_BUILD=$S2E_DIR/build
+        export S2E_SRC=$PROJECT_DIR/src/s2e
+        make -C \$S2E_BUILD -f \$S2E_SRC/Makefile stamps/klee-release-make
+EOM
+    )"
+    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+        -c "$build_cmd"
+}
+
 build_s2e() {
     local image='kyechou/s2e:latest'
     local build_cmd
@@ -302,6 +326,10 @@ main() {
 
     if [[ $S2E_INIT -eq 1 ]]; then
         s2e_init
+    fi
+
+    if [[ $S2E_LIBPS_DEPS -eq 1 ]]; then
+        build_s2e_libps_deps
     fi
 
     if [[ $S2E -eq 1 ]]; then

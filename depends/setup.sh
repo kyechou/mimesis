@@ -222,6 +222,8 @@ main() {
     build_s2e_docker_image
     "$PROJECT_DIR/scripts/build.sh" --s2e-env
     "$PROJECT_DIR/scripts/build.sh" --s2e-init
+    "$PROJECT_DIR/scripts/build.sh" --s2e-libps-deps
+    "$PROJECT_DIR/scripts/build.sh" --mimesis
     "$PROJECT_DIR/scripts/build.sh" --s2e
     "$PROJECT_DIR/scripts/build.sh" --s2e-image
     build_docker_images
