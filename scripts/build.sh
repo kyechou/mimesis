@@ -23,7 +23,7 @@ usage() {
     -h, --help          Print this message and exit
     -r, --reconfigure   Reconfigure the build
     -j, --parallel N    Number of parallel build tasks
-    --targets           Build the target and sender programs (default: off)
+    --mimesis           Build Mimesis (targets, sender, libps) (default: off)
     --stap              Build the systemtap scripts (default: off)
     --s2e-env           Build s2e-env (default: off)
     --s2e-init          Initialize S2E (default: off)
@@ -36,7 +36,7 @@ EOF
 parse_args() {
     RECONF=0
     NUM_TASKS=$(nproc)
-    TARGETS=0
+    MIMESIS=0
     STAP=0
     S2E_ENV=0
     S2E_INIT=0
@@ -57,8 +57,8 @@ parse_args() {
         -r | --reconfigure)
             RECONF=1
             ;;
-        --targets)
-            TARGETS=1
+        --mimesis)
+            MIMESIS=1
             ;;
         --stap)
             STAP=1
@@ -85,7 +85,7 @@ parse_args() {
     done
 }
 
-build_target_programs() {
+build_mimesis_programs() {
     local image='kyechou/s2e:latest'
     local build_cmd
     build_cmd="$(
@@ -288,8 +288,8 @@ main() {
     S2E_ENV_DIR="$PROJECT_DIR/s2e/s2e-env"
     S2E_DIR="$PROJECT_DIR/s2e/s2e"
 
-    if [[ $TARGETS -eq 1 ]]; then
-        build_target_programs
+    if [[ $MIMESIS -eq 1 ]]; then
+        build_mimesis_programs
     fi
 
     if [[ $STAP -eq 1 ]]; then

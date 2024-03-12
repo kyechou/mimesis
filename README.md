@@ -24,13 +24,13 @@ If the S2E source code in `src/s2e/` is modified, you can rebuild S2E with
 $ ./scripts/build.sh --s2e
 ```
 
-### Mimesis & Target programs
+### Mimesis
 
-To build Mimesis and the example target programs, from which the models are
-extracted, please run:
+To build Mimesis, including the example target programs, packet sender, and
+libps, please run:
 
 ```sh 
-$ ./scripts/build.sh --targets --stap --s2e
+$ ./scripts/build.sh --mimesis --stap --s2e
 ```
 
 The results will be inside the `build/` directory.
