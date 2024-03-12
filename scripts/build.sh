@@ -27,7 +27,8 @@ usage() {
     --stap              Build the systemtap scripts (default: off)
     --s2e-env           Build s2e-env (default: off)
     --s2e-init          Initialize S2E (default: off)
-    --s2e               Build the S2E with plugins (default: off)
+    --s2e               Build S2E (default: off)
+    --s2e-local         Build S2E locally without s2e-env (default: off)
     --s2e-image         Build the S2E VM image (default: off)
 EOF
 }
@@ -40,6 +41,7 @@ parse_args() {
     S2E_ENV=0
     S2E_INIT=0
     S2E=0
+    S2E_LOCAL=0
     S2E_IMAGE=0
 
     while :; do
@@ -69,6 +71,9 @@ parse_args() {
             ;;
         --s2e)
             S2E=1
+            ;;
+        --s2e-local)
+            S2E_LOCAL=1
             ;;
         --s2e-image)
             S2E_IMAGE=1
@@ -231,6 +236,27 @@ EOM
         -c "$build_cmd"
 }
 
+# Build S2E locally in tree without using s2e-env.
+# This is mostly used for populating the correct compile commands database for
+# development environments.
+build_s2e_local() {
+    local image='kyechou/s2e:latest'
+    local build_cmd
+    build_cmd="$(
+        cat <<-EOM
+        set -euo pipefail
+        export S2EDIR=$S2E_DIR
+        export S2E_PREFIX=$S2E_DIR/install
+        export BUILD_SCRIPTS_SRC=$S2E_DIR/scripts
+        export S2E_SRC=$PROJECT_DIR/src/s2e
+        export S2E_BUILD=$PROJECT_DIR/build/s2e
+        make -C \$S2E_BUILD -f \$S2E_SRC/Makefile all install
+EOM
+    )"
+    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+        -c "$build_cmd"
+}
+
 build_s2e_image() {
     local image='kyechou/s2e:latest'
     local build_cmd
@@ -280,6 +306,10 @@ main() {
 
     if [[ $S2E -eq 1 ]]; then
         build_s2e
+    fi
+
+    if [[ $S2E_LOCAL -eq 1 ]]; then
+        build_s2e_local
     fi
 
     if [[ $S2E_IMAGE -eq 1 ]]; then
