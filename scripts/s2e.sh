@@ -138,33 +138,48 @@ EOM
 
     # 1. Enable the custom plugin for Mimesis.
     # 2. Disable unused Lua plugins.
+    # 3. Add KLEE arguments.
     local plugin_cfg=
     plugin_cfg+='add_plugin("Mimesis")\n'
     plugin_cfg+='pluginsConfig.Mimesis = {}\n'
+    local klee_args=                                  # "--help" to show the available options
+    klee_args+='        "--const-array-opt=false",\n' # const array optimizations
+    klee_args+='        "--debug-constraints",\n'
+    # klee_args+='        "--debug-expr-simplifier",\n'
+    klee_args+='        "--debug-log-state-merge",\n'
+    klee_args+='        "--debug-validate-solver",\n'
+    klee_args+='        "--enable-timeingsolver",\n' # measure query time
+    klee_args+='        "--end-solver=z3",\n'
+    klee_args+='        "--end-solver-increm=stack",\n' # none, stack, assumptions
+    # klee_args+='        "--log-partial-queries-early",\n'
+    klee_args+='        "--print-concretized-expression",\n'
+    # klee_args+='        "--print-expr-simplifier",\n'
+    klee_args+='        "--print-mode-switch",\n'
+    klee_args+='        "--s2e-debug-edge-detector",\n'
+    klee_args+='        "--simplify-sym-indices",\n'
+    klee_args+='        "--smtlib-abbreviation-mode=let",\n' # none, let, named
+    klee_args+='        "--smtlib-display-constants=dec",\n' # bin, hex, dec
+    klee_args+='        "--smtlib-human-readable",\n'
+    klee_args+='        "--state-shared-memory",\n'
+    klee_args+='        "--suppress-external-warnings",\n'
+    klee_args+='        "--use-cache",\n'
+    klee_args+='        "--use-cex-cache",\n'
+    klee_args+='        "--use-dfs-search",\n'
+    # klee_args+='        "--use-random-search",\n'
+    klee_args+='        "--use-expr-simplifier",\n'
+    # klee_args+='        "--use-fast-cex-solver",\n'
+    klee_args+='        "--use-independent-solver",\n'
+    klee_args+='        "--use-query-log=all:smt2,solver:smt2",\n'
+    klee_args+='        "--use-visitor-hash",\n'
+    klee_args+='        "--validate-expr-simplifier",\n'
+    klee_args+='        "--verbose-fork-info",\n'
+    klee_args+='        "--verbose-state-switching",\n'
+    # klee_args+='        "--z3-array-cons-mode=ite",\n' # ite, stores, asserts
+    # klee_args+='        "--z3-use-hash-consing",\n'
     sed -i "$S2E_PROJ_DIR/s2e-config.lua" \
         -e "s,^\(-- .* User-specific scripts begin here .*\)$,\1\n$plugin_cfg," \
-        -e 's,^\(.*add_plugin("Lua\(Bindings\|CoreEvents\)").*\)$,-- \1,'
-
-    # TODO: kleeArgs:
-    # --simplify-sym-indices \
-    # --solver-backend=z3 \
-    # --solver-optimize-divides \
-    # --use-forked-solver \
-    # --use-independent-solver \
-    # --external-calls=concrete \
-    # --suppress-external-warnings \
-    # \
-    # --libc=none \
-    # --search=dfs \
-    # --exit-on-error-type=ReportError \
-    # --max-memory=$((100 * 1024)) --max-time=1h \
-    # \
-    # --write-cov \
-    # --write-kqueries \
-    # --write-smt2s \
-    # --write-paths \
-    # --write-sym-paths \
-    # --write-test-info \
+        -e 's,^\(.*add_plugin("Lua\(Bindings\|CoreEvents\)").*\)$,-- \1,' \
+        -e "s|^\(.*kleeArgs = {.*\)$|\1\n${klee_args}|"
 
     # Set the number of interfaces
     echo "$INTERFACES" >"$NUM_INTFS_FILE"
