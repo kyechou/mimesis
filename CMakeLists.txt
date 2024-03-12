@@ -31,21 +31,7 @@ endif()
 # third-party libraries
 #
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # option() honors normal variables.
-set(BUILD_EXAMPLE OFF)
-set(BUILD_TEST OFF)
-set(BUILD_SHARED_LIBS OFF)
-set(BUILD_STATIC_LIBS ON)
-set(USE_BOOST_FILESYSTEM OFF)
-add_subdirectory(third_party/inotify-cpp)
-get_target_property(inotify_compile_options inotify-cpp-static COMPILE_OPTIONS)
-list(APPEND inotify_compile_options -Wno-unused-private-field -Wno-unused-result)
-set_target_properties(inotify-cpp-static PROPERTIES COMPILE_OPTIONS "${inotify_compile_options}")
-unset(BUILD_EXAMPLE)
-unset(BUILD_TEST)
-unset(BUILD_SHARED_LIBS)
-unset(BUILD_STATIC_LIBS)
-unset(USE_BOOST_FILESYSTEM)
+add_subdirectory(third_party/inotify-cpp EXCLUDE_FROM_ALL)
 find_package(Threads)
 find_package(Boost REQUIRED
     program_options

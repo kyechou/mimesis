@@ -1,0 +1,23 @@
+ExternalProject_Add(inotify-cpp
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inotify-cpp
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
+    INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install
+    CONFIGURE_COMMAND cmake
+        -B ${CMAKE_CURRENT_BINARY_DIR}
+        -S ${CMAKE_CURRENT_SOURCE_DIR}/inotify-cpp
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/install
+        -DBUILD_EXAMPLE=off
+        -DBUILD_TEST=off
+        -DBUILD_SHARED_LIBS=off
+        -DBUILD_STATIC_LIBS=on
+        -DUSE_BOOST_FILESYSTEM=off
+    BUILD_COMMAND cmake --build ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND cmake --install ${CMAKE_CURRENT_BINARY_DIR}
+    BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/install/lib/libinotify-cpp.a
+    INSTALL_COMMAND ""
+    STEP_TARGETS build
+)
+
+set(inotify_cpp_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/install/include PARENT_SCOPE)
+set(inotify_cpp_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/install/lib/libinotify-cpp.a PARENT_SCOPE)
