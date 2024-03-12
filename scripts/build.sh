@@ -274,6 +274,7 @@ build_s2e_local() {
         export BUILD_SCRIPTS_SRC=$S2E_DIR/scripts
         export S2E_SRC=$PROJECT_DIR/src/s2e
         export S2E_BUILD=$PROJECT_DIR/build/s2e
+        mkdir -p \$S2E_BUILD
         make -C \$S2E_BUILD -f \$S2E_SRC/Makefile all install
 EOM
     )"
