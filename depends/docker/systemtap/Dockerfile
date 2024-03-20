@@ -17,7 +17,7 @@ RUN apt-get update && \
     apt-get clean && \
     apt-file update
 
-ARG STAP_VER=4.7
+ARG STAP_VER=4.9
 
 RUN curl --insecure -LO https://sourceware.org/ftp/systemtap/releases/systemtap-${STAP_VER}.tar.gz && \
     tar xf systemtap-${STAP_VER}.tar.gz && \
