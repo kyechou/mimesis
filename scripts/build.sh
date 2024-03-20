@@ -183,6 +183,31 @@ EOM
     docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 
+    local s2e_repos=(
+        decree
+        guest-images
+        qemu
+        s2e
+        s2e-env
+        s2e-linux-kernel
+        scripts
+    )
+    local s2e_repo_commits=(
+        a523ec2ec1ca1e1369b33db755bed135af57e09c # decree
+        2eba2ba2a3fe1d5dab21984195f104b3af52763e # guest-images
+        6a865ba1b1c9f5e32cd2cd9dc12ed5972addd567 # qemu
+        0c8aae3cfdbedbf8be17bd1fe681026ea75adae2 # s2e
+        8cb79cebef60f5f10b3091c30492ed08c8255e5f # s2e-env
+        81dcf04137d1ff68989d7823dc0689751affe3cd # s2e-linux-kernel
+        c0bb3ac35c4b3a47158d03138b5c476571208958 # scripts
+    )
+
+    # Check out the specified revisions.
+    for ((i = 0; i < ${#s2e_repos[@]}; ++i)); do
+        git -C "$S2E_DIR/source/${s2e_repos[i]}" \
+            reset --hard "${s2e_repo_commits[i]}"
+    done
+
     # Apply patches
     local PATCH_DIR="$PROJECT_DIR/depends/patches"
     local out

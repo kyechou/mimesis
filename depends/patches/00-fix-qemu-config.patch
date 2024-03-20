@@ -1,20 +1,11 @@
 diff --git a/Makefile.qemu b/Makefile.qemu
-index 69354bb..0162493 100644
+index f18a092..2891c05 100644
 --- a/Makefile.qemu
 +++ b/Makefile.qemu
-@@ -37,13 +37,15 @@ QEMU_TARGETS=i386-softmmu,x86_64-softmmu
- QEMU_CONFIGURE_FLAGS = --prefix=$(S2E_PREFIX)        \
-                        --target-list=$(QEMU_TARGETS) \
-                        --disable-smartcard           \
--                       --disable-virtfs              \
-+                       --enable-virtfs               \
-+                       --enable-attr                 \
-                        --disable-xen                 \
-                        --disable-bluez               \
-                        --disable-vde                 \
-                        --disable-libiscsi            \
-                        --disable-docs                \
-                        --disable-spice               \
+@@ -47,6 +47,7 @@ QEMU_CONFIGURE_FLAGS = --prefix=$(S2E_PREFIX)        \
+                        --disable-nettle              \
+                        --disable-curl                \
+                        --disable-opengl              \
 +                       --disable-werror              \
                         $(EXTRA_QEMU_FLAGS)
  
