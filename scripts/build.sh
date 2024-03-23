@@ -121,7 +121,7 @@ build_systemtap_programs() {
         set -euo pipefail
         mkdir -p $PROJECT_DIR/build/src
         cd $PROJECT_DIR/build/src
-        for stp_file in $PROJECT_DIR/src/*.stp; do 
+        for stp_file in $PROJECT_DIR/src/*.stp; do
             stap -r 4.9.3-s2e -g -p4 -m \$(basename -s .stp \$stp_file) \$stp_file &
         done
         wait
@@ -321,6 +321,7 @@ EOM
     docker run -it --rm --privileged \
         -u builder \
         --group-add "$(getent group docker | cut -d: -f3)" \
+        --group-add "$(getent group kvm | cut -d: -f3)" \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         -v /var/run/docker.sock:/var/run/docker.sock \
         "$image" \
