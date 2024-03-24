@@ -35,8 +35,7 @@ add_subdirectory(third_party/inotify-cpp EXCLUDE_FROM_ALL)
 find_package(Threads)
 find_package(pcapplusplus REQUIRED)
 find_package(KLEE REQUIRED)
-find_package(LLVM REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/s2e/build/llvm-release/lib/cmake/llvm NO_DEFAULT_PATH)
-find_package(Clang REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/s2e/build/llvm-release/lib/cmake/clang NO_DEFAULT_PATH)
+find_package(LLVM REQUIRED)
 
 #
 # configure the sources and directories
@@ -58,3 +57,12 @@ target_link_libraries(mimesis_libs PUBLIC
 #
 add_subdirectory(src)
 add_subdirectory(targets)
+
+#
+# build tests targets
+#
+option(BUILD_TESTS "Build tests" ON)
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

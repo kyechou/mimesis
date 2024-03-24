@@ -8,6 +8,9 @@ cmake/[>=3.26]
 ninja/1.11.1
 pkgconf/1.9.3
 
+[test_requires]
+gtest/1.14.0
+
 [generators]
 CMakeDeps
 CMakeToolchain
