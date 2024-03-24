@@ -33,7 +33,7 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 add_subdirectory(third_party/inotify-cpp EXCLUDE_FROM_ALL)
 find_package(Threads)
-find_package(pcapplusplus REQUIRED)
+find_package(PcapPlusPlus REQUIRED)
 find_package(KLEE REQUIRED)
 find_package(LLVM REQUIRED)
 
@@ -49,7 +49,7 @@ FILE(GLOB_RECURSE LIB_SRCS CONFIGURE_DEPENDS ${SRC_DIR}/lib/*.cpp)
 add_library(mimesis_libs OBJECT ${LIB_SRCS})
 target_include_directories(mimesis_libs PUBLIC ${SRC_DIR})
 target_link_libraries(mimesis_libs PUBLIC
-    pcapplusplus::pcapplusplus
+    PcapPlusPlus::PcapPlusPlus
 )
 
 #

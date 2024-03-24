@@ -24,15 +24,15 @@ usage() {
     -h, --help          Print this message and exit
     -d, --debug         Enable debugging
     --clean             Clean all build files without configuring
-    --gcc               Use GCC (default)
-    --clang             Use Clang
+    --gcc               Use GCC
+    --clang             Use Clang (default)
 EOF
 }
 
 parse_args() {
     DEBUG=0
     CLEAN=0
-    COMPILER=gcc
+    COMPILER=clang
     BOOTSTRAP_FLAGS=()
 
     while :; do

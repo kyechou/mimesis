@@ -1,7 +1,5 @@
 [requires]
-pcapplusplus/22.11
-# boost/1.82.0
-# libnet/1.2
+pcapplusplus/23.09
 
 [tool_requires]
 cmake/[>=3.26]

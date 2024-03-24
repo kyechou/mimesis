@@ -12,13 +12,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include <EthLayer.h>
-#include <MacAddress.h>
-#include <Packet.h>
-#include <PcapFileDevice.h>
-#include <PcapLiveDevice.h>
-#include <RawPacket.h>
-#include <SystemUtils.h>
+#include <pcapplusplus/EthLayer.h>
+#include <pcapplusplus/MacAddress.h>
+#include <pcapplusplus/Packet.h>
+#include <pcapplusplus/PcapFileDevice.h>
+#include <pcapplusplus/PcapLiveDevice.h>
+#include <pcapplusplus/RawPacket.h>
+#include <pcapplusplus/SystemUtils.h>
 
 #include "inotify-cpp/Event.h"
 #include "inotify-cpp/Notification.h"

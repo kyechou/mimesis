@@ -17,11 +17,11 @@
 #include <unistd.h>
 #include <vector>
 
-#include <EthLayer.h>
-#include <PcapLiveDevice.h>
-#include <ProtocolType.h>
-#include <RawPacket.h>
-#include <SystemUtils.h>
+#include <pcapplusplus/EthLayer.h>
+#include <pcapplusplus/PcapLiveDevice.h>
+#include <pcapplusplus/ProtocolType.h>
+#include <pcapplusplus/RawPacket.h>
+#include <pcapplusplus/SystemUtils.h>
 
 #include "lib/logger.hpp"
 #include "lib/net.hpp"

@@ -11,8 +11,8 @@
 #include <unistd.h>
 #include <unordered_map>
 
-#include <PcapLiveDevice.h>
-#include <PcapLiveDeviceList.h>
+#include <pcapplusplus/PcapLiveDevice.h>
+#include <pcapplusplus/PcapLiveDeviceList.h>
 
 #include "lib/logger.hpp"
 
