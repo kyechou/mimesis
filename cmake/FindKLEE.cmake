@@ -31,7 +31,12 @@ find_package(KLEE REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/s2e/build/klee-r
 set(KLEE_VERSION ${KLEE_PACKAGE_VERSION})
 set(KLEE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/src/s2e/klee/include")
 set(KLEE_INCLUDE_DIRS ${KLEE_INCLUDE_DIR})
-FILE(GLOB KLEE_LIBRARIES CONFIGURE_DEPENDS ${KLEE_LIBRARY_DIR}/*.a)
+set(KLEE_LIBRARIES ${KLEE_LIBRARY_DIR}/libkleeModule.a
+                   ${KLEE_LIBRARY_DIR}/libkleaverSolver.a
+                   ${KLEE_LIBRARY_DIR}/libkleaverExpr.a
+                   ${KLEE_LIBRARY_DIR}/libkleeSupport.a
+                   ${KLEE_LIBRARY_DIR}/libkleeBasic.a
+                   ${KLEE_LIBRARY_DIR}/libkleeCore.a)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(KLEE
