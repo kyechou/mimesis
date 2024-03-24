@@ -244,6 +244,7 @@ EOM
     # https://github.com/S2E/s2e-env#configuring
 }
 
+# This will build llvm, z3, gtest, and klee from within S2E.
 build_s2e_libps_deps() {
     local image='kyechou/s2e:latest'
     local build_cmd
