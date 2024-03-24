@@ -36,6 +36,7 @@ find_package(Threads)
 find_package(PcapPlusPlus REQUIRED)
 find_package(KLEE REQUIRED)
 find_package(LLVM REQUIRED)
+find_package(Z3 REQUIRED)
 
 #
 # configure the sources and directories

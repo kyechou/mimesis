@@ -8,7 +8,7 @@ target_include_directories(ps SYSTEM PUBLIC ${KLEE_INCLUDE_DIRS} ${LLVM_INCLUDE_
 target_link_libraries(ps PUBLIC
     klee
     llvm
-    # z3 (?)
+    z3
 )
 
 install(TARGETS ps DESTINATION lib)
