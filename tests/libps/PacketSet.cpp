@@ -1,19 +1,21 @@
 #include <gtest/gtest.h>
 #include <klee/Common.h>
+#include <klee/Constraints.h>
 #include <klee/Expr.h>
 #include <klee/Solver.h>
 #include <klee/SolverFactory.h>
+#include <llvm/Support/raw_ostream.h>
 #include <string>
 #include <unistd.h>
 
 #include "libps/PacketSet.hpp"
 
 class PacketSetTests : public testing::Test {
-private:
-    klee::SolverPtr solver;
-    llvm::raw_ostream *out = nullptr;
-
 protected:
+    llvm::raw_ostream *out = nullptr;
+    klee::SolverPtr solver;
+    klee::ConstraintManager constraints;
+
     void SetUp() override {
         out = new llvm::raw_fd_ostream(/*fd=*/STDOUT_FILENO,
                                        /*shouldClose=*/false);
@@ -41,4 +43,9 @@ TEST_F(PacketSetTests, ctor) {
     std::string expr_str;
     expr->toString(expr_str);
     EXPECT_EQ(expr_str, "42");
+
+    klee::Query q(/*_constraints=*/{}, expr);
+    bool result;
+    solver->mayBeTrue(q, result);
+    EXPECT_TRUE(result);
 }
