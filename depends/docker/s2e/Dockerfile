@@ -5,6 +5,9 @@ FROM ubuntu:22.04
 
 LABEL org.opencontainers.image.authors="kychou2@illinois.edu"
 
+ARG UID=1000
+ARG GID=1000
+
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -52,7 +55,8 @@ RUN mkdir -p /usr/lib/glib-2.0/include && \
     /usr/lib/glib-2.0/include/glibconfig.h
 
 # Add a user for building without root privileges
-RUN useradd -m -s /bin/bash builder && \
+RUN if ! getent group ${GID}; then groupadd -g ${GID} builder; fi && \
+    useradd -m -s /bin/bash -u ${UID} -g ${GID} builder && \
     gpasswd -a builder kvm && \
     gpasswd -a builder docker && \
     echo 'builder ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
