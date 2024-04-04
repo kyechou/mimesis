@@ -6,6 +6,9 @@ ExternalProject_Add(inotify-cpp
     CONFIGURE_COMMAND cmake
         -B ${CMAKE_CURRENT_BINARY_DIR}
         -S ${CMAKE_CURRENT_SOURCE_DIR}/inotify-cpp
+        -DCMAKE_C_COMPILER=clang
+        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/install
         -DBUILD_EXAMPLE=off
         -DBUILD_TEST=off
