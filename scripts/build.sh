@@ -91,7 +91,7 @@ parse_args() {
 }
 
 build_mimesis_programs() {
-    local image='kyechou/s2e:latest'
+    local image='s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -114,7 +114,7 @@ EOM
 }
 
 build_systemtap_programs() {
-    local image='kyechou/systemtap:latest'
+    local image='systemtap:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -142,7 +142,7 @@ build_s2e_env() {
     fi
     git -C "$S2E_ENV_DIR" reset --hard "$S2E_ENV_REV"
 
-    local image='kyechou/s2e:latest'
+    local image='s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -159,7 +159,7 @@ EOM
 }
 
 s2e_init() {
-    local image='kyechou/s2e:latest'
+    local image='s2e:latest'
     local build_cmd=
     if [[ $RECONF -eq 1 ]]; then
         build_cmd="$(
@@ -246,7 +246,7 @@ EOM
 
 # This will build llvm, z3, gtest, and klee from within S2E.
 build_s2e_libps_deps() {
-    local image='kyechou/s2e:latest'
+    local image='s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -264,7 +264,7 @@ EOM
 }
 
 build_s2e() {
-    local image='kyechou/s2e:latest'
+    local image='s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -288,7 +288,7 @@ EOM
 # This is mostly used for populating the correct compile commands database for
 # development environments.
 build_s2e_local() {
-    local image='kyechou/s2e:latest'
+    local image='s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
@@ -307,7 +307,7 @@ EOM
 }
 
 build_s2e_image() {
-    local image='kyechou/s2e:latest'
+    local image='s2e:latest'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
