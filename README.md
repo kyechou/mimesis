@@ -20,7 +20,7 @@ $ ./depends/setup.sh
 
 If the S2E source code in `src/s2e/` is modified, you can rebuild S2E with
 
-```sh 
+```sh
 $ ./scripts/build.sh --s2e
 ```
 
@@ -29,7 +29,7 @@ $ ./scripts/build.sh --s2e
 To build Mimesis, including the example target programs, packet sender, libps,
 SystemTap modules, and the S2E plugins, please run:
 
-```sh 
+```sh
 $ ./scripts/build.sh --mimesis --stap --s2e
 ```
 
@@ -42,26 +42,26 @@ Note that this step will also patch the `bootstrap.sh` inside the project
 directory to load *all* compiled systemtap kernel modules. You can manually edit
 the `bootstrap.sh` according to the needs.
 
-```sh 
+```sh
 $ ./scripts/s2e.sh [-i <num_intfs>] -n <target program> [<arguments>]
 ```
 
 For example,
 
-```sh 
+```sh
 $ ./scripts/s2e.sh -n ./build/targets/hello-world-1
-$ ./scripts/s2e.sh -n ./build/targets/demo-router-1
+$ ./scripts/s2e.sh -n ./build/targets/demo-r1
 ```
 
 Once an S2E project is created, you can run the analysis:
 
-```sh 
+```sh
 $ ./scripts/s2e.sh -c -r
 ```
 
 To remove *all* S2E projects, run:
 
-```sh 
+```sh
 $ ./scripts/s2e.sh --rm
 ```
 
