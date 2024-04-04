@@ -32,6 +32,7 @@ endif()
 #
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 add_subdirectory(third_party/inotify-cpp EXCLUDE_FROM_ALL)
+add_subdirectory(third_party/sylvan EXCLUDE_FROM_ALL)
 find_package(Threads)
 find_package(PcapPlusPlus REQUIRED)
 find_package(KLEE REQUIRED)

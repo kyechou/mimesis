@@ -17,7 +17,7 @@ ExternalProject_Add(sylvan
         -DSYLVAN_BUILD_DOCS=OFF
         -DSYLVAN_BUILD_TESTS=ON
         -DSYLVAN_GMP=OFF
-        -DSYLVAN_STATS=OFF # We may collect BDD statistics in the future.
+        -DSYLVAN_STATS=ON
     BUILD_COMMAND cmake --build ${CMAKE_CURRENT_BINARY_DIR}
         COMMAND ctest --progress --output-on-failure
         COMMAND cmake --install ${CMAKE_CURRENT_BINARY_DIR}
@@ -30,8 +30,6 @@ ExternalProject_Add(sylvan
 
 set(sylvan_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/install/include PARENT_SCOPE)
 set(sylvan_LIBRARIES
-    m
-    pthread
     ${CMAKE_CURRENT_BINARY_DIR}/install/lib/liblace.a
     ${CMAKE_CURRENT_BINARY_DIR}/install/lib/libsylvan.a
     PARENT_SCOPE)
