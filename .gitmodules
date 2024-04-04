@@ -4,3 +4,6 @@
 [submodule "inotify-cpp"]
 	path = third_party/inotify-cpp/inotify-cpp
 	url = https://github.com/erikzenker/inotify-cpp.git
+[submodule "sylvan"]
+	path = third_party/sylvan/sylvan
+	url = https://github.com/trolando/sylvan.git

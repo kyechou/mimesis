@@ -1,0 +1,37 @@
+ExternalProject_Add(sylvan
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sylvan
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
+    INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install
+    CONFIGURE_COMMAND cmake
+        -B ${CMAKE_CURRENT_BINARY_DIR}
+        -S ${CMAKE_CURRENT_SOURCE_DIR}/sylvan
+        -DCMAKE_C_COMPILER=clang
+        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/install
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        -DCMAKE_C_FLAGS=-fPIC
+        -DCMAKE_CXX_FLAGS=-fPIC
+        -DSYLVAN_BUILD_EXAMPLES=OFF
+        -DSYLVAN_BUILD_DOCS=OFF
+        -DSYLVAN_BUILD_TESTS=ON
+        -DSYLVAN_GMP=OFF
+        -DSYLVAN_STATS=OFF # We may collect BDD statistics in the future.
+    BUILD_COMMAND cmake --build ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ctest --progress --output-on-failure
+        COMMAND cmake --install ${CMAKE_CURRENT_BINARY_DIR}
+    BUILD_BYPRODUCTS
+        ${CMAKE_CURRENT_BINARY_DIR}/install/lib/liblace.a
+        ${CMAKE_CURRENT_BINARY_DIR}/install/lib/libsylvan.a
+    INSTALL_COMMAND ""
+    STEP_TARGETS build
+)
+
+set(sylvan_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/install/include PARENT_SCOPE)
+set(sylvan_LIBRARIES
+    m
+    pthread
+    ${CMAKE_CURRENT_BINARY_DIR}/install/lib/liblace.a
+    ${CMAKE_CURRENT_BINARY_DIR}/install/lib/libsylvan.a
+    PARENT_SCOPE)
