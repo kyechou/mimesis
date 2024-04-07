@@ -8,7 +8,7 @@
 #include <string>
 #include <unistd.h>
 
-#include "libps/PacketSet.hpp"
+#include "libps/packetset.hpp"
 
 class PacketSetTests : public testing::Test {
 protected:
@@ -36,7 +36,7 @@ protected:
 };
 
 TEST_F(PacketSetTests, ctor) {
-    PacketSet ps;
+    ps::PacketSet ps;
     EXPECT_EQ(ps.to_string(), "(Unimplemented)");
 
     auto expr = klee::ConstantExpr::create(42, 32);

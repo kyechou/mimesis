@@ -1,10 +1,12 @@
-#ifndef MIMESIS_SRC_PACKETSET_HPP
-#define MIMESIS_SRC_PACKETSET_HPP
+#ifndef LIBPS_PACKETSET_HPP
+#define LIBPS_PACKETSET_HPP
 
 #include <klee/Expr.h>
 #include <klee/util/Ref.h>
 #include <set>
 #include <string>
+
+namespace ps {
 
 class PacketSet {
 private:
@@ -22,4 +24,6 @@ public:
     std::string to_string() const;
 };
 
-#endif // MIMESIS_SRC_PACKETSET_HPP
+} // namespace ps
+
+#endif // LIBPS_PACKETSET_HPP

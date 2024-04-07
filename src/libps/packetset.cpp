@@ -1,10 +1,12 @@
-#include "libps/PacketSet.hpp"
+#include "libps/packetset.hpp"
 
 #include <iostream>
 
-#include <sylvan.h>
-#include <sylvan_common.h>
-#include <sylvan_mtbdd.h>
+// #include <sylvan.h>
+
+namespace ps {
+
+// using namespace sylvan;
 
 PacketSet::PacketSet() {
     std::cout << "Constructing an empty packet set" << std::endl;
@@ -17,18 +19,6 @@ PacketSet::PacketSet(const std::set<klee::ref<klee::Expr>> &constraints
     for (const auto &c : constraints) {
         std::cout << c << std::endl;
     }
-
-    lace_start(/*n_workers=*/1, /*dqsize=*/0);
-    sylvan::sylvan_set_limits(/*memory_cap=*/512 * 1024 * 1024, // 512 MB
-                              /*table_ratio=*/1, /*initial_ratio=*/5);
-    sylvan::sylvan_init_package();
-    sylvan::sylvan_init_mtbdd();
-
-    // do stuff
-
-    sylvan::sylvan_stats_report(stdout);
-    sylvan::sylvan_quit();
-    lace_stop();
 }
 
 PacketSet PacketSet::intersect(const PacketSet &ps [[maybe_unused]]) const {
@@ -47,3 +37,5 @@ bool PacketSet::empty() const {
 std::string PacketSet::to_string() const {
     return "(Unimplemented)";
 }
+
+} // namespace ps
