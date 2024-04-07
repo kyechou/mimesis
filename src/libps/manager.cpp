@@ -1,9 +1,12 @@
 #include "libps/manager.hpp"
 
+#include <cerrno>
 #include <cstdio>
 #include <sylvan.h>
 #include <sylvan_common.h>
 #include <sylvan_obj.hpp>
+
+#include "lib/logger.hpp"
 
 // `third_party/sylvan/sylvan/examples/simple.cpp`:
 //
@@ -115,7 +118,7 @@ void Manager::report_stats(FILE *out) const {
     sylvan::sylvan_stats_report(out);
     lace_suspend();
     if (fflush(out) != 0) {
-        // TODO: error handling
+        error("fflush() failed", errno);
     }
 }
 
