@@ -84,26 +84,24 @@
 
 namespace ps {
 
-using namespace sylvan;
-
 Manager::Manager() {
     // The worker threads will busy-wait until a task is offered.
     lace_start(/*n_workers=*/1, /*dqsize=*/0);
-    sylvan_set_limits(
+    sylvan::sylvan_set_limits(
         /*memory_cap=*/1UL * 1024 * 1024 * 1024, // 1 GB (value in bytes)
         /*table_ratio=*/1,  // Node table is twice (2^1) as big as the operation
                             // cache.
         /*initial_ratio=*/5 // The initial tables are 2^5 times smaller than the
                             // max size
     );
-    sylvan_init_package();
-    Sylvan::initBdd();
+    sylvan::sylvan_init_package();
+    sylvan::Sylvan::initBdd();
     lace_suspend();
 }
 
 Manager::~Manager() {
     lace_resume();
-    sylvan_quit();
+    sylvan::sylvan_quit();
     lace_stop();
 }
 
@@ -112,9 +110,9 @@ Manager &Manager::get() {
     return instance;
 }
 
-void Manager::report_stats(FILE *out) {
+void Manager::report_stats(FILE *out) const {
     lace_resume();
-    sylvan_stats_report(out);
+    sylvan::sylvan_stats_report(out);
     lace_suspend();
     if (fflush(out) != 0) {
         // TODO: error handling

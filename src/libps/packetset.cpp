@@ -2,11 +2,7 @@
 
 #include <iostream>
 
-// #include <sylvan.h>
-
 namespace ps {
-
-// using namespace sylvan;
 
 PacketSet::PacketSet() {
     std::cout << "Constructing an empty packet set" << std::endl;

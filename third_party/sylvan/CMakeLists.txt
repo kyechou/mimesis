@@ -22,14 +22,14 @@ ExternalProject_Add(sylvan
         COMMAND ctest --progress --output-on-failure
         COMMAND cmake --install ${CMAKE_CURRENT_BINARY_DIR}
     BUILD_BYPRODUCTS
-        ${CMAKE_CURRENT_BINARY_DIR}/install/lib/liblace.a
         ${CMAKE_CURRENT_BINARY_DIR}/install/lib/libsylvan.a
+        ${CMAKE_CURRENT_BINARY_DIR}/install/lib/liblace.a
     INSTALL_COMMAND ""
     STEP_TARGETS build
 )
 
 set(sylvan_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/install/include PARENT_SCOPE)
 set(sylvan_LIBRARIES
-    ${CMAKE_CURRENT_BINARY_DIR}/install/lib/liblace.a
     ${CMAKE_CURRENT_BINARY_DIR}/install/lib/libsylvan.a
+    ${CMAKE_CURRENT_BINARY_DIR}/install/lib/liblace.a
     PARENT_SCOPE)

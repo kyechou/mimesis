@@ -40,22 +40,7 @@ find_package(LLVM REQUIRED)
 find_package(Z3 REQUIRED)
 
 #
-# configure the sources and directories
-#
-set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-
-#
-# build library sources
-#
-FILE(GLOB_RECURSE LIB_SRCS CONFIGURE_DEPENDS ${SRC_DIR}/lib/*.cpp)
-add_library(mimesis_libs OBJECT ${LIB_SRCS})
-target_include_directories(mimesis_libs PUBLIC ${SRC_DIR})
-target_link_libraries(mimesis_libs PUBLIC
-    PcapPlusPlus::PcapPlusPlus
-)
-
-#
-# build src and target programs
+# build libraries and programs
 #
 add_subdirectory(src)
 add_subdirectory(targets)

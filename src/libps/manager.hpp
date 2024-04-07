@@ -19,7 +19,7 @@ public:
 
     static Manager &get();
 
-    void report_stats(FILE *out);
+    void report_stats(FILE *out) const;
 };
 
 } // namespace ps
