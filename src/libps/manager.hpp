@@ -48,6 +48,8 @@ public:
      */
     std::pair<uint32_t, uint32_t>
     get_variable_offset(const std::string &var_name) const;
+    void suspend_threads() const;
+    void resume_threads() const;
     /**
      * Write sylvan stats report to `out`.
      */

@@ -24,7 +24,6 @@ void Manager::init(size_t n_workers,
     sylvan::sylvan_set_limits(memory_cap, table_ratio, initial_ratio);
     sylvan::sylvan_init_package();
     sylvan::Sylvan::initBdd();
-    lace_suspend();
     _initialized = true;
 }
 
@@ -34,7 +33,6 @@ Manager::~Manager() {
         return;
     }
 
-    lace_resume();
     sylvan::sylvan_quit();
     lace_stop();
 }
@@ -67,15 +65,21 @@ Manager::get_variable_offset(const std::string &var_name) const {
     return it->second;
 }
 
+void Manager::suspend_threads() const {
+    lace_suspend();
+}
+
+void Manager::resume_threads() const {
+    lace_resume();
+}
+
 void Manager::report_stats(FILE *out) const {
     if (!_initialized) {
         warn("libps is not initialized");
         return;
     }
 
-    lace_resume();
     sylvan::sylvan_stats_report(out);
-    lace_suspend();
     if (fflush(out) != 0) {
         error("fflush() failed", errno);
     }
