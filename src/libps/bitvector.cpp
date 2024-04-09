@@ -192,14 +192,29 @@ BitVector BitVector::map2(
     return res;
 }
 
-BitVector BitVector::eq(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::eq(const BitVector &other) const {
+    BitVector res(/*width=*/1, true);
+    sylvan::Bdd &res_bdd = res[0];
+
+    if (this->width() != other.width()) {
+        res_bdd = sylvan::Bdd::bddZero();
+        return res;
+    }
+
+    for (size_t i = 0; i < this->width(); ++i) {
+        res_bdd &= this->bv[i].Xnor(other[i]);
+
+        if (res_bdd.isZero()) {
+            // The i-th bits can never be equal. Return false.
+            break;
+        }
+    }
+
+    return res;
 }
 
-BitVector BitVector::ne(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::ne(const BitVector &other) const {
+    return this->eq(other).bv_not();
 }
 
 BitVector BitVector::ult(const BitVector &other [[maybe_unused]]) const {
@@ -242,64 +257,76 @@ BitVector BitVector::sge(const BitVector &other [[maybe_unused]]) const {
     return {};
 }
 
-BitVector BitVector::operator==(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator==(const BitVector &other) const {
+    return this->eq(other);
 }
 
-BitVector BitVector::operator!=(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator!=(const BitVector &other) const {
+    return this->ne(other);
 }
 
-BitVector BitVector::operator<(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator<(const BitVector &other) const {
+    return this->ult(other);
 }
 
-BitVector BitVector::operator<=(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator<=(const BitVector &other) const {
+    return this->ule(other);
 }
 
-BitVector BitVector::operator>(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator>(const BitVector &other) const {
+    return this->ugt(other);
 }
 
-BitVector BitVector::operator>=(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator>=(const BitVector &other) const {
+    return this->uge(other);
 }
 
-BitVector BitVector::bv_and(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::bv_and(const BitVector &other) const {
+    assert(this->width() == other.width());
+    BitVector res;
+    res.bv.reserve(this->width());
+
+    for (size_t i = 0; i < this->width(); ++i) {
+        res.bv.push_back(this->bv[i] & other[i]);
+    }
+
+    return res;
 }
 
-BitVector BitVector::bv_or(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::bv_or(const BitVector &other) const {
+    assert(this->width() == other.width());
+    BitVector res;
+    res.bv.reserve(this->width());
+
+    for (size_t i = 0; i < this->width(); ++i) {
+        res.bv.push_back(this->bv[i] | other[i]);
+    }
+
+    return res;
 }
 
-BitVector BitVector::bv_xor(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::bv_xor(const BitVector &other) const {
+    assert(this->width() == other.width());
+    BitVector res;
+    res.bv.reserve(this->width());
+
+    for (size_t i = 0; i < this->width(); ++i) {
+        res.bv.push_back(this->bv[i] ^ other[i]);
+    }
+
+    return res;
 }
 
-BitVector BitVector::operator&(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator&(const BitVector &other) const {
+    return this->bv_and(other);
 }
 
-BitVector BitVector::operator|(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator|(const BitVector &other) const {
+    return this->bv_or(other);
 }
 
-BitVector BitVector::operator^(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator^(const BitVector &other) const {
+    return this->bv_xor(other);
 }
 
 BitVector BitVector::shl(const size_t distance [[maybe_unused]]) const {
@@ -328,13 +355,18 @@ BitVector BitVector::operator>>(const size_t distance [[maybe_unused]]) const {
 }
 
 BitVector BitVector::bv_not() const {
-    error("Unimplemented");
-    return {};
+    BitVector res;
+    res.bv.reserve(this->width());
+
+    for (size_t i = 0; i < this->width(); ++i) {
+        res.bv.push_back(~this->bv[i]);
+    }
+
+    return res;
 }
 
 BitVector BitVector::operator~() const {
-    error("Unimplemented");
-    return {};
+    return this->bv_not();
 }
 
 BitVector BitVector::add(const BitVector &other [[maybe_unused]]) const {
