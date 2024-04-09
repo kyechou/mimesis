@@ -44,8 +44,9 @@ void Manager::register_symbolic_variable(const std::string &var_name,
         return;
     }
 
+    static uint32_t starting_bddnode_index = 0;
     auto res = _variables.insert({
-        var_name, {_starting_bddnode_index, nbits}
+        var_name, {starting_bddnode_index, nbits}
     });
 
     if (!res.second) {
@@ -53,7 +54,7 @@ void Manager::register_symbolic_variable(const std::string &var_name,
               "' more than once");
     }
 
-    _starting_bddnode_index += nbits;
+    starting_bddnode_index += nbits;
 }
 
 std::pair<uint32_t, uint32_t>
@@ -66,10 +67,20 @@ Manager::get_variable_offset(const std::string &var_name) const {
 }
 
 void Manager::suspend_threads() const {
+    if (!_initialized) {
+        warn("libps is not initialized");
+        return;
+    }
+
     lace_suspend();
 }
 
 void Manager::resume_threads() const {
+    if (!_initialized) {
+        warn("libps is not initialized");
+        return;
+    }
+
     lace_resume();
 }
 

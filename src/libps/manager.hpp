@@ -12,7 +12,6 @@ namespace ps {
 class Manager {
 private:
     bool _initialized = false;
-    uint32_t _starting_bddnode_index = 0;
     std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> _variables;
 
     Manager() = default;
@@ -25,6 +24,9 @@ public:
     Manager &operator=(Manager &&) = delete;
     ~Manager();
 
+    /**
+     * Get the libps manager singleton.
+     */
     static Manager &get();
 
     /**
@@ -48,7 +50,13 @@ public:
      */
     std::pair<uint32_t, uint32_t>
     get_variable_offset(const std::string &var_name) const;
+    /**
+     * Suspend the lace worker threads. (They busy-wait while idling.)
+     */
     void suspend_threads() const;
+    /**
+     * Resume the lace worker threads if suspended.
+     */
     void resume_threads() const;
     /**
      * Write sylvan stats report to `out`.
