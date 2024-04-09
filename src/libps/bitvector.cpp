@@ -217,24 +217,44 @@ BitVector BitVector::ne(const BitVector &other) const {
     return this->eq(other).bv_not();
 }
 
-BitVector BitVector::ult(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+static inline sylvan::Bdd bdd_lt(const sylvan::Bdd &a, const sylvan::Bdd &b) {
+    return (!a) & b;
 }
 
-BitVector BitVector::ule(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::ult(const BitVector &other) const {
+    assert(this->width() == other.width());
+    assert(this->width() > 0);
+
+    BitVector res(/*width=*/1, bdd_lt(this->bv[0], other[0]));
+    sylvan::Bdd &res_bdd = res[0];
+
+    for (size_t i = 1; i < this->width(); ++i) {
+        res_bdd &= this->bv[i].Xnor(other[i]);
+        res_bdd |= bdd_lt(this->bv[i], other[i]);
+    }
+
+    return res;
 }
 
-BitVector BitVector::ugt(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::ule(const BitVector &other) const {
+    assert(this->width() == other.width());
+    BitVector res(/*width=*/1, true);
+    sylvan::Bdd &res_bdd = res[0];
+
+    for (size_t i = 0; i < this->width(); ++i) {
+        res_bdd &= this->bv[i].Xnor(other[i]);
+        res_bdd |= bdd_lt(this->bv[i], other[i]);
+    }
+
+    return res;
 }
 
-BitVector BitVector::uge(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::ugt(const BitVector &other) const {
+    return other.ult(*this);
+}
+
+BitVector BitVector::uge(const BitVector &other) const {
+    return other.ule(*this);
 }
 
 BitVector BitVector::slt(const BitVector &other [[maybe_unused]]) const {
@@ -477,9 +497,9 @@ BitVector BitVector::select(const BitVector &condition [[maybe_unused]],
     return {};
 }
 
-BitVector BitVector::ite(const BitVector &condition [[maybe_unused]],
-                         const BitVector &true_result [[maybe_unused]],
-                         const BitVector &false_result [[maybe_unused]]) {
+BitVector BitVector::ite(const BitVector &condition,
+                         const BitVector &true_result,
+                         const BitVector &false_result) {
     return BitVector::select(condition, true_result, false_result);
 }
 
