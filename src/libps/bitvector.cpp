@@ -344,14 +344,12 @@ BitVector BitVector::ashr(const size_t distance [[maybe_unused]]) const {
     return {};
 }
 
-BitVector BitVector::operator<<(const size_t distance [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator<<(const size_t distance) const {
+    return this->shl(distance);
 }
 
-BitVector BitVector::operator>>(const size_t distance [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator>>(const size_t distance) const {
+    return this->lshr(distance);
 }
 
 BitVector BitVector::bv_not() const {
@@ -396,54 +394,54 @@ BitVector BitVector::sdiv(const BitVector &divisor [[maybe_unused]],
     return {};
 }
 
-BitVector BitVector::operator+(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator+(const BitVector &other) const {
+    return this->add(other);
 }
 
-BitVector BitVector::operator-(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator-(const BitVector &other) const {
+    return this->sub(other);
 }
 
-BitVector BitVector::operator*(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator*(const BitVector &other) const {
+    return this->mul(other);
 }
 
-BitVector BitVector::operator/(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator/(const BitVector &other) const {
+    BitVector remainder;
+    return this->udiv(other, remainder);
 }
 
-BitVector BitVector::operator%(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::operator%(const BitVector &other) const {
+    BitVector remainder;
+    this->udiv(other, remainder);
+    return remainder;
 }
 
-BitVector &BitVector::operator+=(const BitVector &other [[maybe_unused]]) {
-    error("Unimplemented");
+BitVector &BitVector::operator+=(const BitVector &other) {
+    *this = this->add(other);
     return *this;
 }
 
-BitVector &BitVector::operator-=(const BitVector &other [[maybe_unused]]) {
-    error("Unimplemented");
+BitVector &BitVector::operator-=(const BitVector &other) {
+    *this = this->sub(other);
     return *this;
 }
 
-BitVector &BitVector::operator*=(const BitVector &other [[maybe_unused]]) {
-    error("Unimplemented");
+BitVector &BitVector::operator*=(const BitVector &other) {
+    *this = this->mul(other);
     return *this;
 }
 
-BitVector &BitVector::operator/=(const BitVector &other [[maybe_unused]]) {
-    error("Unimplemented");
+BitVector &BitVector::operator/=(const BitVector &other) {
+    BitVector remainder;
+    *this = this->udiv(other, remainder);
     return *this;
 }
 
-BitVector &BitVector::operator%=(const BitVector &other [[maybe_unused]]) {
-    error("Unimplemented");
-    return *this;
+BitVector &BitVector::operator%=(const BitVector &other) {
+    BitVector remainder;
+    this->udiv(other, remainder);
+    return *this = remainder;
 }
 
 BitVector BitVector::zext(const size_t ext_dist [[maybe_unused]]) const {
@@ -482,8 +480,7 @@ BitVector BitVector::select(const BitVector &condition [[maybe_unused]],
 BitVector BitVector::ite(const BitVector &condition [[maybe_unused]],
                          const BitVector &true_result [[maybe_unused]],
                          const BitVector &false_result [[maybe_unused]]) {
-    error("Unimplemented");
-    return {};
+    return BitVector::select(condition, true_result, false_result);
 }
 
 } // namespace ps
