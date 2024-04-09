@@ -47,6 +47,8 @@ public:
      * `width` must be no greater than 64.
      */
     BitVector(size_t width, uint64_t value);
+
+    BitVector() = default;
     BitVector(const BitVector &) = default;
     BitVector(BitVector &&) = default;
     BitVector &operator=(const BitVector &) = default;
@@ -65,7 +67,7 @@ public:
     /**
      * Get the BDD at index `i`. `i` must be less than the current bit-width.
      */
-    sylvan::Bdd &operator[](size_t i); // Consider disabling this.
+    sylvan::Bdd &operator[](size_t i);
     /**
      * Get the BDD at index `i`. `i` must be less than the current bit-width.
      */
@@ -88,16 +90,18 @@ public:
      */
     size_t num_var_bits() const;
     /**
-     * Returns the number of unique Boolean variables in all bit BDDs.
+     * Returns the number of unique Boolean variables in all bit BDDs. Not
+     * thread-safe!
      */
     size_t num_bdd_boolean_vars() const;
     /**
-     * Returns the unique Boolean variables in all bit BDDs.
+     * Returns the unique Boolean variables in all bit BDDs. Not thread-safe!
      */
     std::set<uint32_t> bdd_boolean_vars() const;
     /**
      * Returns the concrete value as zero-extended 64-bit unsigned integer if
      * the bit-vector is constant. Otherwise, abort with an error message.
+     * `width` must be no greater than 64.
      *
      * Bits with smaller bit-vector indices are interpreted as less significant.
      * For example, bv:[1,0,1,1,0] is interpreted as 13.

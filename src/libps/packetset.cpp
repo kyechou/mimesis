@@ -29,7 +29,7 @@ PacketSet::PacketSet(const std::set<klee::ref<klee::Expr>> &exprs)
     for (const auto &e : exprs) {
         std::cout << e << std::endl;
         PacketSet ps(e);
-        bdd *= ps.bdd;
+        this->bdd *= ps.bdd;
     }
 }
 
@@ -42,12 +42,12 @@ PacketSet PacketSet::empty_set() {
 }
 
 bool PacketSet::empty() const {
-    return bdd.isZero();
+    return this->bdd.isZero();
 }
 
 std::string PacketSet::to_string() const {
     // TODO: Implement
-    // bdd.GetBDD();
+    // this->bdd.GetBDD();
     return "(Unimplemented)";
 }
 
