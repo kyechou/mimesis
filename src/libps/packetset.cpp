@@ -3,11 +3,14 @@
 #include <iostream>
 #include <klee/Expr.h>
 #include <klee/util/Ref.h>
+#include <llvm/ADT/APInt.h>
 #include <llvm/Support/Casting.h>
 #include <string>
 #include <sylvan_obj.hpp>
+#include <variant>
 
 #include "lib/logger.hpp"
+#include "libps/manager.hpp"
 
 namespace ps {
 
@@ -15,13 +18,8 @@ PacketSet::PacketSet() : bdd(sylvan::Bdd::bddZero()) {}
 
 PacketSet::PacketSet(const sylvan::Bdd &from) : bdd(from) {}
 
-PacketSet::PacketSet(const klee::ref<klee::Expr> &expr) {
-    auto transform_func_it = klee_expr_transform_map.find(expr->getKind());
-    if (transform_func_it == klee_expr_transform_map.end()) {
-        error("Invalid klee expr kind " + std::to_string(expr->getKind()));
-    }
-    bdd = transform_func_it->second(expr);
-}
+PacketSet::PacketSet(const klee::ref<klee::Expr> &expr)
+    : bdd(bdd_from_klee_expr(expr)) {}
 
 PacketSet::PacketSet(const std::set<klee::ref<klee::Expr>> &exprs)
     : bdd(sylvan::Bdd::bddOne()) {
@@ -43,10 +41,6 @@ PacketSet PacketSet::empty_set() {
     return sylvan::Bdd::bddZero();
 }
 
-// PacketSet PacketSet::intersect(const PacketSet &ps [[maybe_unused]]) const {
-//     return *this;
-// }
-
 bool PacketSet::empty() const {
     return bdd.isZero();
 }
@@ -55,6 +49,19 @@ std::string PacketSet::to_string() const {
     // TODO: Implement
     // bdd.GetBDD();
     return "(Unimplemented)";
+}
+
+llvm::APInt apint_from_klee_constant_expr(const klee::ref<klee::Expr> &e) {
+    const klee::ref<klee::ConstantExpr> &ce = llvm::cast<klee::ConstantExpr>(e);
+    return ce->getAPValue();
+}
+
+sylvan::Bdd bdd_from_klee_expr(const klee::ref<klee::Expr> &e) {
+    auto transform_func_it = klee_expr_transform_map.find(e->getKind());
+    if (transform_func_it == klee_expr_transform_map.end()) {
+        error("Invalid klee expr kind: " + std::to_string(e->getKind()));
+    }
+    return transform_func_it->second(e);
 }
 
 sylvan::Bdd bdd_from_klee_constant_expr(const klee::ref<klee::Expr> &e) {
@@ -66,48 +73,98 @@ sylvan::Bdd bdd_from_klee_constant_expr(const klee::ref<klee::Expr> &e) {
     }
 }
 
+/**
+ * See `klee::ExprEvaluator::visitRead` and `klee::ExprEvaluator::evalRead`.
+ */
 sylvan::Bdd bdd_from_klee_read_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ReadExpr> &re = llvm::cast<klee::ReadExpr>(e);
+    re->dump();
     const klee::ref<klee::Expr> &index = re->getIndex();
-    const klee::ref<klee::ConstantExpr> &cidx =
+    const klee::ref<klee::ConstantExpr> &concrete_idx =
         llvm::dyn_cast<klee::ConstantExpr>(index);
 
-    if (!cidx) {
-        // TODO(FUTURE): Consider `klee::ExecutionState::toConstant` to
-        // concretize the index value
+    if (!concrete_idx) {
+        // Consider `klee::ExecutionState::toConstant` to concretize the index
+        // value, or construct a BDD for the symbolic index and see how many
+        // possible values it can be (sat count?)
         index->dump();
-        error("Non-constant array indices are not currently handled "
+        error("Non-constant array indices are not currently supported "
               "(consider concretization).");
     }
 
-    error("TODO: Implement");
-    // cidx->getAPValue().isSignedIntN(0);
-    // re->getUpdates();
+    // Evaluate the read expression.
+    // See `klee::ExprEvaluator::evalRead` for reference.
+    const klee::UpdateListPtr &ul = re->getUpdates();
+
+    for (klee::UpdateNodePtr un = ul->getHead(); un; un = un->getNext()) {
+        const klee::ref<klee::Expr> &ui = un->getIndex();
+        if (auto cui = llvm::dyn_cast<klee::ConstantExpr>(ui)) {
+            if (cui->getZExtValue() == concrete_idx->getZExtValue()) {
+                return bdd_from_klee_expr(un->getValue());
+            }
+        } else {
+            // update node index is symbolic, which may or may not be
+            // `concrete_idx`. We are not supporting this for now. Consider
+            // explore the possible values in the future.
+            ui->dump();
+            error("Non-constant array update node index are not currently "
+                  "supported (consider concretization)");
+        }
+    }
+
+    // Return the concrete byte directly if this is a concrete array.
+    if (ul->getRoot()->isConstantArray() &&
+        concrete_idx->getZExtValue() < ul->getRoot()->getSize()) {
+        // TODO: We may not want to convert the ConstantExpr to Bdd here, but
+        // return the ConstantExpr directly instead.
+        return bdd_from_klee_constant_expr(
+            ul->getRoot()->getConstantValues()[concrete_idx->getZExtValue()]);
+    }
+
+    // TODO: Get the symbolic bit-vector byte.
+    // auto [start_idx, len] = ps::Manager::get().get_variable_offset(var_name);
+    auto [start_idx, len] =
+        ps::Manager::get().get_variable_offset(ul->getRoot()->getName());
+    info(ul->getRoot()->getName() + " :: starting bit-index: " +
+         std::to_string(start_idx) + ", len: " + std::to_string(len));
+    info("Concrete array (byte) index: " +
+         std::to_string(concrete_idx->getZExtValue()));
+
     return {};
 }
 
 sylvan::Bdd bdd_from_klee_select_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SelectExpr> &se = llvm::cast<klee::SelectExpr>(e);
     se->dump();
+    info("---> Select");
     return {};
 }
 
 sylvan::Bdd bdd_from_klee_concat_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ConcatExpr> &ce = llvm::cast<klee::ConcatExpr>(e);
     ce->dump();
+    info("Concat width: " + std::to_string(ce->getWidth()));
+    info("Concat left width: " + std::to_string(ce->getLeft()->getWidth()));
+    info("Concat right width: " + std::to_string(ce->getRight()->getWidth()));
+    bdd_from_klee_expr(ce->getLeft());
+    bdd_from_klee_expr(ce->getRight());
+    error("TODO: Implement");
     return {};
 }
 
 sylvan::Bdd bdd_from_klee_extract_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ExtractExpr> &ee = llvm::cast<klee::ExtractExpr>(e);
     ee->dump();
-    return {};
+    info("Extract offset: " + std::to_string(ee->getOffset()) +
+         ", width: " + std::to_string(ee->getWidth()));
+    return bdd_from_klee_expr(ee->getExpr());
 }
 
 sylvan::Bdd bdd_from_klee_zext_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ZExtExpr> &zee = llvm::cast<klee::ZExtExpr>(e);
     zee->dump();
-    return {};
+    info("ZExt width: " + std::to_string(zee->getWidth()));
+    return bdd_from_klee_expr(zee->getSrc());
 }
 
 sylvan::Bdd bdd_from_klee_sext_expr(const klee::ref<klee::Expr> &e) {
@@ -158,15 +215,43 @@ sylvan::Bdd bdd_from_klee_srem_expr(const klee::ref<klee::Expr> &e) {
     return {};
 }
 
+/**
+ * And, Or, Xor, Not may be used as (1) Boolean logical operations or (2)
+ * bit-vector, bitwise operations.
+ * IIRC, BDD operations are all Boolean logical operations, so we need to
+ * implement the bitwise operations ourselves by recursively applying the
+ * transformation.
+ */
+
 sylvan::Bdd bdd_from_klee_and_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::AndExpr> &ande = llvm::cast<klee::AndExpr>(e);
     ande->dump();
+
+    // Construct the left and right operands.
+    sylvan::Bdd left_bdd = bdd_from_klee_expr(ande->getLeft());
+    sylvan::Bdd right_bdd = bdd_from_klee_expr(ande->getRight());
+
+    // TODO: Make sure the bitwidths of both operands are consistent.
+
+    // TODO: Apply the binary transformation recursively.
+    // return bdd_apply(klee::Expr::Kind::And, left, right); // recursive call
+
     return {};
 }
 
 sylvan::Bdd bdd_from_klee_or_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::OrExpr> &ore = llvm::cast<klee::OrExpr>(e);
     ore->dump();
+
+    // Construct the left and right operands.
+    sylvan::Bdd left_bdd = bdd_from_klee_expr(ore->getLeft());
+    sylvan::Bdd right_bdd = bdd_from_klee_expr(ore->getRight());
+
+    // TODO: Make sure the bitwidths of both operands are consistent.
+
+    // TODO: Apply the binary transformation recursively.
+    // return bdd_apply(klee::Expr::Kind::Or, left, right); // recursive call
+
     return {};
 }
 
@@ -188,9 +273,32 @@ sylvan::Bdd bdd_from_klee_shl_expr(const klee::ref<klee::Expr> &e) {
     return {};
 }
 
+/**
+ * Logical shift right (zero fill)
+ * E.g., `lshr i32 0b100, 1` yields 0b010
+ * See https://llvm.org/docs/LangRef.html#lshr-instruction
+ */
 sylvan::Bdd bdd_from_klee_lshr_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::LShrExpr> &lshr = llvm::cast<klee::LShrExpr>(e);
     lshr->dump();
+
+    // Construct the left and right operands.
+    sylvan::Bdd left_bdd = bdd_from_klee_expr(lshr->getLeft());
+    const klee::ref<klee::Expr> &shift_dist = lshr->getRight();
+    const klee::ref<klee::ConstantExpr> &cshift_dist =
+        llvm::dyn_cast<klee::ConstantExpr>(shift_dist);
+    // sylvan::Bdd right_bdd = bdd_from_klee_expr(lshr->getRight());
+
+    // Here we only support the right operand (op2) to be concrete for now.
+    if (!cshift_dist) {
+        // TODO(FUTURE): Consider `klee::ExecutionState::toConstant` to
+        // concretize the value
+        shift_dist->dump();
+        error("Non-constant lshr distances are not currently handled "
+              "(consider concretization).");
+    }
+
+    // TODO
     return {};
 }
 
@@ -220,11 +328,41 @@ sylvan::Bdd bdd_from_klee_ult_expr(const klee::ref<klee::Expr> &e) {
 
 sylvan::Bdd bdd_from_klee_ule_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::UleExpr> &ule = llvm::cast<klee::UleExpr>(e);
-    info("bdd_from_klee_ule_expr: Unsigned Less than or Equal to");
     ule->dump();
 
-    // TODO
+    // Construct the left and right operands.
+    std::variant<llvm::APInt, sylvan::Bdd> left, right;
+    unsigned int left_bitwidth [[maybe_unused]] = 0,
+                               right_bitwidth [[maybe_unused]] = 0;
 
+    if (ule->getLeft()->getKind() == klee::Expr::Kind::Constant) {
+        left = apint_from_klee_constant_expr(ule->getLeft());
+        auto &apint = std::get<llvm::APInt>(left);
+        left_bitwidth = apint.getBitWidth();
+    } else {
+        left = bdd_from_klee_expr(ule->getLeft());
+        auto &bdd = std::get<sylvan::Bdd>(left);
+
+        // DEBUG
+        info("left bdd node count: " + std::to_string(bdd.NodeCount()));
+    }
+
+    if (ule->getRight()->getKind() == klee::Expr::Kind::Constant) {
+        right = apint_from_klee_constant_expr(ule->getRight());
+    } else {
+        right = bdd_from_klee_expr(ule->getRight());
+    }
+
+    // TODO: Make sure the bitwidths of both operands are consistent.
+
+    // if (left.max() <= right.min()) {
+    //     return T(1);
+    // } else if (left.min() > right.max()) {
+    //     return T(0);
+    // }
+
+    // TODO: Apply the binary transformation recursively.
+    // return bdd_apply(klee::Expr::Kind::Ule, left, right); // recursive call
     return {};
 }
 

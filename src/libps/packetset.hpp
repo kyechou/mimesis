@@ -4,6 +4,7 @@
 #include <functional>
 #include <klee/Expr.h>
 #include <klee/util/Ref.h>
+#include <llvm/ADT/APInt.h>
 #include <set>
 #include <string>
 #include <sylvan_obj.hpp>
@@ -17,7 +18,7 @@ private:
 
 public:
     /**
-     * Construct the empty packet set.
+     * Construct the empty packet set by default.
      */
     PacketSet();
     PacketSet(const PacketSet &) = default;
@@ -31,16 +32,16 @@ public:
     static PacketSet universe();
 
     /**
-     * Construct the empty packet set.
+     * Construct the empty packet set that contains no packet.
      */
     static PacketSet empty_set();
-
-    // PacketSet intersect(const PacketSet &) const;
 
     bool empty() const;
     std::string to_string() const;
 };
 
+llvm::APInt apint_from_klee_constant_expr(const klee::ref<klee::Expr> &);
+sylvan::Bdd bdd_from_klee_expr(const klee::ref<klee::Expr> &);
 sylvan::Bdd bdd_from_klee_constant_expr(const klee::ref<klee::Expr> &);
 sylvan::Bdd bdd_from_klee_read_expr(const klee::ref<klee::Expr> &);
 sylvan::Bdd bdd_from_klee_select_expr(const klee::ref<klee::Expr> &);
