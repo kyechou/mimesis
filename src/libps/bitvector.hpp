@@ -193,6 +193,20 @@ public:
                          const BitVector &false_result);
 };
 
-} // namespace  ps
+} // namespace ps
+
+// Maybe useful functions in sylvan:
+//
+// mtbdd_satcount(bdd, number_of_vars): compute the number of minterms
+// (assignments that lead to True) for a function with <number_of_vars>
+// variables; we don’t need to know the exact variables that may be in the BDD,
+// just how many there are.
+//
+// sylvan_pathcount(bdd): compute the number of distinct paths to True.
+//
+// mtbdd_nodecount(bdd): compute the number of nodes (and leaves) in the BDD.
+//
+// mtbdd_nodecount_more(array, length): compute the number of nodes (and leaves)
+// in the array of BDDs.
 
 #endif // LIBPS_BITVECTOR_HPP
