@@ -69,62 +69,47 @@ protected:
      * encountered in demo-r1.
      */
     klee::ref<klee::Expr> create_expr_1() {
-        // (Ule (ZExt w64 (Extract w16 0 (And w64 (Or w64 (LShr w64 N0:(ZExt w64
-        // (Extract w16 0 (Extract w32 0 (ZExt w64 (ReadLSB w48 0xc
-        // v0_ingress_packet_0)))))
-        //                                                           0x8)
-        //                                                 (Shl w64 N0 0x8))
-        //                                         0xffff)))
-        //       0x5ff)
-        // (ZExt w64 (Extract w16 0 (And w64 (Or w64 (LShr w64 N0:(ZExt w64
-        // (Extract w16 0 (Extract w32 0 (ZExt w64 (ReadLSB w48 0xc
-        // v0_ingress_packet_0)))))
-        //                                                      0x8)
-        //                                            (Shl w64 N0 0x8))
-        //                                    0xffff)))
-        // [info] ZExt width: 64
-        // (Extract w16 0 (And w64 (Or w64 (LShr w64 N0:(ZExt w64 (Extract w16 0
-        // (Extract w32 0 (ZExt w64 (ReadLSB w48 0xc v0_ingress_packet_0)))))
-        //                                            0x8)
-        //                                  (Shl w64 N0 0x8))
-        //                          0xffff))
-        // [info] Extract offset: 0, width: 16
-        // (And w64 (Or w64 (LShr w64 N0:(ZExt w64 (Extract w16 0 (Extract w32 0
-        // (ZExt w64 (ReadLSB w48 0xc v0_ingress_packet_0)))))
-        //                             0x8)
-        //                   (Shl w64 N0 0x8))
-        //           0xffff)
-        // (Or w64 (LShr w64 N0:(ZExt w64 (Extract w16 0 (Extract w32 0 (ZExt
-        // w64 (ReadLSB w48 0xc v0_ingress_packet_0)))))
-        //                    0x8)
-        //          (Shl w64 N0 0x8))
-        // (LShr w64 (ZExt w64 (Extract w16 0 (Extract w32 0 (ZExt w64 (ReadLSB
-        // w48 0xc v0_ingress_packet_0)))))
-        //            0x8)
-        // (ZExt w64 (Extract w16 0 (Extract w32 0 (ZExt w64 (ReadLSB w48 0xc
-        // v0_ingress_packet_0))))) [info] ZExt width: 64 (Extract w16 0
-        // (Extract w32 0 (ZExt w64 (ReadLSB w48 0xc v0_ingress_packet_0))))
-        // [info] Extract offset: 0, width: 16 (Extract w32 0 (ZExt w64 (ReadLSB
-        // w48 0xc v0_ingress_packet_0))) [info] Extract offset: 0, width: 32
-        // (ZExt w64 (ReadLSB w48 0xc v0_ingress_packet_0))
-        // [info] ZExt width: 64
-        // (ReadLSB w48 0xc v0_ingress_packet_0)
-
-        // TODO: Use variable `array` to create predicates and packet sets.
-        // See ReadExpr::createTempRead()
-        // https://mailman.ic.ac.uk/pipermail/klee-dev/2016-December/001523.html
-
+        // (Ule
+        //  (ZExt w64
+        //      (Extract w16 0
+        //          (And w64
+        //              (Or w64
+        //                  (LShr w64
+        //                      N0:(ZExt w64
+        //                          (Extract w16 0
+        //                              (Extract w32 0
+        //                                  (ZExt w64
+        //                                      (ReadLSB w48 0xc
+        //                                          ingress_packet)))))
+        //                      0x8)
+        //                  (Shl w64 N0 0x8))
+        //              0xffff)))
+        //  0x5ff)
+        klee::ref<klee::Expr> expr, n0;
         std::vector<klee::ref<klee::Expr>> read_exprs;
         for (int i = 0x11; i >= 0xc; --i) { // Read 6 bytes
             auto e = klee::ReadExpr::create(
                 ul, klee::ConstantExpr::create(i, klee::Expr::Int32));
             read_exprs.push_back(e);
         }
-        auto concat =
-            klee::ConcatExpr::createN(read_exprs.size(), read_exprs.data());
-
-        concat->dump();
-        return concat;
+        expr = klee::ConcatExpr::createN(read_exprs.size(), read_exprs.data());
+        expr = klee::ZExtExpr::create(expr, klee::Expr::Int64);
+        expr = klee::ExtractExpr::create(expr, 0, klee::Expr::Int32);
+        expr = klee::ExtractExpr::create(expr, 0, klee::Expr::Int16);
+        n0 = klee::ZExtExpr::create(expr, klee::Expr::Int64);
+        expr = klee::LShrExpr::create(
+            n0, klee::ConstantExpr::create(0x8, klee::Expr::Int64));
+        expr = klee::OrExpr::create(
+            expr, klee::ShlExpr::create(
+                      n0, klee::ConstantExpr::create(0x8, klee::Expr::Int64)));
+        expr = klee::AndExpr::create(
+            expr, klee::ConstantExpr::create(0xffff, klee::Expr::Int64));
+        expr = klee::ExtractExpr::create(expr, 0, klee::Expr::Int16);
+        expr = klee::ZExtExpr::create(expr, klee::Expr::Int64);
+        expr = klee::UleExpr::create(
+            expr, klee::ConstantExpr::create(0x5ff, klee::Expr::Int64));
+        expr->dump();
+        return expr;
     }
 };
 
