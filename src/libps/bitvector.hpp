@@ -41,7 +41,7 @@ public:
     /**
      * Construct a concrete bit-vector from the APInt `value`.
      */
-    BitVector(llvm::APInt value);
+    BitVector(const llvm::APInt &value);
     /**
      * Construct a concrete bit-vector from `value`.
      * `width` must be no greater than 64.

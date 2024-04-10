@@ -39,7 +39,7 @@ BitVector::BitVector(size_t width, const sylvan::Bdd &bit_val)
 BitVector::BitVector(size_t width, bool bit_val)
     : bv(width, (bit_val ? sylvan::Bdd::bddOne() : sylvan::Bdd::bddZero())) {}
 
-BitVector::BitVector(llvm::APInt value) {
+BitVector::BitVector(const llvm::APInt &value) {
     this->bv.reserve(value.getBitWidth());
     for (size_t i = 0; i < value.getBitWidth(); ++i) {
         this->bv.push_back(value[i] ? sylvan::Bdd::bddOne()
@@ -479,9 +479,11 @@ BitVector BitVector::read(const BitVector &index [[maybe_unused]]) const {
     return {};
 }
 
-BitVector BitVector::concat(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::concat(const BitVector &other) const {
+    BitVector res(*this);
+    res.bv.reserve(this->width() + other.width());
+    res.bv.insert(res.bv.end(), other.bv.begin(), other.bv.end());
+    return res;
 }
 
 BitVector BitVector::extract(const size_t offset [[maybe_unused]],
