@@ -205,7 +205,6 @@ BitVector BitVector::eq(const BitVector &other) const {
 
     for (size_t i = 0; i < this->width(); ++i) {
         res_bdd &= this->bv[i].Xnor(other[i]);
-
         if (res_bdd.isZero()) {
             // The i-th bits can never be equal. Return false.
             break;
@@ -226,15 +225,12 @@ static inline sylvan::Bdd bdd_lt(const sylvan::Bdd &a, const sylvan::Bdd &b) {
 BitVector BitVector::ult(const BitVector &other) const {
     assert(this->width() == other.width());
     assert(this->width() > 0);
-
     BitVector res(/*width=*/1, bdd_lt(this->bv[0], other[0]));
     sylvan::Bdd &res_bdd = res[0];
-
     for (size_t i = 1; i < this->width(); ++i) {
         res_bdd &= this->bv[i].Xnor(other[i]);
         res_bdd |= bdd_lt(this->bv[i], other[i]);
     }
-
     return res;
 }
 
@@ -242,12 +238,10 @@ BitVector BitVector::ule(const BitVector &other) const {
     assert(this->width() == other.width());
     BitVector res(/*width=*/1, true);
     sylvan::Bdd &res_bdd = res[0];
-
     for (size_t i = 0; i < this->width(); ++i) {
         res_bdd &= this->bv[i].Xnor(other[i]);
         res_bdd |= bdd_lt(this->bv[i], other[i]);
     }
-
     return res;
 }
 
@@ -322,11 +316,9 @@ BitVector BitVector::bv_and(const BitVector &other) const {
     assert(this->width() == other.width());
     BitVector res;
     res.bv.reserve(this->width());
-
     for (size_t i = 0; i < this->width(); ++i) {
         res.bv.push_back(this->bv[i] & other[i]);
     }
-
     return res;
 }
 
@@ -334,11 +326,9 @@ BitVector BitVector::bv_or(const BitVector &other) const {
     assert(this->width() == other.width());
     BitVector res;
     res.bv.reserve(this->width());
-
     for (size_t i = 0; i < this->width(); ++i) {
         res.bv.push_back(this->bv[i] | other[i]);
     }
-
     return res;
 }
 
@@ -346,11 +336,9 @@ BitVector BitVector::bv_xor(const BitVector &other) const {
     assert(this->width() == other.width());
     BitVector res;
     res.bv.reserve(this->width());
-
     for (size_t i = 0; i < this->width(); ++i) {
         res.bv.push_back(this->bv[i] ^ other[i]);
     }
-
     return res;
 }
 
@@ -371,6 +359,7 @@ BitVector BitVector::shl(const BitVector &distance) const {
         error("Symbolic shl distance is not currently supported.");
     }
     const uint64_t dist [[maybe_unused]] = distance.zext_value();
+    // TODO: Implement.
     error("Unimplemented");
     return {};
 }
@@ -380,6 +369,7 @@ BitVector BitVector::lshr(const BitVector &distance) const {
         error("Symbolic lshr distance is not currently supported.");
     }
     const uint64_t dist [[maybe_unused]] = distance.zext_value();
+    // TODO: Implement.
     error("Unimplemented");
     return {};
 }
@@ -389,6 +379,7 @@ BitVector BitVector::ashr(const BitVector &distance) const {
         error("Symbolic ashr distance is not currently supported.");
     }
     const uint64_t dist [[maybe_unused]] = distance.zext_value();
+    // TODO: Implement.
     error("Unimplemented");
     return {};
 }
@@ -404,11 +395,9 @@ BitVector BitVector::operator>>(const BitVector &distance) const {
 BitVector BitVector::bv_not() const {
     BitVector res;
     res.bv.reserve(this->width());
-
     for (size_t i = 0; i < this->width(); ++i) {
         res.bv.push_back(~this->bv[i]);
     }
-
     return res;
 }
 
@@ -417,11 +406,13 @@ BitVector BitVector::operator~() const {
 }
 
 BitVector BitVector::add(const BitVector &other [[maybe_unused]]) const {
+    // TODO: Implement.
     error("Unimplemented");
     return {};
 }
 
 BitVector BitVector::sub(const BitVector &other [[maybe_unused]]) const {
+    // TODO: Implement.
     error("Unimplemented");
     return {};
 }
@@ -438,13 +429,14 @@ BitVector BitVector::udiv(const BitVector &divisor [[maybe_unused]],
 }
 
 BitVector BitVector::udiv(const BitVector &divisor [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+    BitVector remainder;
+    return this->udiv(divisor, remainder);
 }
 
 BitVector BitVector::urem(const BitVector &divisor [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+    BitVector remainder;
+    this->udiv(divisor, remainder);
+    return remainder;
 }
 
 BitVector BitVector::sdiv(const BitVector &divisor [[maybe_unused]],
@@ -453,14 +445,15 @@ BitVector BitVector::sdiv(const BitVector &divisor [[maybe_unused]],
     return {};
 }
 
-BitVector BitVector::sdiv(const BitVector &divisor [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::sdiv(const BitVector &divisor) const {
+    BitVector remainder;
+    return this->sdiv(divisor, remainder);
 }
 
-BitVector BitVector::srem(const BitVector &divisor [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::srem(const BitVector &divisor) const {
+    BitVector remainder;
+    this->sdiv(divisor, remainder);
+    return remainder;
 }
 
 BitVector BitVector::operator+(const BitVector &other) const {
@@ -514,16 +507,13 @@ BitVector &BitVector::operator%=(const BitVector &other) {
 }
 
 BitVector BitVector::zext(const size_t width [[maybe_unused]]) const {
+    // TODO: Implement.
     error("Unimplemented");
     return {};
 }
 
 BitVector BitVector::sext(const size_t width [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
-}
-
-BitVector BitVector::read(const BitVector &index [[maybe_unused]]) const {
+    // TODO: Implement.
     error("Unimplemented");
     return {};
 }
@@ -537,15 +527,23 @@ BitVector BitVector::concat(const BitVector &other) const {
 
 BitVector BitVector::extract(const size_t offset [[maybe_unused]],
                              const size_t width [[maybe_unused]]) const {
+    // TODO: Implement.
     error("Unimplemented");
     return {};
 }
 
-BitVector BitVector::select(const BitVector &condition [[maybe_unused]],
-                            const BitVector &true_result [[maybe_unused]],
-                            const BitVector &false_result [[maybe_unused]]) {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::select(const BitVector &condition,
+                            const BitVector &true_result,
+                            const BitVector &false_result) {
+    assert(condition.width() == 1);
+    assert(true_result.width() == false_result.width());
+    BitVector res;
+    res.bv.reserve(true_result.width());
+    for (size_t i = 0; i < true_result.width(); ++i) {
+        res.bv.push_back((condition[0] & true_result[i]) |
+                         (~condition[0] & false_result[i]));
+    }
+    return res;
 }
 
 BitVector BitVector::ite(const BitVector &condition,

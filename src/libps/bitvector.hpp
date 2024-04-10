@@ -187,8 +187,7 @@ public:
     BitVector zext(const size_t width) const;
     BitVector sext(const size_t width) const;
 
-    // Others (Read, Concat, Extract, Select/Ite)
-    BitVector read(const BitVector &index) const;
+    // Others (Concat, Extract, Select/Ite)
     BitVector concat(const BitVector &other) const;
     BitVector extract(const size_t offset, const size_t width) const;
     static BitVector select(const BitVector &condition,
