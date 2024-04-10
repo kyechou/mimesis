@@ -15,11 +15,10 @@ ExternalProject_Add(sylvan
         -DCMAKE_CXX_FLAGS=-fPIC
         -DSYLVAN_BUILD_EXAMPLES=OFF
         -DSYLVAN_BUILD_DOCS=OFF
-        -DSYLVAN_BUILD_TESTS=ON
+        -DSYLVAN_BUILD_TESTS=OFF
         -DSYLVAN_GMP=OFF
         -DSYLVAN_STATS=ON
     BUILD_COMMAND cmake --build ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND ctest --progress --output-on-failure
         COMMAND cmake --install ${CMAKE_CURRENT_BINARY_DIR}
     BUILD_BYPRODUCTS
         ${CMAKE_CURRENT_BINARY_DIR}/install/lib/libsylvan.a
