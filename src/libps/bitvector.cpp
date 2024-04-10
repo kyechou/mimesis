@@ -349,26 +349,38 @@ BitVector BitVector::operator^(const BitVector &other) const {
     return this->bv_xor(other);
 }
 
-BitVector BitVector::shl(const size_t distance [[maybe_unused]]) const {
+BitVector BitVector::shl(const BitVector &distance) const {
+    if (!distance.is_constant()) {
+        error("Symbolic shl distance is not currently supported.");
+    }
+    const uint64_t dist [[maybe_unused]] = distance.zext_value();
     error("Unimplemented");
     return {};
 }
 
-BitVector BitVector::lshr(const size_t distance [[maybe_unused]]) const {
+BitVector BitVector::lshr(const BitVector &distance) const {
+    if (!distance.is_constant()) {
+        error("Symbolic lshr distance is not currently supported.");
+    }
+    const uint64_t dist [[maybe_unused]] = distance.zext_value();
     error("Unimplemented");
     return {};
 }
 
-BitVector BitVector::ashr(const size_t distance [[maybe_unused]]) const {
+BitVector BitVector::ashr(const BitVector &distance) const {
+    if (!distance.is_constant()) {
+        error("Symbolic ashr distance is not currently supported.");
+    }
+    const uint64_t dist [[maybe_unused]] = distance.zext_value();
     error("Unimplemented");
     return {};
 }
 
-BitVector BitVector::operator<<(const size_t distance) const {
+BitVector BitVector::operator<<(const BitVector &distance) const {
     return this->shl(distance);
 }
 
-BitVector BitVector::operator>>(const size_t distance) const {
+BitVector BitVector::operator>>(const BitVector &distance) const {
     return this->lshr(distance);
 }
 
@@ -408,8 +420,28 @@ BitVector BitVector::udiv(const BitVector &divisor [[maybe_unused]],
     return {};
 }
 
+BitVector BitVector::udiv(const BitVector &divisor [[maybe_unused]]) const {
+    error("Unimplemented");
+    return {};
+}
+
+BitVector BitVector::urem(const BitVector &divisor [[maybe_unused]]) const {
+    error("Unimplemented");
+    return {};
+}
+
 BitVector BitVector::sdiv(const BitVector &divisor [[maybe_unused]],
                           BitVector &remainder [[maybe_unused]]) const {
+    error("Unimplemented");
+    return {};
+}
+
+BitVector BitVector::sdiv(const BitVector &divisor [[maybe_unused]]) const {
+    error("Unimplemented");
+    return {};
+}
+
+BitVector BitVector::srem(const BitVector &divisor [[maybe_unused]]) const {
     error("Unimplemented");
     return {};
 }
@@ -464,12 +496,12 @@ BitVector &BitVector::operator%=(const BitVector &other) {
     return *this = remainder;
 }
 
-BitVector BitVector::zext(const size_t ext_dist [[maybe_unused]]) const {
+BitVector BitVector::zext(const size_t width [[maybe_unused]]) const {
     error("Unimplemented");
     return {};
 }
 
-BitVector BitVector::sext(const size_t ext_dist [[maybe_unused]]) const {
+BitVector BitVector::sext(const size_t width [[maybe_unused]]) const {
     error("Unimplemented");
     return {};
 }

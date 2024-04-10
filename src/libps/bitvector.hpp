@@ -150,11 +150,11 @@ public:
     BitVector operator^(const BitVector &other) const;
 
     // Bitwise shift (The bit-width remains the same.)
-    BitVector shl(const size_t distance) const;
-    BitVector lshr(const size_t distance) const;
-    BitVector ashr(const size_t distance) const;
-    BitVector operator<<(const size_t distance) const;
-    BitVector operator>>(const size_t distance) const;
+    BitVector shl(const BitVector &distance) const;
+    BitVector lshr(const BitVector &distance) const;
+    BitVector ashr(const BitVector &distance) const;
+    BitVector operator<<(const BitVector &distance) const;
+    BitVector operator>>(const BitVector &distance) const;
 
     // Bitwise negation
     BitVector bv_not() const;
@@ -165,7 +165,11 @@ public:
     BitVector sub(const BitVector &other) const;
     BitVector mul(const BitVector &other) const;
     BitVector udiv(const BitVector &divisor, BitVector &remainder) const;
+    BitVector udiv(const BitVector &divisor) const;
+    BitVector urem(const BitVector &divisor) const;
     BitVector sdiv(const BitVector &divisor, BitVector &remainder) const;
+    BitVector sdiv(const BitVector &divisor) const;
+    BitVector srem(const BitVector &divisor) const;
     BitVector operator+(const BitVector &other) const;
     BitVector operator-(const BitVector &other) const;
     BitVector operator*(const BitVector &other) const;
@@ -178,8 +182,8 @@ public:
     BitVector &operator%=(const BitVector &other);
 
     // Conversion/Cast operators
-    BitVector zext(const size_t ext_dist) const;
-    BitVector sext(const size_t ext_dist) const;
+    BitVector zext(const size_t width) const;
+    BitVector sext(const size_t width) const;
 
     // Others (Read, Concat, Extract, Select/Ite)
     BitVector read(const BitVector &index) const;
