@@ -24,7 +24,9 @@ BitVector::BitVector(const std::string &var_name) {
     }
 }
 
-BitVector::BitVector(const std::string &var_name, size_t offset, size_t width) {
+BitVector::BitVector(const std::string &var_name,
+                     const size_t offset,
+                     const size_t width) {
     auto [var_offset, nbits] = Manager::get().get_variable_offset(var_name);
     assert(offset + width <= nbits);
     this->bv.reserve(width);
@@ -33,10 +35,10 @@ BitVector::BitVector(const std::string &var_name, size_t offset, size_t width) {
     }
 }
 
-BitVector::BitVector(size_t width, const sylvan::Bdd &bit_val)
+BitVector::BitVector(const size_t width, const sylvan::Bdd &bit_val)
     : bv(width, bit_val) {}
 
-BitVector::BitVector(size_t width, bool bit_val)
+BitVector::BitVector(const size_t width, const bool bit_val)
     : bv(width, (bit_val ? sylvan::Bdd::bddOne() : sylvan::Bdd::bddZero())) {}
 
 BitVector::BitVector(const llvm::APInt &value) {
@@ -47,7 +49,7 @@ BitVector::BitVector(const llvm::APInt &value) {
     }
 }
 
-BitVector::BitVector(size_t width, uint64_t value) {
+BitVector::BitVector(const size_t width, const uint64_t value) {
     assert(width <= 64);
     this->bv.reserve(width);
     for (size_t i = 0; i < width; ++i) {
@@ -60,17 +62,17 @@ void BitVector::clear() {
     this->bv.clear();
 }
 
-void BitVector::set(size_t i, const sylvan::Bdd &bit_val) {
+void BitVector::set(const size_t i, const sylvan::Bdd &bit_val) {
     assert(i < this->bv.size());
     this->bv[i] = bit_val;
 }
 
-sylvan::Bdd &BitVector::operator[](size_t i) {
+sylvan::Bdd &BitVector::operator[](const size_t i) {
     assert(i < this->bv.size());
     return this->bv[i];
 }
 
-const sylvan::Bdd &BitVector::operator[](size_t i) const {
+const sylvan::Bdd &BitVector::operator[](const size_t i) const {
     assert(i < this->bv.size());
     return this->bv[i];
 }
@@ -258,23 +260,38 @@ BitVector BitVector::uge(const BitVector &other) const {
 }
 
 BitVector BitVector::slt(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+    assert(this->width() == other.width());
+    assert(this->width() > 0);
+    BitVector res(/*width=*/1, true);
+    sylvan::Bdd &res_bdd = res[0];
+    res_bdd = (this->bv.back() & (~other.bv.back())) |
+              (this->bv.back() & other.bv.back() & this->ugt(other)[0]) |
+              (~this->bv.back() & ~other.bv.back() & this->ult(other)[0]);
+    return res;
 }
 
-BitVector BitVector::sle(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::sle(const BitVector &other) const {
+    assert(this->width() == other.width());
+    BitVector res(/*width=*/1, true);
+    sylvan::Bdd &res_bdd = res[0];
+
+    if (this->empty()) { // Both bit-vectors are empty.
+        res_bdd = sylvan::Bdd::bddOne();
+        return res;
+    }
+
+    res_bdd = (this->bv.back() & (~other.bv.back())) |
+              (this->bv.back() & other.bv.back() & this->uge(other)[0]) |
+              (~this->bv.back() & ~other.bv.back() & this->ule(other)[0]);
+    return res;
 }
 
-BitVector BitVector::sgt(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::sgt(const BitVector &other) const {
+    return other.slt(*this);
 }
 
-BitVector BitVector::sge(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
-    return {};
+BitVector BitVector::sge(const BitVector &other) const {
+    return other.sle(*this);
 }
 
 BitVector BitVector::operator==(const BitVector &other) const {

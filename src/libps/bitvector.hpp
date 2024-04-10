@@ -27,17 +27,19 @@ public:
      * with respect to the variable, rather than the BDD index. I.e., `offset` =
      * 0 means starting from the beginning of the variable.
      */
-    BitVector(const std::string &var_name, size_t offset, size_t width);
+    BitVector(const std::string &var_name,
+              const size_t offset,
+              const size_t width);
     /**
      * Create a bit-vector with `width` number of bits, each of which
      * initialized as `bit_val`.
      */
-    BitVector(size_t width, const sylvan::Bdd &bit_val);
+    BitVector(const size_t width, const sylvan::Bdd &bit_val);
     /**
      * Create a concrete bit-vector with `width` number of bits, each of which
      * initialized as `bit_val`.
      */
-    BitVector(size_t width, bool bit_val);
+    BitVector(const size_t width, const bool bit_val);
     /**
      * Construct a concrete bit-vector from the APInt `value`.
      */
@@ -46,7 +48,7 @@ public:
      * Construct a concrete bit-vector from `value`.
      * `width` must be no greater than 64.
      */
-    BitVector(size_t width, uint64_t value);
+    BitVector(const size_t width, const uint64_t value);
 
     BitVector() = default;
     BitVector(const BitVector &) = default;
@@ -63,15 +65,15 @@ public:
      * Set the BDD at index `i` to `bit_val`. `i` must be less than the current
      * bit-width.
      */
-    void set(size_t i, const sylvan::Bdd &bit_val);
+    void set(const size_t i, const sylvan::Bdd &bit_val);
     /**
      * Get the BDD at index `i`. `i` must be less than the current bit-width.
      */
-    sylvan::Bdd &operator[](size_t i);
+    sylvan::Bdd &operator[](const size_t i);
     /**
      * Get the BDD at index `i`. `i` must be less than the current bit-width.
      */
-    const sylvan::Bdd &operator[](size_t i) const;
+    const sylvan::Bdd &operator[](const size_t i) const;
     /**
      * Returns the current bit-width.
      */
