@@ -18,11 +18,13 @@ PacketSet::PacketSet() : bdd(sylvan::Bdd::bddZero()) {}
 
 PacketSet::PacketSet(const sylvan::Bdd &from) : bdd(from) {}
 
-PacketSet::PacketSet(const klee::ref<klee::Expr> &expr) {
-    BitVector bv = bv_from_klee_expr(expr);
+PacketSet::PacketSet(const BitVector &bv) {
     assert(bv.width() == 1);
     this->bdd = bv[0];
 }
+
+PacketSet::PacketSet(const klee::ref<klee::Expr> &expr)
+    : PacketSet(bv_from_klee_expr(expr)) {}
 
 PacketSet::PacketSet(const std::set<klee::ref<klee::Expr>> &exprs)
     : bdd(sylvan::Bdd::bddOne()) {
@@ -67,9 +69,6 @@ BitVector bv_from_klee_constant_expr(const klee::ref<klee::Expr> &e) {
     return ce->getAPValue();
 }
 
-/**
- * See `klee::ExprEvaluator::visitRead` and `klee::ExprEvaluator::evalRead`.
- */
 BitVector bv_from_klee_read_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ReadExpr> &re = llvm::cast<klee::ReadExpr>(e);
     re->dump();
@@ -84,7 +83,7 @@ BitVector bv_from_klee_read_expr(const klee::ref<klee::Expr> &e) {
               "concretization).");
     }
 
-    const uint64_t read_idx =
+    const uint64_t array_idx =
         llvm::cast<klee::ConstantExpr>(index)->getZExtValue();
 
     // Evaluate the read expression.
@@ -94,12 +93,12 @@ BitVector bv_from_klee_read_expr(const klee::ref<klee::Expr> &e) {
     for (klee::UpdateNodePtr un = ul->getHead(); un; un = un->getNext()) {
         const klee::ref<klee::Expr> &ui = un->getIndex();
         if (auto cui = llvm::dyn_cast<klee::ConstantExpr>(ui)) {
-            if (cui->getZExtValue() == read_idx) {
+            if (cui->getZExtValue() == array_idx) {
                 return bv_from_klee_expr(un->getValue());
             }
         } else {
             // update node index is symbolic, which may or may not be
-            // `read_idx`. This is not supported for now. Consider exploring
+            // `array_idx`. This is not supported for now. Consider exploring
             // the possible values in the future.
             ui->dump();
             error("Symbolic array update node index are not currently "
@@ -109,19 +108,20 @@ BitVector bv_from_klee_read_expr(const klee::ref<klee::Expr> &e) {
 
     // Return the concrete byte directly if this is a concrete array.
     if (ul->getRoot()->isConstantArray() &&
-        read_idx < ul->getRoot()->getSize()) {
+        array_idx < ul->getRoot()->getSize()) {
         return bv_from_klee_constant_expr(
-            ul->getRoot()->getConstantValues()[read_idx]);
+            ul->getRoot()->getConstantValues()[array_idx]);
     }
 
     // Get the indexed byte from the symbolic array.
     return BitVector(/*var_name=*/ul->getRoot()->getName(),
-                     /*offset=*/read_idx * 8, /*width=*/8);
+                     /*offset=*/array_idx * 8, /*width=*/8);
 }
 
 BitVector bv_from_klee_select_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SelectExpr> &se = llvm::cast<klee::SelectExpr>(e);
     se->dump();
+    // TODO: Implement
     info("---> Select");
     return {};
 }
@@ -129,9 +129,6 @@ BitVector bv_from_klee_select_expr(const klee::ref<klee::Expr> &e) {
 BitVector bv_from_klee_concat_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ConcatExpr> &ce = llvm::cast<klee::ConcatExpr>(e);
     ce->dump();
-    info("Concat width: " + std::to_string(ce->getWidth()));
-    info("Concat left width: " + std::to_string(ce->getLeft()->getWidth()));
-    info("Concat right width: " + std::to_string(ce->getRight()->getWidth()));
     BitVector left = bv_from_klee_expr(ce->getLeft());
     BitVector right = bv_from_klee_expr(ce->getRight());
     return left.concat(right);
@@ -140,14 +137,16 @@ BitVector bv_from_klee_concat_expr(const klee::ref<klee::Expr> &e) {
 BitVector bv_from_klee_extract_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ExtractExpr> &ee = llvm::cast<klee::ExtractExpr>(e);
     ee->dump();
+    BitVector src = bv_from_klee_expr(ee->getExpr());
     info("Extract offset: " + std::to_string(ee->getOffset()) +
          ", width: " + std::to_string(ee->getWidth()));
-    return bv_from_klee_expr(ee->getExpr());
+    return src.extract(ee->getOffset(), ee->getWidth());
 }
 
 BitVector bv_from_klee_zext_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ZExtExpr> &zee = llvm::cast<klee::ZExtExpr>(e);
     zee->dump();
+    // TODO: Implement
     info("ZExt width: " + std::to_string(zee->getWidth()));
     return bv_from_klee_expr(zee->getSrc());
 }
@@ -155,159 +154,162 @@ BitVector bv_from_klee_zext_expr(const klee::ref<klee::Expr> &e) {
 BitVector bv_from_klee_sext_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SExtExpr> &see = llvm::cast<klee::SExtExpr>(e);
     see->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_add_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::AddExpr> &add = llvm::cast<klee::AddExpr>(e);
     add->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_sub_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SubExpr> &sub = llvm::cast<klee::SubExpr>(e);
     sub->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_mul_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::MulExpr> &mul = llvm::cast<klee::MulExpr>(e);
     mul->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_udiv_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::UDivExpr> &udiv = llvm::cast<klee::UDivExpr>(e);
     udiv->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_sdiv_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SDivExpr> &sdiv = llvm::cast<klee::SDivExpr>(e);
     sdiv->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_urem_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::URemExpr> &urem = llvm::cast<klee::URemExpr>(e);
     urem->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_srem_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SRemExpr> &srem = llvm::cast<klee::SRemExpr>(e);
     srem->dump();
+    // TODO: Implement
     return {};
 }
-
-/**
- * And, Or, Xor, Not may be used as (1) Boolean logical operations or (2)
- * bit-vector, bitwise operations.
- * IIRC, BDD operations are all Boolean logical operations, so we need to
- * implement the bitwise operations ourselves by recursively applying the
- * transformation.
- */
 
 BitVector bv_from_klee_and_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::AndExpr> &ande = llvm::cast<klee::AndExpr>(e);
     ande->dump();
-
-    // Construct the left and right operands.
-    BitVector left_bdd = bv_from_klee_expr(ande->getLeft());
-    BitVector right_bdd = bv_from_klee_expr(ande->getRight());
-
-    // TODO: Make sure the bitwidths of both operands are consistent.
-
-    // TODO: Apply the binary transformation recursively.
-    // return bdd_apply(klee::Expr::Kind::And, left, right); // recursive call
-
-    return {};
+    BitVector left = bv_from_klee_expr(ande->getLeft());
+    BitVector right = bv_from_klee_expr(ande->getRight());
+    return left.bv_and(right);
 }
 
 BitVector bv_from_klee_or_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::OrExpr> &ore = llvm::cast<klee::OrExpr>(e);
     ore->dump();
-
-    // Construct the left and right operands.
-    BitVector left_bdd = bv_from_klee_expr(ore->getLeft());
-    BitVector right_bdd = bv_from_klee_expr(ore->getRight());
-
-    // TODO: Make sure the bitwidths of both operands are consistent.
-
-    // TODO: Apply the binary transformation recursively.
-    // return bdd_apply(klee::Expr::Kind::Or, left, right); // recursive call
-
-    return {};
+    BitVector left = bv_from_klee_expr(ore->getLeft());
+    BitVector right = bv_from_klee_expr(ore->getRight());
+    return left.bv_or(right);
 }
 
 BitVector bv_from_klee_xor_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::XorExpr> &xore = llvm::cast<klee::XorExpr>(e);
     xore->dump();
-    return {};
+    BitVector left = bv_from_klee_expr(xore->getLeft());
+    BitVector right = bv_from_klee_expr(xore->getRight());
+    return left.bv_or(right);
 }
 
 BitVector bv_from_klee_not_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::NotExpr> &not_ex = llvm::cast<klee::NotExpr>(e);
     not_ex->dump();
-    return {};
+    BitVector src = bv_from_klee_expr(not_ex->getExpr());
+    return src.bv_not();
 }
 
 BitVector bv_from_klee_shl_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ShlExpr> &shl = llvm::cast<klee::ShlExpr>(e);
     shl->dump();
-    return {};
+    BitVector left = bv_from_klee_expr(shl->getLeft());
+
+    if (!llvm::isa<klee::ConstantExpr>(shl->getRight())) {
+        // Consider `klee::ExecutionState::toConstant` to concretize the shift
+        // distance.
+        shl->getRight()->dump();
+        error("Symbolic shl distances are not currently supported (consider "
+              "concretization).");
+    }
+
+    const uint64_t dist =
+        llvm::cast<klee::ConstantExpr>(shl->getRight())->getZExtValue();
+    return left.shl(dist);
 }
 
-/**
- * Logical shift right (zero fill)
- * E.g., `lshr i32 0b100, 1` yields 0b010
- * See https://llvm.org/docs/LangRef.html#lshr-instruction
- */
 BitVector bv_from_klee_lshr_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::LShrExpr> &lshr = llvm::cast<klee::LShrExpr>(e);
     lshr->dump();
+    BitVector left = bv_from_klee_expr(lshr->getLeft());
 
-    // Construct the left and right operands.
-    BitVector left_bdd = bv_from_klee_expr(lshr->getLeft());
-    const klee::ref<klee::Expr> &shift_dist = lshr->getRight();
-    const klee::ref<klee::ConstantExpr> &cshift_dist =
-        llvm::dyn_cast<klee::ConstantExpr>(shift_dist);
-    // sylvan::Bdd right_bdd = bv_from_klee_expr(lshr->getRight());
-
-    // Here we only support the right operand (op2) to be concrete for now.
-    if (!cshift_dist) {
-        // TODO(FUTURE): Consider `klee::ExecutionState::toConstant` to
-        // concretize the value
-        shift_dist->dump();
-        error("Symbolic lshr distances are not currently handled "
-              "(consider concretization).");
+    if (!llvm::isa<klee::ConstantExpr>(lshr->getRight())) {
+        // Consider `klee::ExecutionState::toConstant` to concretize the shift
+        // distance.
+        lshr->getRight()->dump();
+        error("Symbolic lshr distances are not currently supported (consider "
+              "concretization).");
     }
 
-    // TODO
-    return {};
+    const uint64_t dist =
+        llvm::cast<klee::ConstantExpr>(lshr->getRight())->getZExtValue();
+    return left.lshr(dist);
 }
 
 BitVector bv_from_klee_ashr_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::AShrExpr> &ashr = llvm::cast<klee::AShrExpr>(e);
     ashr->dump();
-    return {};
+    BitVector left = bv_from_klee_expr(ashr->getLeft());
+
+    if (!llvm::isa<klee::ConstantExpr>(ashr->getRight())) {
+        // Consider `klee::ExecutionState::toConstant` to concretize the shift
+        // distance.
+        ashr->getRight()->dump();
+        error("Symbolic ashr distances are not currently supported (consider "
+              "concretization).");
+    }
+
+    const uint64_t dist =
+        llvm::cast<klee::ConstantExpr>(ashr->getRight())->getZExtValue();
+    return left.ashr(dist);
 }
 
 BitVector bv_from_klee_eq_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::EqExpr> &eq = llvm::cast<klee::EqExpr>(e);
     eq->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_ne_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::NeExpr> &ne = llvm::cast<klee::NeExpr>(e);
     ne->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_ult_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::UltExpr> &ult = llvm::cast<klee::UltExpr>(e);
     ult->dump();
+    // TODO: Implement
     return {};
 }
 
@@ -324,36 +326,42 @@ BitVector bv_from_klee_ule_expr(const klee::ref<klee::Expr> &e) {
 BitVector bv_from_klee_ugt_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::UgtExpr> &ugt = llvm::cast<klee::UgtExpr>(e);
     ugt->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_uge_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::UgeExpr> &uge = llvm::cast<klee::UgeExpr>(e);
     uge->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_slt_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SltExpr> &slt = llvm::cast<klee::SltExpr>(e);
     slt->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_sle_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SleExpr> &sle = llvm::cast<klee::SleExpr>(e);
     sle->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_sgt_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SgtExpr> &sgt = llvm::cast<klee::SgtExpr>(e);
     sgt->dump();
+    // TODO: Implement
     return {};
 }
 
 BitVector bv_from_klee_sge_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SgeExpr> &sge = llvm::cast<klee::SgeExpr>(e);
     sge->dump();
+    // TODO: Implement
     return {};
 }
 

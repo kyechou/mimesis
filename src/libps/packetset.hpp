@@ -25,6 +25,7 @@ public:
     PacketSet();
     PacketSet(const PacketSet &) = default;
     PacketSet(const sylvan::Bdd &);
+    PacketSet(const BitVector &);
     PacketSet(const klee::ref<klee::Expr> &);
     PacketSet(const std::set<klee::ref<klee::Expr>> &);
 
