@@ -119,8 +119,9 @@ BitVector
 KleeInterpreter::translate_select_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SelectExpr> &se = llvm::cast<klee::SelectExpr>(e);
     se->dump();
-    // TODO: Implement
-    return {};
+    return BitVector::select(translate(se->getCondition()),
+                             translate(se->getTrue()),
+                             translate(se->getFalse()));
 }
 
 BitVector
@@ -136,71 +137,69 @@ BitVector
 KleeInterpreter::translate_extract_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ExtractExpr> &ee = llvm::cast<klee::ExtractExpr>(e);
     ee->dump();
-    BitVector src = translate(ee->getExpr());
-    return src.extract(ee->getOffset(), ee->getWidth());
+    return translate(ee->getExpr()).extract(ee->getOffset(), ee->getWidth());
 }
 
 BitVector KleeInterpreter::translate_zext_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ZExtExpr> &zee = llvm::cast<klee::ZExtExpr>(e);
     zee->dump();
-    BitVector src = translate(zee->getSrc());
-    return src.zext(zee->getWidth());
+    return translate(zee->getSrc()).zext(zee->getWidth());
 }
 
 BitVector KleeInterpreter::translate_sext_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SExtExpr> &see = llvm::cast<klee::SExtExpr>(e);
     see->dump();
-    BitVector src = translate(see->getSrc());
-    return src.sext(see->getWidth());
+    return translate(see->getSrc()).sext(see->getWidth());
 }
 
 BitVector KleeInterpreter::translate_add_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::AddExpr> &add = llvm::cast<klee::AddExpr>(e);
     add->dump();
-    // TODO: Implement
-    return {};
+    return translate(add->getLeft()).add(translate(add->getRight()));
 }
 
 BitVector KleeInterpreter::translate_sub_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SubExpr> &sub = llvm::cast<klee::SubExpr>(e);
     sub->dump();
-    // TODO: Implement
-    return {};
+    return translate(sub->getLeft()).sub(translate(sub->getRight()));
 }
 
 BitVector KleeInterpreter::translate_mul_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::MulExpr> &mul = llvm::cast<klee::MulExpr>(e);
     mul->dump();
-    // TODO: Implement
-    return {};
+    return translate(mul->getLeft()).mul(translate(mul->getRight()));
 }
 
 BitVector KleeInterpreter::translate_udiv_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::UDivExpr> &udiv = llvm::cast<klee::UDivExpr>(e);
     udiv->dump();
-    // TODO: Implement
-    return {};
+    BitVector remainder;
+    return translate(udiv->getLeft())
+        .udiv(translate(udiv->getRight()), remainder);
 }
 
 BitVector KleeInterpreter::translate_sdiv_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SDivExpr> &sdiv = llvm::cast<klee::SDivExpr>(e);
     sdiv->dump();
-    // TODO: Implement
-    return {};
+    BitVector remainder;
+    return translate(sdiv->getLeft())
+        .sdiv(translate(sdiv->getRight()), remainder);
 }
 
 BitVector KleeInterpreter::translate_urem_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::URemExpr> &urem = llvm::cast<klee::URemExpr>(e);
     urem->dump();
-    // TODO: Implement
-    return {};
+    BitVector remainder;
+    translate(urem->getLeft()).udiv(translate(urem->getRight()), remainder);
+    return remainder;
 }
 
 BitVector KleeInterpreter::translate_srem_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SRemExpr> &srem = llvm::cast<klee::SRemExpr>(e);
     srem->dump();
-    // TODO: Implement
-    return {};
+    BitVector remainder;
+    translate(srem->getLeft()).udiv(translate(srem->getRight()), remainder);
+    return remainder;
 }
 
 BitVector KleeInterpreter::translate_and_expr(const klee::ref<klee::Expr> &e) {
@@ -230,8 +229,7 @@ BitVector KleeInterpreter::translate_xor_expr(const klee::ref<klee::Expr> &e) {
 BitVector KleeInterpreter::translate_not_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::NotExpr> &not_ex = llvm::cast<klee::NotExpr>(e);
     not_ex->dump();
-    BitVector src = translate(not_ex->getExpr());
-    return src.bv_not();
+    return translate(not_ex->getExpr()).bv_not();
 }
 
 BitVector KleeInterpreter::translate_shl_expr(const klee::ref<klee::Expr> &e) {
@@ -314,8 +312,8 @@ BitVector KleeInterpreter::translate_ule_expr(const klee::ref<klee::Expr> &e) {
     ule->dump();
     BitVector left = translate(ule->getLeft());
     BitVector right = translate(ule->getRight());
-    info("left  bool vars: " + std::to_string(left.num_bdd_boolean_vars()));
-    info("right bool vars: " + std::to_string(right.num_bdd_boolean_vars()));
+    // info("left  bool vars: " + std::to_string(left.num_bdd_boolean_vars()));
+    // info("right bool vars: " + std::to_string(right.num_bdd_boolean_vars()));
     return left.ule(right);
 }
 
