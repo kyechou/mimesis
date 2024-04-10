@@ -358,30 +358,40 @@ BitVector BitVector::shl(const BitVector &distance) const {
     if (!distance.is_constant()) {
         error("Symbolic shl distance is not currently supported.");
     }
-    const uint64_t dist [[maybe_unused]] = distance.zext_value();
-    // TODO: Implement.
-    error("Unimplemented");
-    return {};
+    const uint64_t dist = distance.zext_value();
+    BitVector res(this->width(), false);
+    size_t from_idx = (dist > this->width()) ? this->width() : dist;
+    for (size_t i = from_idx; i < this->width(); ++i) {
+        res.bv[i] = this->bv[i - dist];
+    }
+    return res;
 }
 
 BitVector BitVector::lshr(const BitVector &distance) const {
     if (!distance.is_constant()) {
         error("Symbolic lshr distance is not currently supported.");
     }
-    const uint64_t dist [[maybe_unused]] = distance.zext_value();
-    // TODO: Implement.
-    error("Unimplemented");
-    return {};
+    const uint64_t dist = distance.zext_value();
+    BitVector res(this->width(), false);
+    size_t to_idx = (dist > this->width()) ? 0 : this->width() - dist;
+    for (size_t i = 0; i < to_idx; ++i) {
+        res.bv[i] = this->bv[i + dist];
+    }
+    return res;
 }
 
 BitVector BitVector::ashr(const BitVector &distance) const {
     if (!distance.is_constant()) {
         error("Symbolic ashr distance is not currently supported.");
     }
-    const uint64_t dist [[maybe_unused]] = distance.zext_value();
-    // TODO: Implement.
-    error("Unimplemented");
-    return {};
+    const uint64_t dist = distance.zext_value();
+    BitVector res(this->width(),
+                  this->empty() ? sylvan::Bdd::bddZero() : this->bv.back());
+    size_t to_idx = (dist > this->width()) ? 0 : this->width() - dist;
+    for (size_t i = 0; i < to_idx; ++i) {
+        res.bv[i] = this->bv[i + dist];
+    }
+    return res;
 }
 
 BitVector BitVector::operator<<(const BitVector &distance) const {
