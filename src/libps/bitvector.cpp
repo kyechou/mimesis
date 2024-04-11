@@ -1,6 +1,9 @@
 #include "libps/bitvector.hpp"
 
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <filesystem>
 #include <functional>
 #include <llvm/ADT/APInt.h>
 #include <set>
@@ -135,6 +138,71 @@ uint64_t BitVector::zext_value(size_t width) const {
     }
 
     return value;
+}
+
+std::string BitVector::to_string() const {
+    std::string res;
+    for (size_t i = 0; i < this->width(); ++i) {
+        res += "bit " + std::to_string(i) + ": " + Bdd::to_string(this->bv[i]) +
+               "\n";
+    }
+    res.pop_back();
+    return res;
+}
+
+void BitVector::to_dot_file(const std::filesystem::path &fp) const {
+    char *line;
+    size_t line_len = 256;
+    FILE *out = fopen(fp.c_str(), "w");
+    if (!out) {
+        error("Failed to open " + fp.string(), errno);
+    }
+    fprintf(out, "digraph \"DD\" {\n"
+                 "graph [dpi = 300];\n"
+                 "center = true;\n"
+                 "edge [dir = forward];\n"
+                 "root [style=invis];\n");
+    line = static_cast<char *>(malloc(line_len));
+    if (!line) {
+        fclose(out);
+        error("malloc() failed", errno);
+    }
+    for (const sylvan::Bdd &bdd : this->bv) {
+        char *buf;
+        size_t len;
+        FILE *ss = open_memstream(&buf, &len);
+        if (!ss) {
+            free(line);
+            fclose(out);
+            error("open_memstream failed", errno);
+        }
+        Bdd::to_dot_file(bdd, ss);
+        if (fseek(ss, 0, SEEK_SET) == -1) {
+            fclose(ss);
+            free(buf);
+            free(line);
+            fclose(out);
+            error("fseek() failed", errno);
+        }
+
+        // Skip the first 5 lines.
+        for (int i = 0; i < 5; ++i) {
+            getline(&line, &line_len, ss);
+        }
+        // Merge and append the remaining lines.
+        while (getline(&line, &line_len, ss) > 0) {
+            if (line[0] == '}' && line[1] == '\n') {
+                break;
+            }
+            fputs(line, out);
+        }
+
+        fclose(ss);
+        free(buf);
+    }
+    free(line);
+    fprintf(out, "}\n");
+    fclose(out);
 }
 
 BitVector

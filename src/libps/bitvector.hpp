@@ -2,6 +2,7 @@
 #define LIBPS_BITVECTOR_HPP
 
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 #include <llvm/ADT/APInt.h>
 #include <set>
@@ -109,6 +110,8 @@ public:
      * For example, bv:[1,0,1,1,0] is interpreted as 13.
      */
     uint64_t zext_value(size_t width = 64) const;
+    std::string to_string() const;
+    void to_dot_file(const std::filesystem::path &) const;
 
     /**
      * Apply `func` to each bit BDD of `src` sequentially and create a new
