@@ -47,4 +47,8 @@ std::string PacketSet::to_string() const {
     return Bdd::to_string(this->bdd);
 }
 
+void PacketSet::to_dot_file(const std::filesystem::path &fp) const {
+    Bdd::to_dot_file(this->bdd, fp);
+}
+
 } // namespace ps

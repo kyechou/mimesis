@@ -1,6 +1,7 @@
 #ifndef LIBPS_PACKETSET_HPP
 #define LIBPS_PACKETSET_HPP
 
+#include <filesystem>
 #include <klee/Expr.h>
 #include <klee/util/Ref.h>
 #include <set>
@@ -38,6 +39,7 @@ public:
 
     bool empty() const;
     std::string to_string() const;
+    void to_dot_file(const std::filesystem::path &) const;
 };
 
 } // namespace ps
