@@ -253,7 +253,7 @@ BitVector BitVector::uge(const BitVector &other) const {
     return other.ule(*this);
 }
 
-BitVector BitVector::slt(const BitVector &other [[maybe_unused]]) const {
+BitVector BitVector::slt(const BitVector &other) const {
     assert(this->width() == other.width());
     assert(this->width() > 0);
     BitVector res(/*width=*/1, true);
@@ -438,12 +438,12 @@ BitVector BitVector::udiv(const BitVector &divisor [[maybe_unused]],
     return {};
 }
 
-BitVector BitVector::udiv(const BitVector &divisor [[maybe_unused]]) const {
+BitVector BitVector::udiv(const BitVector &divisor) const {
     BitVector remainder;
     return this->udiv(divisor, remainder);
 }
 
-BitVector BitVector::urem(const BitVector &divisor [[maybe_unused]]) const {
+BitVector BitVector::urem(const BitVector &divisor) const {
     BitVector remainder;
     this->udiv(divisor, remainder);
     return remainder;
