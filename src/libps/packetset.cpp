@@ -5,6 +5,7 @@
 #include <string>
 #include <sylvan_obj.hpp>
 
+#include "libps/bdd.hpp"
 #include "libps/bitvector.hpp"
 #include "libps/klee-interpreter.hpp"
 
@@ -43,9 +44,7 @@ bool PacketSet::empty() const {
 }
 
 std::string PacketSet::to_string() const {
-    // TODO: Implement
-    // this->bdd.GetBDD();
-    return "(Unimplemented)";
+    return Bdd::to_string(this->bdd);
 }
 
 } // namespace ps
