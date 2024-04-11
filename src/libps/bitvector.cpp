@@ -415,16 +415,34 @@ BitVector BitVector::operator~() const {
     return this->bv_not();
 }
 
-BitVector BitVector::add(const BitVector &other [[maybe_unused]]) const {
-    // TODO: Implement.
-    error("Unimplemented");
-    return {};
+BitVector BitVector::add(const BitVector &other) const {
+    assert(this->width() == other.width());
+    BitVector res;
+    sylvan::Bdd carry = sylvan::Bdd::bddZero();
+    res.bv.reserve(this->width());
+
+    for (size_t i = 0; i < this->width(); ++i) {
+        res.bv.push_back(this->bv[i] ^ other.bv[i] ^ carry);
+        carry =
+            (this->bv[i] & other.bv[i]) | ((this->bv[i] | other.bv[i]) & carry);
+    }
+
+    return res;
 }
 
 BitVector BitVector::sub(const BitVector &other [[maybe_unused]]) const {
-    // TODO: Implement.
-    error("Unimplemented");
-    return {};
+    assert(this->width() == other.width());
+    BitVector res;
+    sylvan::Bdd borrow = sylvan::Bdd::bddZero();
+    res.bv.reserve(this->width());
+
+    for (size_t i = 0; i < this->width(); ++i) {
+        res.bv.push_back(this->bv[i] ^ other.bv[i] ^ borrow);
+        borrow = (this->bv[i] & other.bv[i] & borrow) |
+                 (~this->bv[i] & (other.bv[i] | borrow));
+    }
+
+    return res;
 }
 
 BitVector BitVector::mul(const BitVector &other [[maybe_unused]]) const {
