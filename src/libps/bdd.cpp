@@ -6,6 +6,7 @@
 #include <functional>
 #include <set>
 #include <sylvan.h>
+#include <sylvan_bdd.h>
 #include <sylvan_int.h>
 #include <sylvan_mtbdd.h>
 #include <sylvan_obj.hpp>
@@ -69,6 +70,20 @@ std::string Bdd::to_string(const sylvan::Bdd &bdd) {
     std::string res(buf);
     free(buf);
     res.pop_back(); // Remove the trailing newline.
+    return res;
+}
+
+std::string Bdd::to_string_oneline(const sylvan::Bdd &bdd) {
+    char *buf;
+    size_t len;
+    FILE *out = open_memstream(&buf, &len);
+    if (!out) {
+        error("open_memstream failed", errno);
+    }
+    sylvan::sylvan_fprint(out, bdd.GetBDD());
+    fclose(out);
+    std::string res(buf);
+    free(buf);
     return res;
 }
 

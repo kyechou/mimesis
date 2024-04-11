@@ -143,8 +143,8 @@ uint64_t BitVector::zext_value(size_t width) const {
 std::string BitVector::to_string() const {
     std::string res;
     for (size_t i = 0; i < this->width(); ++i) {
-        res += "bit " + std::to_string(i) + ": " + Bdd::to_string(this->bv[i]) +
-               "\n";
+        res += "bit " + std::to_string(i) + ": " +
+               Bdd::to_string_oneline(this->bv[i]) + "\n";
     }
     res.pop_back();
     return res;

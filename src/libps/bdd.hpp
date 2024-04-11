@@ -36,6 +36,7 @@ public:
      */
 
     static std::string to_string(const sylvan::Bdd &);
+    static std::string to_string_oneline(const sylvan::Bdd &);
     static std::string to_dot_string(const sylvan::Bdd &);
     static void to_dot_file(const sylvan::Bdd &, FILE *);
     static void to_dot_file(const sylvan::Bdd &, const std::filesystem::path &);
