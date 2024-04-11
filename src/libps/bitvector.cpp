@@ -516,16 +516,20 @@ BitVector &BitVector::operator%=(const BitVector &other) {
     return *this = remainder;
 }
 
-BitVector BitVector::zext(const size_t width [[maybe_unused]]) const {
-    // TODO: Implement.
-    error("Unimplemented");
-    return {};
+BitVector BitVector::zext(const size_t width) const {
+    assert(this->width() < width);
+    BitVector res(*this);
+    res.bv.reserve(width);
+    res.bv.insert(res.bv.end(), width - this->width(), sylvan::Bdd::bddZero());
+    return res;
 }
 
-BitVector BitVector::sext(const size_t width [[maybe_unused]]) const {
-    // TODO: Implement.
-    error("Unimplemented");
-    return {};
+BitVector BitVector::sext(const size_t width) const {
+    assert(this->width() < width && !this->empty());
+    BitVector res(*this);
+    res.bv.reserve(width);
+    res.bv.insert(res.bv.end(), width - this->width(), this->bv.back());
+    return res;
 }
 
 BitVector BitVector::concat(const BitVector &other) const {
