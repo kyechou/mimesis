@@ -170,8 +170,6 @@ KleeInterpreter::translate_binary_expr(const klee::ref<klee::Expr> &e) {
     bin->dump();
     BitVector left = translate(bin->getLeft());
     BitVector right = translate(bin->getRight());
-    info("left  bool vars: " + std::to_string(left.num_bdd_boolean_vars()));
-    info("right bool vars: " + std::to_string(right.num_bdd_boolean_vars()));
 
     switch (bin->getKind()) {
     case klee::Expr::Add:

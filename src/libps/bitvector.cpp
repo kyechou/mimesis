@@ -7,11 +7,11 @@
 #include <string>
 #include <sylvan_int.h>
 #include <sylvan_mtbdd.h>
-#include <sylvan_mtbdd_int.h>
 #include <sylvan_obj.hpp>
 #include <vector>
 
 #include "lib/logger.hpp"
+#include "libps/bdd.hpp"
 #include "libps/manager.hpp"
 
 namespace ps {
@@ -110,41 +110,8 @@ size_t BitVector::num_bdd_boolean_vars() const {
 
 std::set<uint32_t> BitVector::bdd_boolean_vars() const {
     std::set<uint32_t> vars;
-    std::function<void(const sylvan::BDD)> collect_bdd_vars_recursive;
-    collect_bdd_vars_recursive =
-        [&vars, &collect_bdd_vars_recursive](const sylvan::BDD bdd) -> void {
-        sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(bdd);
-        if (sylvan::mtbddnode_getmark(n)) {
-            return;
-        }
-        sylvan::mtbddnode_setmark(n, 1);
-
-        if (sylvan::mtbdd_isleaf(bdd)) {
-            return;
-        }
-        vars.insert(sylvan::mtbddnode_getvariable(n));
-        collect_bdd_vars_recursive(sylvan::mtbddnode_getlow(n));
-        collect_bdd_vars_recursive(sylvan::mtbddnode_gethigh(n));
-    };
-
-    std::function<void(const sylvan::BDD)> unmark_bddnodes_recursive;
-    unmark_bddnodes_recursive =
-        [&unmark_bddnodes_recursive](const sylvan::BDD bdd) -> void {
-        sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(bdd);
-        if (!sylvan::mtbddnode_getmark(n)) {
-            return;
-        }
-        sylvan::mtbddnode_setmark(n, 0);
-        if (sylvan::mtbdd_isleaf(bdd)) {
-            return;
-        }
-        unmark_bddnodes_recursive(sylvan::mtbddnode_getlow(n));
-        unmark_bddnodes_recursive(sylvan::mtbddnode_gethigh(n));
-    };
-
     for (const sylvan::Bdd &bdd : this->bv) {
-        collect_bdd_vars_recursive(bdd.GetBDD());
-        unmark_bddnodes_recursive(bdd.GetBDD());
+        vars.merge(Bdd::variables(bdd));
     }
     return vars;
 }
