@@ -539,11 +539,14 @@ BitVector BitVector::concat(const BitVector &other) const {
     return res;
 }
 
-BitVector BitVector::extract(const size_t offset [[maybe_unused]],
-                             const size_t width [[maybe_unused]]) const {
-    // TODO: Implement.
-    error("Unimplemented");
-    return {};
+BitVector BitVector::extract(const size_t offset, const size_t width) const {
+    assert(offset + width <= this->width());
+    BitVector res;
+    res.bv.reserve(width);
+    auto start = this->bv.begin() + offset;
+    auto end = this->bv.begin() + offset + width;
+    res.bv.insert(res.bv.end(), start, end);
+    return res;
 }
 
 BitVector BitVector::select(const BitVector &condition,
