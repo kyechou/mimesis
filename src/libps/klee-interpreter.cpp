@@ -62,20 +62,17 @@ BitVector KleeInterpreter::translate(const klee::ref<klee::Expr> &e) {
 BitVector
 KleeInterpreter::translate_constant_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ConstantExpr> &ce = llvm::cast<klee::ConstantExpr>(e);
-    ce->dump();
     return ce->getAPValue();
 }
 
 BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ReadExpr> &re = llvm::cast<klee::ReadExpr>(e);
-    re->dump();
     const klee::ref<klee::Expr> &index = re->getIndex();
 
     if (!llvm::isa<klee::ConstantExpr>(index)) {
         // Consider `klee::ExecutionState::toConstant` to concretize the index
         // value, or construct a BDD for the symbolic index and see how many
         // possible values it can be (sat count?)
-        index->dump();
         error("Symbolic array indices are not currently supported (consider "
               "concretization).");
     }
@@ -97,7 +94,6 @@ BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
             // update node index is symbolic, which may or may not be
             // `array_idx`. This is not supported for now. Consider exploring
             // the possible values in the future.
-            ui->dump();
             error("Symbolic array update node index are not currently "
                   "supported (consider concretization)");
         }
@@ -118,7 +114,6 @@ BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
 BitVector
 KleeInterpreter::translate_select_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::SelectExpr> &se = llvm::cast<klee::SelectExpr>(e);
-    se->dump();
     return BitVector::select(translate(se->getCondition()),
                              translate(se->getTrue()),
                              translate(se->getFalse()));
@@ -127,7 +122,6 @@ KleeInterpreter::translate_select_expr(const klee::ref<klee::Expr> &e) {
 BitVector
 KleeInterpreter::translate_concat_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ConcatExpr> &ce = llvm::cast<klee::ConcatExpr>(e);
-    ce->dump();
     BitVector left = translate(ce->getLeft());
     BitVector right = translate(ce->getRight());
     return left.concat(right);
@@ -136,20 +130,17 @@ KleeInterpreter::translate_concat_expr(const klee::ref<klee::Expr> &e) {
 BitVector
 KleeInterpreter::translate_extract_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::ExtractExpr> &ee = llvm::cast<klee::ExtractExpr>(e);
-    ee->dump();
     BitVector src = translate(ee->getExpr());
     return src.extract(ee->getOffset(), ee->getWidth());
 }
 
 BitVector KleeInterpreter::translate_not_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::NotExpr> &not_ex = llvm::cast<klee::NotExpr>(e);
-    not_ex->dump();
     return translate(not_ex->getExpr()).bv_not();
 }
 
 BitVector KleeInterpreter::translate_cast_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::CastExpr> &cast = llvm::cast<klee::CastExpr>(e);
-    cast->dump();
     BitVector src = translate(cast->getSrc());
     klee::Expr::Width width = cast->getWidth();
 
@@ -167,7 +158,6 @@ BitVector KleeInterpreter::translate_cast_expr(const klee::ref<klee::Expr> &e) {
 BitVector
 KleeInterpreter::translate_binary_expr(const klee::ref<klee::Expr> &e) {
     const klee::ref<klee::BinaryExpr> &bin = llvm::cast<klee::BinaryExpr>(e);
-    bin->dump();
     BitVector left = translate(bin->getLeft());
     BitVector right = translate(bin->getRight());
 
