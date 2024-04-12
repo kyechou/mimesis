@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <klee/Common.h>
 #include <klee/Constraints.h>
@@ -115,17 +116,19 @@ protected:
 TEST_F(PacketSetTests, ctor) {
     auto expr = create_expr_1();
     ps::PacketSet ps(expr);
+    EXPECT_EQ(ps.to_string(), "[\n"
+                              "  node(1,143,0,~0),\n"
+                              "  node(2,142,1,~0),\n"
+                              "  node(3,141,2,~0),\n"
+                              "  node(4,140,3,~0),\n"
+                              "  node(5,139,4,~0),\n"
+                              "  node(6,138,5,~0),\n"
+                              "  node(7,137,5,6),\n"
+                              "],[~7,]");
+    ps.to_dot_file("ps.dot");
 
-    // ps::PacketSet ps;
-    // EXPECT_EQ(ps.to_string(), "(Unimplemented)");
-    //
-    // auto expr = klee::ConstantExpr::create(42, 32);
-    // std::string expr_str;
-    // expr->toString(expr_str);
-    // EXPECT_EQ(expr_str, "42");
-    //
-    // klee::Query q(/*_constraints=*/{}, expr);
-    // bool result;
-    // solver->mayBeTrue(q, result);
-    // EXPECT_TRUE(result);
+    klee::Query q(/*_constraints=*/{}, expr);
+    bool result;
+    solver->mayBeTrue(q, result);
+    EXPECT_TRUE(result);
 }
