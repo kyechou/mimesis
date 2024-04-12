@@ -115,7 +115,11 @@ protected:
 
 TEST_F(PacketSetTests, ctor) {
     auto expr = create_expr_1();
+    auto not_expr = klee::Expr::createIsZero(expr);
     ps::PacketSet ps(expr);
+    ps::PacketSet not_ps(not_expr);
+    EXPECT_EQ(ps, ~not_ps);
+    EXPECT_EQ(~ps, not_ps);
     EXPECT_EQ(ps.to_string(), "[\n"
                               "  node(1,143,0,~0),\n"
                               "  node(2,142,1,~0),\n"
