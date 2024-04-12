@@ -59,4 +59,51 @@ void PacketSet::to_dot_file(const std::filesystem::path &fp) const {
     Bdd::to_dot_file(this->bdd, fp);
 }
 
+PacketSet PacketSet::intersection(const PacketSet &other) const {
+    return this->bdd & other.bdd;
+}
+
+PacketSet PacketSet::set_union(const PacketSet &other) const {
+    return this->bdd | other.bdd;
+}
+
+PacketSet PacketSet::difference(const PacketSet &other) const {
+    return this->bdd - other.bdd;
+}
+
+PacketSet PacketSet::complement() const {
+    return ~this->bdd;
+}
+
+PacketSet PacketSet::operator&(const PacketSet &other) const {
+    return this->intersection(other);
+}
+
+PacketSet PacketSet::operator|(const PacketSet &other) const {
+    return this->set_union(other);
+}
+
+PacketSet PacketSet::operator-(const PacketSet &other) const {
+    return this->difference(other);
+}
+
+PacketSet PacketSet::operator~() const {
+    return this->complement();
+}
+
+PacketSet &PacketSet::operator&=(const PacketSet &other) {
+    *this = this->intersection(other);
+    return *this;
+}
+
+PacketSet &PacketSet::operator|=(const PacketSet &other) {
+    *this = this->set_union(other);
+    return *this;
+}
+
+PacketSet &PacketSet::operator-=(const PacketSet &other) {
+    *this = this->difference(other);
+    return *this;
+}
+
 } // namespace ps

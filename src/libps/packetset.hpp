@@ -21,7 +21,6 @@ public:
      * Construct the empty packet set by default.
      */
     PacketSet();
-    PacketSet(const PacketSet &) = default;
     PacketSet(const sylvan::Bdd &);
     PacketSet(const BitVector &);
     PacketSet(const klee::ref<klee::Expr> &);
@@ -31,16 +30,12 @@ public:
      * Construct the universe packet set that contains all packets.
      */
     static PacketSet universe();
-
     /**
      * Construct the empty packet set that contains no packet.
      */
     static PacketSet empty_set();
 
     bool empty() const;
-    /**
-     * Returns the number of packets in this set.
-     */
     size_t size() const;
     /**
      * Returns the number of paths that lead to True in the BDD.
@@ -48,6 +43,17 @@ public:
     size_t num_paths() const;
     std::string to_string() const;
     void to_dot_file(const std::filesystem::path &) const;
+    PacketSet intersection(const PacketSet &) const;
+    PacketSet set_union(const PacketSet &) const;
+    PacketSet difference(const PacketSet &) const;
+    PacketSet complement() const;
+    PacketSet operator&(const PacketSet &) const;
+    PacketSet operator|(const PacketSet &) const;
+    PacketSet operator-(const PacketSet &) const;
+    PacketSet operator~() const;
+    PacketSet &operator&=(const PacketSet &);
+    PacketSet &operator|=(const PacketSet &);
+    PacketSet &operator-=(const PacketSet &);
 };
 
 } // namespace ps
