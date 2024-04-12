@@ -47,6 +47,7 @@ public:
     PacketSet set_union(const PacketSet &) const;
     PacketSet difference(const PacketSet &) const;
     PacketSet complement() const;
+    bool subset_of(const PacketSet &) const;
     PacketSet operator&(const PacketSet &) const;
     PacketSet operator|(const PacketSet &) const;
     PacketSet operator-(const PacketSet &) const;
@@ -54,6 +55,12 @@ public:
     PacketSet &operator&=(const PacketSet &);
     PacketSet &operator|=(const PacketSet &);
     PacketSet &operator-=(const PacketSet &);
+    bool operator!=(const PacketSet &) const;
+    bool operator==(const PacketSet &) const;
+    bool operator<=(const PacketSet &) const;
+    bool operator>=(const PacketSet &) const;
+    bool operator<(const PacketSet &) const;
+    bool operator>(const PacketSet &) const;
 };
 
 } // namespace ps

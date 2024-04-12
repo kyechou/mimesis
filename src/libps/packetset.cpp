@@ -71,6 +71,10 @@ PacketSet PacketSet::difference(const PacketSet &other) const {
     return this->bdd - other.bdd;
 }
 
+bool PacketSet::subset_of(const PacketSet &other) const {
+    return this->bdd.Leq(other.bdd);
+}
+
 PacketSet PacketSet::complement() const {
     return ~this->bdd;
 }
@@ -104,6 +108,30 @@ PacketSet &PacketSet::operator|=(const PacketSet &other) {
 PacketSet &PacketSet::operator-=(const PacketSet &other) {
     *this = this->difference(other);
     return *this;
+}
+
+bool PacketSet::operator!=(const PacketSet &other) const {
+    return this->bdd != other.bdd;
+}
+
+bool PacketSet::operator==(const PacketSet &other) const {
+    return this->bdd == other.bdd;
+}
+
+bool PacketSet::operator<=(const PacketSet &other) const {
+    return this->subset_of(other);
+}
+
+bool PacketSet::operator>=(const PacketSet &other) const {
+    return other <= *this;
+}
+
+bool PacketSet::operator<(const PacketSet &other) const {
+    return *this <= other && *this != other;
+}
+
+bool PacketSet::operator>(const PacketSet &other) const {
+    return other < *this;
 }
 
 } // namespace ps
