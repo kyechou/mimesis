@@ -18,6 +18,10 @@ public:
      * Returns the unique variables in the given BDD. Not thread-safe!
      */
     static std::set<uint32_t> variables(const sylvan::Bdd &);
+    // TODO: Check if the alt version is sound and equivalent to the above
+    // version. If it is, remove the above version and remove the "not
+    // thread-safe" warning. Same as the `num_vars` method.
+    static std::set<uint32_t> variables_alt(const sylvan::Bdd &);
     /**
      * Returns the number of unique variables in the given BDD. Not thread-safe!
      */

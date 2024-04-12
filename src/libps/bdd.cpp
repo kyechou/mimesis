@@ -56,6 +56,17 @@ std::set<uint32_t> Bdd::variables(const sylvan::Bdd &bdd) {
     return vars;
 }
 
+std::set<uint32_t> Bdd::variables_alt(const sylvan::Bdd &bdd) {
+    std::set<uint32_t> res;
+    sylvan::Bdd vars_cube = bdd.Support();
+    while (!vars_cube.isTerminal()) {
+        res.insert(vars_cube.TopVar());
+        assert(vars_cube.Else() == sylvan::Bdd::bddZero());
+        vars_cube = vars_cube.Then();
+    }
+    return res;
+}
+
 size_t Bdd::num_vars(const sylvan::Bdd &bdd) {
     return Bdd::variables(bdd).size();
 }
