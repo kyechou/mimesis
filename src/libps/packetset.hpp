@@ -38,6 +38,14 @@ public:
     static PacketSet empty_set();
 
     bool empty() const;
+    /**
+     * Returns the number of packets in this set.
+     */
+    size_t size() const;
+    /**
+     * Returns the number of paths that lead to True in the BDD.
+     */
+    size_t num_paths() const;
     std::string to_string() const;
     void to_dot_file(const std::filesystem::path &) const;
 };

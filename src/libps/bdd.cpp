@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <functional>
 #include <set>
+#include <string>
 #include <sylvan.h>
 #include <sylvan_bdd.h>
 #include <sylvan_int.h>
@@ -12,6 +13,7 @@
 #include <sylvan_obj.hpp>
 
 #include "lib/logger.hpp"
+#include "libps/manager.hpp"
 
 namespace ps {
 
@@ -54,8 +56,19 @@ std::set<uint32_t> Bdd::variables(const sylvan::Bdd &bdd) {
     return vars;
 }
 
-size_t Bdd::variable_count(const sylvan::Bdd &bdd) {
+size_t Bdd::num_vars(const sylvan::Bdd &bdd) {
     return Bdd::variables(bdd).size();
+}
+
+size_t Bdd::num_true_paths(const sylvan::Bdd &bdd) {
+    double pathcount = sylvan::sylvan_pathcount_RUN(bdd.GetBDD(), 0);
+    return pathcount;
+}
+
+size_t Bdd::num_sat_assignments(const sylvan::Bdd &bdd) {
+    sylvan::BddSet vars = Manager::get().get_all_variables();
+    double satcount = bdd.SatCount(vars);
+    return satcount;
 }
 
 std::string Bdd::to_string(const sylvan::Bdd &bdd) {

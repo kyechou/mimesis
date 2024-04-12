@@ -125,6 +125,8 @@ TEST_F(PacketSetTests, ctor) {
                               "  node(6,138,5,~0),\n"
                               "  node(7,137,5,6),\n"
                               "],[~7,]");
+    EXPECT_EQ(ps.num_paths(), 2);
+    EXPECT_EQ(ps.size(), 9223372036854775808UL);
     ps.to_dot_file("ps.dot");
 
     klee::Query q(/*_constraints=*/{}, expr);

@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <string>
+#include <sylvan_obj.hpp>
 #include <unordered_map>
 #include <utility>
 
@@ -50,6 +51,10 @@ public:
      */
     std::pair<uint32_t, uint32_t>
     get_variable_offset(const std::string &var_name) const;
+    /**
+     * Returns a set of all BDD Boolean variables.
+     */
+    sylvan::BddSet get_all_variables() const;
     /**
      * Suspend the lace worker threads. (They busy-wait while idling.)
      */

@@ -43,6 +43,14 @@ bool PacketSet::empty() const {
     return this->bdd.isZero();
 }
 
+size_t PacketSet::size() const {
+    return Bdd::num_sat_assignments(this->bdd);
+}
+
+size_t PacketSet::num_paths() const {
+    return Bdd::num_true_paths(this->bdd);
+}
+
 std::string PacketSet::to_string() const {
     return Bdd::to_string(this->bdd);
 }

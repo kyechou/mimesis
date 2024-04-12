@@ -21,7 +21,15 @@ public:
     /**
      * Returns the number of unique variables in the given BDD. Not thread-safe!
      */
-    static size_t variable_count(const sylvan::Bdd &);
+    static size_t num_vars(const sylvan::Bdd &);
+    /**
+     * Returns the number of paths that lead to True.
+     */
+    static size_t num_true_paths(const sylvan::Bdd &);
+    /**
+     * Returns the number of assignments that satisfy the BDD.
+     */
+    static size_t num_sat_assignments(const sylvan::Bdd &);
 
     /**
      * ASCII (`mtbdd_writer_totext`) format of a BDD:
@@ -31,7 +39,7 @@ public:
      *   leaf(id, type, "value"), -- for a leaf (with value between "")
      * ],[dd1, dd2, dd3, ...,] -- and each the stored decision diagram.
      *
-     * `sylvan_fprint` format:
+     * One-line (`sylvan_fprint`) format of a BDD:
      * [(<key>,<level>,<key_low>,<key_high>,<complement_high>),...]
      */
 
@@ -48,7 +56,6 @@ public:
 };
 
 // TODO:
-// sylvan_pathcount
 // sylvan_satcount (need vars)
 // mtbdd_satcount (need vars)
 // size_t sylvan_serialize_add(BDD bdd);

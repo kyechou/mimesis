@@ -66,6 +66,18 @@ Manager::get_variable_offset(const std::string &var_name) const {
     return it->second;
 }
 
+sylvan::BddSet Manager::get_all_variables() const {
+    sylvan::BddSet res;
+    for (const auto &[_, var_info] : this->_variables) {
+        const uint32_t offset = var_info.first;
+        const uint32_t width = var_info.second;
+        for (uint32_t i = offset; i < offset + width; ++i) {
+            res.add(i);
+        }
+    }
+    return res;
+}
+
 void Manager::suspend_threads() const {
     if (!_initialized) {
         warn("libps is not initialized");
