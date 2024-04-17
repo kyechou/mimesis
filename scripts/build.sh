@@ -106,6 +106,7 @@ build_mimesis_programs() {
         cmake --install '$BUILD_DIR' --prefix '$S2E_DIR/install'
 EOM
     )"
+    mkdir -p "$HOME/.conan2"
     docker run -it --rm -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         -v "$HOME/.conan2:$HOME/.conan2" \
