@@ -42,11 +42,11 @@ understand how Mimesis works.
 - [`scripts/s2e.sh`](scripts/s2e.sh)
 - [`src/sender.cpp`](src/sender.cpp)
 - [`src/symbolic_ingress.stp`](src/symbolic_ingress.stp)
-- [`src/s2e/libs2eplugins/src/s2e/Plugins/Mimesis.cpp`](src/s2e/libs2eplugins/src/s2e/Plugins/Mimesis.cpp)
-- [`src/libps/manager.hpp`](src/libps/manager.hpp)
-- [`src/libps/packetset.hpp`](src/libps/packetset.hpp)
-- [`src/libps/klee-interpreter.hpp`](src/libps/klee-interpreter.hpp)
-- [`src/libps/bitvector.hpp`](src/libps/bitvector.hpp)
+- [`src/s2e/libs2eplugins/src/s2e/Plugins/Mimesis.cpp`](https://github.com/kyechou/s2e/blob/master/libs2eplugins/src/s2e/Plugins/Mimesis.cpp)
+- [`src/libps/manager.cpp`](src/libps/manager.cpp)
+- [`src/libps/packetset.cpp`](src/libps/packetset.cpp)
+- [`src/libps/klee-interpreter.cpp`](src/libps/klee-interpreter.cpp)
+- [`src/libps/bitvector.cpp`](src/libps/bitvector.cpp)
 - [`src/libps/bdd.cpp`](src/libps/bdd.cpp)
 
 ## Improvements
