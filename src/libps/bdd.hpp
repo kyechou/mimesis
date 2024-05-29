@@ -16,13 +16,9 @@ namespace ps {
 class Bdd {
 public:
     /**
-     * Returns the unique variables in the given BDD. Not thread-safe!
+     * Returns the unique variables in the given BDD.
      */
     static std::set<uint32_t> variables(const sylvan::Bdd &);
-    // TODO: Check if the alt version is sound and equivalent to the above
-    // version. If it is, remove the above version and remove the "not
-    // thread-safe" warning. Same as the `num_vars` method.
-    static std::set<uint32_t> variables_alt(const sylvan::Bdd &);
     /**
      * Returns the number of unique variables in the given BDD. Not thread-safe!
      */
@@ -62,9 +58,7 @@ public:
                                const std::filesystem::path &);
 };
 
-// TODO:
-// sylvan_satcount (need vars)
-// mtbdd_satcount (need vars)
+// TODO: Serialization. See:
 // size_t sylvan_serialize_add(BDD bdd);
 // size_t sylvan_serialize_get(BDD bdd);
 // BDD sylvan_serialize_get_reversed(size_t value);

@@ -3,7 +3,6 @@
 #include <cerrno>
 #include <cstdint>
 #include <cstdio>
-#include <functional>
 #include <set>
 #include <string>
 #include <sylvan.h>
@@ -17,46 +16,8 @@
 namespace ps {
 
 std::set<uint32_t> Bdd::variables(const sylvan::Bdd &bdd) {
-    std::set<uint32_t> vars;
-    std::function<void(const sylvan::BDD)> collect_bdd_vars_recursive;
-    collect_bdd_vars_recursive =
-        [&vars, &collect_bdd_vars_recursive](const sylvan::BDD bdd) -> void {
-        sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(bdd);
-        if (sylvan::mtbddnode_getmark(n)) {
-            return;
-        }
-        sylvan::mtbddnode_setmark(n, 1);
-
-        if (sylvan::mtbdd_isleaf(bdd)) {
-            return;
-        }
-        vars.insert(sylvan::mtbddnode_getvariable(n));
-        collect_bdd_vars_recursive(sylvan::mtbddnode_getlow(n));
-        collect_bdd_vars_recursive(sylvan::mtbddnode_gethigh(n));
-    };
-
-    std::function<void(const sylvan::BDD)> unmark_bddnodes_recursive;
-    unmark_bddnodes_recursive =
-        [&unmark_bddnodes_recursive](const sylvan::BDD bdd) -> void {
-        sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(bdd);
-        if (!sylvan::mtbddnode_getmark(n)) {
-            return;
-        }
-        sylvan::mtbddnode_setmark(n, 0);
-        if (sylvan::mtbdd_isleaf(bdd)) {
-            return;
-        }
-        unmark_bddnodes_recursive(sylvan::mtbddnode_getlow(n));
-        unmark_bddnodes_recursive(sylvan::mtbddnode_gethigh(n));
-    };
-
-    collect_bdd_vars_recursive(bdd.GetBDD());
-    unmark_bddnodes_recursive(bdd.GetBDD());
-    return vars;
-}
-
-std::set<uint32_t> Bdd::variables_alt(const sylvan::Bdd &bdd) {
     std::set<uint32_t> res;
+    // Support := the cube of all variables that appear in the BDD nodes.
     sylvan::Bdd vars_cube = bdd.Support();
     while (!vars_cube.isTerminal()) {
         res.insert(vars_cube.TopVar());
