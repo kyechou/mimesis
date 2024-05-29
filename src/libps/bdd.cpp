@@ -13,7 +13,6 @@
 #include <sylvan_obj.hpp>
 
 #include "lib/logger.hpp"
-#include "libps/manager.hpp"
 
 namespace ps {
 
@@ -76,10 +75,13 @@ size_t Bdd::num_true_paths(const sylvan::Bdd &bdd) {
     return pathcount;
 }
 
-size_t Bdd::num_sat_assignments(const sylvan::Bdd &bdd) {
-    sylvan::BddSet vars = Manager::get().get_all_variables();
-    double satcount = bdd.SatCount(vars);
-    return satcount;
+size_t Bdd::num_sat_assignments(const sylvan::Bdd &bdd,
+                                const std::optional<sylvan::BddSet> variables) {
+    if (variables.has_value()) {
+        return bdd.SatCount(*variables);
+    } else {
+        return bdd.SatCount(bdd.Support());
+    }
 }
 
 std::string Bdd::to_string(const sylvan::Bdd &bdd) {

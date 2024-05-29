@@ -8,6 +8,7 @@
 #include "libps/bdd.hpp"
 #include "libps/bitvector.hpp"
 #include "libps/klee-interpreter.hpp"
+#include "libps/manager.hpp"
 
 namespace ps {
 
@@ -44,7 +45,8 @@ bool PacketSet::empty() const {
 }
 
 size_t PacketSet::size() const {
-    return Bdd::num_sat_assignments(this->bdd);
+    return Bdd::num_sat_assignments(this->bdd,
+                                    Manager::get().get_all_variables());
 }
 
 size_t PacketSet::num_paths() const {

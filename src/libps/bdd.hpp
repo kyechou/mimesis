@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 #include <set>
 #include <string>
 #include <sylvan_obj.hpp>
@@ -33,7 +34,9 @@ public:
     /**
      * Returns the number of assignments that satisfy the BDD.
      */
-    static size_t num_sat_assignments(const sylvan::Bdd &);
+    static size_t
+    num_sat_assignments(const sylvan::Bdd &,
+                        const std::optional<sylvan::BddSet> = std::nullopt);
 
     /**
      * ASCII (`mtbdd_writer_totext`) format of a BDD:
