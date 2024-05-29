@@ -65,7 +65,7 @@ protected:
         wildcard = bdd_0 & bdd_3;
     }
 
-    void TearDown() override {}
+    void TearDown() override { ps::Manager::get().reset(); }
 };
 
 TEST_F(BddTests, bit_variables_in_bdd) {

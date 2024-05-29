@@ -16,6 +16,12 @@ Manager &Manager::get() {
     return instance;
 }
 
+Manager::~Manager() {
+    if (_initialized) {
+        this->reset();
+    }
+}
+
 void Manager::init(size_t n_workers,
                    size_t memory_cap,
                    int table_ratio,
@@ -32,12 +38,14 @@ void Manager::init(size_t n_workers,
     _initialized = true;
 }
 
-Manager::~Manager() {
+void Manager::reset() {
     if (!_initialized) {
         warn("libps is not initialized");
         return;
     }
 
+    _initialized = false;
+    _variables.clear();
     sylvan::sylvan_quit();
     lace_stop();
 }

@@ -40,6 +40,11 @@ public:
               int table_ratio,
               int initial_ratio);
     /**
+     * Reset the manager to the uninitialized state as if the object was just
+     * constructed.
+     */
+    void reset();
+    /**
      * All symbolic variables must be registered before being used to create
      * BDDs.
      */

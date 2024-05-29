@@ -56,6 +56,7 @@ protected:
         out = nullptr;
         klee::klee_message_stream = nullptr;
         klee::klee_warning_stream = nullptr;
+        ps::Manager::get().reset();
     }
 
     void create_symbolic_variable() {
