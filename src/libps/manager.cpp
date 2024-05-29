@@ -20,6 +20,11 @@ void Manager::init(size_t n_workers,
                    size_t memory_cap,
                    int table_ratio,
                    int initial_ratio) {
+    if (_initialized) {
+        this->resume_threads();
+        return;
+    }
+
     lace_start(n_workers, /*dqsize=*/0);
     sylvan::sylvan_set_limits(memory_cap, table_ratio, initial_ratio);
     sylvan::sylvan_init_package();
