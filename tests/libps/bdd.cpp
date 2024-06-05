@@ -229,8 +229,6 @@ TEST_F(BddTests, print_string) {
 }
 
 TEST_F(BddTests, file_io) {
-    // TODO: Implement the tests.
-
     // Test `to_dot_file` via `to_dot_string`.
     EXPECT_EQ(ps::Bdd::to_dot_string(vars_cube),
               util::get_testdata_str("ps_bdd_vars_cube.dot"));
