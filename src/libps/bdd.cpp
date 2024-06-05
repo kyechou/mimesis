@@ -155,7 +155,7 @@ sylvan::Bdd Bdd::from_binary_file(FILE *in) {
 }
 
 sylvan::Bdd Bdd::from_binary_file(const std::filesystem::path &fp) {
-    FILE *in = fopen(fp.c_str(), "w");
+    FILE *in = fopen(fp.c_str(), "r");
     if (!in) {
         error("Failed to open " + fp.string(), errno);
     }
