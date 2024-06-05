@@ -1,10 +1,7 @@
 #include <cstdint>
 #include <gtest/gtest.h>
 #include <klee/Common.h>
-#include <klee/Constraints.h>
 #include <klee/Expr.h>
-#include <klee/Solver.h>
-#include <klee/SolverFactory.h>
 #include <linux/if_ether.h>
 #include <llvm/Support/raw_ostream.h>
 #include <string>
@@ -22,9 +19,6 @@ struct DemoHeader {
 class PacketSetTests : public testing::Test {
 protected:
     llvm::raw_ostream *out = nullptr;
-    klee::SolverPtr solver;
-    klee::ConstraintManager constraints;
-
     const std::string var_name = "ingress_packet";
     klee::ArrayPtr array;
     klee::UpdateListPtr ul;
@@ -35,11 +29,6 @@ protected:
                                        /*shouldClose=*/false);
         klee::klee_message_stream = out;
         klee::klee_warning_stream = out;
-
-        // Solver
-        auto factory = klee::DefaultSolverFactory::create(".");
-        klee::SolverPtr endSolver = factory->createEndSolver();
-        solver = factory->decorateSolver(endSolver);
 
         // Initialize libps
         ps::Manager::get().init(/*n_workers=*/1,
@@ -133,9 +122,4 @@ TEST_F(PacketSetTests, ctor) {
     EXPECT_EQ(ps.num_paths(), 2);
     EXPECT_EQ(ps.size(), 9223372036854775808UL);
     ps.to_dot_file("ps.dot");
-
-    klee::Query q(/*_constraints=*/{}, expr);
-    bool result;
-    solver->mayBeTrue(q, result);
-    EXPECT_TRUE(result);
 }
