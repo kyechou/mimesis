@@ -1,12 +1,14 @@
 #ifndef LIBPS_BDD_HPP
 #define LIBPS_BDD_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
 #include <set>
 #include <string>
 #include <sylvan_obj.hpp>
+#include <vector>
 
 namespace ps {
 
@@ -59,6 +61,10 @@ public:
      * The string cannot be turned back into a BDD.
      */
     static std::string to_dot_string(const sylvan::Bdd &);
+    /**
+     * Write the given BDD into a vector of bytes in the binary format.
+     */
+    static std::vector<std::byte> to_byte_vector(const sylvan::Bdd &);
     /**
      * Output the given BDD as a dot file for debugging purposes only.
      * The file cannot be turned back into a BDD.

@@ -1,0 +1,20 @@
+digraph "DD" {
+graph [dpi = 300];
+center = true;
+edge [dir = forward];
+root [style=invis];
+root -> 11 [style=solid dir=both arrowtail=none];
+11 [label="0"];
+0 [shape=box, style=filled, label="F"];
+10 [label="1"];
+9 [label="2"];
+5 [label="3"];
+5 -> 0 [style=dashed];
+5 -> 0 [style=solid dir=both arrowtail=dot];
+9 -> 0 [style=dashed];
+9 -> 5 [style=solid dir=both arrowtail=none];
+10 -> 0 [style=dashed];
+10 -> 9 [style=solid dir=both arrowtail=none];
+11 -> 0 [style=dashed];
+11 -> 10 [style=solid dir=both arrowtail=none];
+}

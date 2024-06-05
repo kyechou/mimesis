@@ -3,6 +3,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <set>
 #include <string>
 #include <sylvan.h>
@@ -10,6 +11,7 @@
 #include <sylvan_int.h>
 #include <sylvan_mtbdd.h>
 #include <sylvan_obj.hpp>
+#include <vector>
 
 #include "lib/logger.hpp"
 
@@ -84,6 +86,21 @@ std::string Bdd::to_dot_string(const sylvan::Bdd &bdd) {
     to_dot_file(bdd, out);
     fclose(out);
     std::string res(buf);
+    free(buf);
+    return res;
+}
+
+std::vector<std::byte> Bdd::to_byte_vector(const sylvan::Bdd &bdd) {
+    char *buf;
+    size_t len;
+    FILE *out = open_memstream(&buf, &len);
+    if (!out) {
+        error("open_memstream failed", errno);
+    }
+    to_binary_file(bdd, out);
+    fclose(out);
+    std::vector<std::byte> res(reinterpret_cast<std::byte *>(buf),
+                               reinterpret_cast<std::byte *>(buf) + len);
     free(buf);
     return res;
 }

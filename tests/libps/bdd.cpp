@@ -7,6 +7,7 @@
 
 #include "libps/bdd.hpp"
 #include "libps/manager.hpp"
+#include "util.hpp"
 
 class BddTests : public testing::Test {
 protected:
@@ -227,6 +228,46 @@ TEST_F(BddTests, print_string) {
     EXPECT_EQ(ps::Bdd::to_dot_string(wildcard), wildcard_dot_str);
 }
 
-TEST_F(BddTests, print_file) {
-    //
+TEST_F(BddTests, file_io) {
+    // TODO: Implement the tests.
+
+    // Test `to_dot_file` via `to_dot_string`.
+    EXPECT_EQ(ps::Bdd::to_dot_string(vars_cube),
+              util::get_testdata_str("ps_bdd_vars_cube.dot"));
+    EXPECT_EQ(ps::Bdd::to_dot_string(diamond),
+              util::get_testdata_str("ps_bdd_diamond.dot"));
+    EXPECT_EQ(ps::Bdd::to_dot_string(train),
+              util::get_testdata_str("ps_bdd_train.dot"));
+    EXPECT_EQ(ps::Bdd::to_dot_string(wildcard),
+              util::get_testdata_str("ps_bdd_wildcard.dot"));
+
+    // Test `to_ascii_file` via `to_string`.
+    EXPECT_EQ(ps::Bdd::to_string(vars_cube) + "\n",
+              util::get_testdata_str("ps_bdd_vars_cube.txt"));
+    EXPECT_EQ(ps::Bdd::to_string(diamond) + "\n",
+              util::get_testdata_str("ps_bdd_diamond.txt"));
+    EXPECT_EQ(ps::Bdd::to_string(train) + "\n",
+              util::get_testdata_str("ps_bdd_train.txt"));
+    EXPECT_EQ(ps::Bdd::to_string(wildcard) + "\n",
+              util::get_testdata_str("ps_bdd_wildcard.txt"));
+
+    // Test `to_binary_file` via `to_byte_vector`.
+    EXPECT_EQ(ps::Bdd::to_byte_vector(vars_cube),
+              util::get_testdata_byte_vector("ps_bdd_vars_cube.bin"));
+    EXPECT_EQ(ps::Bdd::to_byte_vector(diamond),
+              util::get_testdata_byte_vector("ps_bdd_diamond.bin"));
+    EXPECT_EQ(ps::Bdd::to_byte_vector(train),
+              util::get_testdata_byte_vector("ps_bdd_train.bin"));
+    EXPECT_EQ(ps::Bdd::to_byte_vector(wildcard),
+              util::get_testdata_byte_vector("ps_bdd_wildcard.bin"));
+
+    // Test `from_binary_file`.
+    EXPECT_EQ(vars_cube, ps::Bdd::from_binary_file(
+                             util::get_testdata_path("ps_bdd_vars_cube.bin")));
+    EXPECT_EQ(diamond, ps::Bdd::from_binary_file(
+                           util::get_testdata_path("ps_bdd_diamond.bin")));
+    EXPECT_EQ(train, ps::Bdd::from_binary_file(
+                         util::get_testdata_path("ps_bdd_train.bin")));
+    EXPECT_EQ(wildcard, ps::Bdd::from_binary_file(
+                            util::get_testdata_path("ps_bdd_wildcard.bin")));
 }
