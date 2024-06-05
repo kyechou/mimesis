@@ -1,4 +1,3 @@
-#include <cstddef>
 #include <cstdint>
 #include <gtest/gtest.h>
 #include <linux/if_ether.h>
@@ -11,7 +10,6 @@
 
 class BddTests : public testing::Test {
 protected:
-    const size_t nbits = 8;
     sylvan::Bdd bdd_0;
     sylvan::Bdd bdd_1;
     sylvan::Bdd bdd_2;
