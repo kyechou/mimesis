@@ -35,37 +35,87 @@ public:
                         const std::optional<sylvan::BddSet> = std::nullopt);
 
     /**
+     * Write the given BDD into an ASCII string for debugging purposes only.
+     * The string cannot be turned back into a BDD.
+     *
      * ASCII (`mtbdd_writer_totext`) format of a BDD:
      * [
      *   node(id, var, low, high), -- for a normal node (no complement on high)
      *   node(id, var, low, ~high), -- for a normal node (complement on high)
      *   leaf(id, type, "value"), -- for a leaf (with value between "")
      * ],[dd1, dd2, dd3, ...,] -- and each the stored decision diagram.
+     */
+    static std::string to_string(const sylvan::Bdd &);
+    /**
+     * Write the given BDD into a one-line string for debugging purposes only.
+     * The string cannot be turned back into a BDD.
      *
      * One-line (`sylvan_fprint`) format of a BDD:
      * [(<key>,<level>,<key_low>,<key_high>,<complement_high>),...]
      */
-
-    static std::string to_string(const sylvan::Bdd &);
     static std::string to_string_oneline(const sylvan::Bdd &);
+    /**
+     * Write the given BDD into a dot-format string for debugging purposes only.
+     * The string cannot be turned back into a BDD.
+     */
     static std::string to_dot_string(const sylvan::Bdd &);
+    /**
+     * Output the given BDD as a dot file for debugging purposes only.
+     * The file cannot be turned back into a BDD.
+     */
     static void to_dot_file(const sylvan::Bdd &, FILE *);
+    /**
+     * Output the given BDD as a dot file for debugging purposes only.
+     * The file cannot be turned back into a BDD.
+     */
     static void to_dot_file(const sylvan::Bdd &, const std::filesystem::path &);
+    /**
+     * Output the given BDD as an ASCII file for debugging purposes only.
+     * The file cannot be turned back into a BDD.
+     *
+     * ASCII (`mtbdd_writer_totext`) format of a BDD:
+     * [
+     *   node(id, var, low, high), -- for a normal node (no complement on high)
+     *   node(id, var, low, ~high), -- for a normal node (complement on high)
+     *   leaf(id, type, "value"), -- for a leaf (with value between "")
+     * ],[dd1, dd2, dd3, ...,] -- and each the stored decision diagram.
+     */
     static void to_ascii_file(const sylvan::Bdd &, FILE *);
+    /**
+     * Output the given BDD as an ASCII file for debugging purposes only.
+     * The file cannot be turned back into a BDD.
+     *
+     * ASCII (`mtbdd_writer_totext`) format of a BDD:
+     * [
+     *   node(id, var, low, high), -- for a normal node (no complement on high)
+     *   node(id, var, low, ~high), -- for a normal node (complement on high)
+     *   leaf(id, type, "value"), -- for a leaf (with value between "")
+     * ],[dd1, dd2, dd3, ...,] -- and each the stored decision diagram.
+     */
     static void to_ascii_file(const sylvan::Bdd &,
                               const std::filesystem::path &);
+    /**
+     * Output the given BDD as a binary file, which can be later turned back
+     * into a BDD with `ps::Bdd::from_binary_file`.
+     */
+    static void to_binary_file(const sylvan::Bdd &, FILE *);
+    /**
+     * Output the given BDD as a binary file, which can be later turned back
+     * into a BDD with `ps::Bdd::from_binary_file`.
+     */
     static void to_binary_file(const sylvan::Bdd &,
                                const std::filesystem::path &);
+    /**
+     * Convert the given file previously output by `ps::Bdd::to_binary_file`
+     * into a BDD.
+     */
+    static sylvan::Bdd from_binary_file(FILE *);
+    /**
+     * Convert the given file previously output by `ps::Bdd::to_binary_file`
+     * into a BDD.
+     */
+    static sylvan::Bdd from_binary_file(const std::filesystem::path &);
 };
-
-// TODO: Serialization. See:
-// size_t sylvan_serialize_add(BDD bdd);
-// size_t sylvan_serialize_get(BDD bdd);
-// BDD sylvan_serialize_get_reversed(size_t value);
-// void sylvan_serialize_reset(void);
-// void sylvan_serialize_totext(FILE *out);
-// void sylvan_serialize_tofile(FILE *out);
-// void sylvan_serialize_fromfile(FILE *in);
 
 } // namespace ps
 

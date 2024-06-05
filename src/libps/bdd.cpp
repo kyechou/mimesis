@@ -116,10 +116,35 @@ void Bdd::to_ascii_file(const sylvan::Bdd &bdd,
     fclose(out);
 }
 
-void Bdd::to_binary_file(const sylvan::Bdd &bdd [[maybe_unused]],
-                         const std::filesystem::path &fp [[maybe_unused]]) {
-    // TODO: See `mtbdd_writer_tobinary`
-    error("Not yet implemented");
+void Bdd::to_binary_file(const sylvan::Bdd &bdd, FILE *out) {
+    sylvan::BDD c_bdd = bdd.GetBDD();
+    sylvan::mtbdd_writer_tobinary_RUN(out, &c_bdd, /*count=*/1);
+}
+
+void Bdd::to_binary_file(const sylvan::Bdd &bdd,
+                         const std::filesystem::path &fp) {
+    FILE *out = fopen(fp.c_str(), "w");
+    if (!out) {
+        error("Failed to open " + fp.string(), errno);
+    }
+    to_binary_file(bdd, out);
+    fclose(out);
+}
+
+sylvan::Bdd Bdd::from_binary_file(FILE *in) {
+    sylvan::BDD c_bdd{sylvan::sylvan_false};
+    sylvan::mtbdd_reader_frombinary_RUN(in, &c_bdd, /*count=*/1);
+    return sylvan::Bdd(c_bdd);
+}
+
+sylvan::Bdd Bdd::from_binary_file(const std::filesystem::path &fp) {
+    FILE *in = fopen(fp.c_str(), "w");
+    if (!in) {
+        error("Failed to open " + fp.string(), errno);
+    }
+    sylvan::Bdd bdd = from_binary_file(in);
+    fclose(in);
+    return bdd;
 }
 
 } // namespace ps
