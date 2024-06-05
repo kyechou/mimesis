@@ -27,8 +27,7 @@ void Manager::init(size_t n_workers,
                    int table_ratio,
                    int initial_ratio) {
     if (_initialized) {
-        this->resume_threads();
-        return;
+        this->reset();
     }
 
     lace_start(n_workers, /*dqsize=*/0);
