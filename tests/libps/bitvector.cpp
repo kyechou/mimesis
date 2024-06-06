@@ -207,8 +207,8 @@ TEST_F(BitVectorTests, relational_ops) {
     ps::BitVector bv_13(/*width=*/nbits, /*value=*/13ul);
     ps::BitVector res;
 
-    EXPECT_TRUE((bv == bv).identical_to(ps::BitVector(1, true)));
-    EXPECT_TRUE((bv != bv).identical_to(ps::BitVector(1, false)));
+    EXPECT_TRUE((bv == bv).identical_to(ps::BitVector(true)));
+    EXPECT_TRUE((bv != bv).identical_to(ps::BitVector(false)));
 
     // ult
     res = (bv < bv_3);
@@ -220,8 +220,8 @@ TEST_F(BitVectorTests, relational_ops) {
                                "  node(3,1,2,~0),\n"
                                "  node(4,0,2,3),\n"
                                "],[~4,]");
-    EXPECT_TRUE((bv_3 < bv_10).identical_to(ps::BitVector(1, true)));
-    EXPECT_TRUE((bv_13 < bv_10).identical_to(ps::BitVector(1, false)));
+    EXPECT_TRUE((bv_3 < bv_10).identical_to(ps::BitVector(true)));
+    EXPECT_TRUE((bv_13 < bv_10).identical_to(ps::BitVector(false)));
 
     // ule
     res = (bv <= bv_3);
@@ -231,7 +231,7 @@ TEST_F(BitVectorTests, relational_ops) {
                                "  node(1,3,0,~0),\n"
                                "  node(2,2,1,~0),\n"
                                "],[~2,]");
-    EXPECT_TRUE((bv_3 <= bv_3).identical_to(ps::BitVector(1, true)));
+    EXPECT_TRUE((bv_3 <= bv_3).identical_to(ps::BitVector(true)));
 
     // ugt
     res = (bv > bv_3);
@@ -241,8 +241,8 @@ TEST_F(BitVectorTests, relational_ops) {
                                "  node(1,3,0,~0),\n"
                                "  node(2,2,1,~0),\n"
                                "],[2,]");
-    EXPECT_TRUE((bv_3 > bv_10).identical_to(ps::BitVector(1, false)));
-    EXPECT_TRUE((bv_13 > bv_10).identical_to(ps::BitVector(1, true)));
+    EXPECT_TRUE((bv_3 > bv_10).identical_to(ps::BitVector(false)));
+    EXPECT_TRUE((bv_13 > bv_10).identical_to(ps::BitVector(true)));
 
     // uge
     res = (bv >= bv_3);
@@ -254,7 +254,7 @@ TEST_F(BitVectorTests, relational_ops) {
                                "  node(3,1,2,~0),\n"
                                "  node(4,0,2,3),\n"
                                "],[4,]");
-    EXPECT_TRUE((bv_3 >= bv_3).identical_to(ps::BitVector(1, true)));
+    EXPECT_TRUE((bv_3 >= bv_3).identical_to(ps::BitVector(true)));
 
     // slt
     res = bv.slt(bv_3);
@@ -266,7 +266,7 @@ TEST_F(BitVectorTests, relational_ops) {
                                "  node(3,1,2,~1),\n"
                                "  node(4,0,2,3),\n"
                                "],[~4,]");
-    EXPECT_TRUE(bv_3.slt(bv_10).identical_to(ps::BitVector(1, false)));
+    EXPECT_TRUE(bv_3.slt(bv_10).identical_to(ps::BitVector(false)));
 
     // sle
     res = bv.sle(bv_3);
@@ -276,7 +276,7 @@ TEST_F(BitVectorTests, relational_ops) {
                                "  node(1,3,0,~0),\n"
                                "  node(2,2,0,~1),\n"
                                "],[~2,]");
-    EXPECT_TRUE(bv_13.sle(bv_10).identical_to(ps::BitVector(1, true)));
+    EXPECT_TRUE(bv_13.sle(bv_10).identical_to(ps::BitVector(true)));
 
     // sgt
     res = bv.sgt(bv_3);
@@ -286,7 +286,7 @@ TEST_F(BitVectorTests, relational_ops) {
                                "  node(1,3,0,~0),\n"
                                "  node(2,2,0,~1),\n"
                                "],[2,]");
-    EXPECT_TRUE(bv_3.sgt(bv_10).identical_to(ps::BitVector(1, true)));
+    EXPECT_TRUE(bv_3.sgt(bv_10).identical_to(ps::BitVector(true)));
 
     // sge
     res = bv.sge(bv_3);
@@ -298,7 +298,7 @@ TEST_F(BitVectorTests, relational_ops) {
                                "  node(3,1,2,~1),\n"
                                "  node(4,0,2,3),\n"
                                "],[4,]");
-    EXPECT_TRUE(bv_13.sge(bv_10).identical_to(ps::BitVector(1, false)));
+    EXPECT_TRUE(bv_13.sge(bv_10).identical_to(ps::BitVector(false)));
 }
 
 TEST_F(BitVectorTests, bitwise_logical_ops) {

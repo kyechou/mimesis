@@ -42,6 +42,10 @@ public:
      */
     BitVector(const size_t width, const bool bit_val);
     /**
+     * Create a one-bit bit-vector with a concrete boolean value.
+     */
+    BitVector(const bool bool_val);
+    /**
      * Construct a concrete bit-vector from the APInt `value`.
      */
     BitVector(const llvm::APInt &value);

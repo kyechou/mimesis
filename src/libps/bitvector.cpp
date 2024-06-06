@@ -44,6 +44,9 @@ BitVector::BitVector(const size_t width, const sylvan::Bdd &bit_val)
 BitVector::BitVector(const size_t width, const bool bit_val)
     : bv(width, (bit_val ? sylvan::Bdd::bddOne() : sylvan::Bdd::bddZero())) {}
 
+BitVector::BitVector(const bool bool_val)
+    : bv(1, (bool_val ? sylvan::Bdd::bddOne() : sylvan::Bdd::bddZero())) {}
+
 BitVector::BitVector(const llvm::APInt &value) {
     this->bv.reserve(value.getBitWidth());
     for (size_t i = 0; i < value.getBitWidth(); ++i) {
