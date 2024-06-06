@@ -13,6 +13,7 @@ namespace ps {
 class Manager {
 private:
     bool _initialized = false;
+    uint32_t _starting_bddnode_index = 0;
     std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> _variables;
 
     Manager() = default;

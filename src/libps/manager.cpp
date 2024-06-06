@@ -44,6 +44,7 @@ void Manager::reset() {
     }
 
     _initialized = false;
+    _starting_bddnode_index = 0;
     _variables.clear();
     sylvan::sylvan_quit();
     lace_stop();
@@ -56,9 +57,8 @@ void Manager::register_symbolic_variable(const std::string &var_name,
         return;
     }
 
-    static uint32_t starting_bddnode_index = 0;
     auto res = _variables.insert({
-        var_name, {starting_bddnode_index, nbits}
+        var_name, {_starting_bddnode_index, nbits}
     });
 
     if (!res.second) {
@@ -66,7 +66,7 @@ void Manager::register_symbolic_variable(const std::string &var_name,
               "' more than once");
     }
 
-    starting_bddnode_index += nbits;
+    _starting_bddnode_index += nbits;
 }
 
 std::pair<uint32_t, uint32_t>
