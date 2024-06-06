@@ -121,5 +121,4 @@ TEST_F(PacketSetTests, ctor) {
                               "],[~7,]");
     EXPECT_EQ(ps.num_paths(), 2);
     EXPECT_EQ(ps.size(), 9223372036854775808UL);
-    ps.to_dot_file("ps.dot");
 }
