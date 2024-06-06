@@ -375,7 +375,73 @@ TEST_F(BitVectorTests, bitwise_logical_ops) {
 }
 
 TEST_F(BitVectorTests, shift_ops) {
-    //
+    ps::BitVector bv(var_name);
+    ps::BitVector bv_0(/*width=*/nbits, /*value=*/0ul);
+    ps::BitVector bv_1(/*width=*/nbits, /*value=*/1ul);
+    ps::BitVector bv_2(/*width=*/nbits, /*value=*/2ul);
+    ps::BitVector bv_3(/*width=*/nbits, /*value=*/3ul);
+    ps::BitVector bv_4(/*width=*/nbits, /*value=*/4ul);
+    ps::BitVector bv_8(/*width=*/nbits, /*value=*/8ul);
+    ps::BitVector res;
+
+    // shl (<<)
+    EXPECT_TRUE((bv << bv_0).identical_to(bv));
+    EXPECT_TRUE((bv << bv_4).identical_to(bv_0));
+    EXPECT_TRUE(((bv << bv_4) >> bv_4).identical_to(bv_0));
+    EXPECT_TRUE((bv_2 << bv_1).identical_to(bv_4));
+    res = bv << bv_2;
+    EXPECT_EQ(res.num_bdd_boolean_vars(), 2);
+    EXPECT_EQ(res.to_string(), "4-bits bit-vector\n"
+                               "-- bit 0: [\n"
+                               "],[0,]\n"
+                               "-- bit 1: [\n"
+                               "],[0,]\n"
+                               "-- bit 2: [\n"
+                               "  node(1,0,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 3: [\n"
+                               "  node(1,1,0,~0),\n"
+                               "],[1,]");
+    // lshr (>>)
+    EXPECT_TRUE((bv >> bv_0).identical_to(bv));
+    EXPECT_TRUE((bv >> bv_4).identical_to(bv_0));
+    EXPECT_TRUE(((bv >> bv_4) << bv_4).identical_to(bv_0));
+    EXPECT_TRUE((bv_3 >> bv_1).identical_to(bv_1));
+    res = bv >> bv_2;
+    EXPECT_EQ(res.num_bdd_boolean_vars(), 2);
+    EXPECT_EQ(res.to_string(), "4-bits bit-vector\n"
+                               "-- bit 0: [\n"
+                               "  node(1,2,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 1: [\n"
+                               "  node(1,3,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 2: [\n"
+                               "],[0,]\n"
+                               "-- bit 3: [\n"
+                               "],[0,]");
+    // ashr
+    EXPECT_TRUE(bv.ashr(bv_0).identical_to(bv));
+    EXPECT_TRUE(
+        bv.ashr(bv_4).identical_to(ps::BitVector(nbits, bv[nbits - 1])));
+    EXPECT_TRUE((bv.ashr(bv_4) << bv_4).identical_to(bv_0));
+    EXPECT_TRUE(bv_8.ashr(bv_3).identical_to(~bv_0));
+    EXPECT_TRUE(bv_8.ashr(bv_4).identical_to(~bv_0));
+    res = bv.ashr(bv_2);
+    EXPECT_EQ(res.num_bdd_boolean_vars(), 2);
+    EXPECT_EQ(res.to_string(), "4-bits bit-vector\n"
+                               "-- bit 0: [\n"
+                               "  node(1,2,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 1: [\n"
+                               "  node(1,3,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 2: [\n"
+                               "  node(1,3,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 3: [\n"
+                               "  node(1,3,0,~0),\n"
+                               "],[1,]");
 }
 
 TEST_F(BitVectorTests, negation) {
