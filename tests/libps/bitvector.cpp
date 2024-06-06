@@ -503,7 +503,20 @@ TEST_F(BitVectorTests, arithmetic_ops) {
 }
 
 TEST_F(BitVectorTests, casting) {
-    //
+    ps::BitVector bv(var_name, 0, 2);
+    ps::BitVector bv_3(/*width=*/nbits, /*value=*/3ul);
+    ps::BitVector bv_c(/*width=*/nbits, /*value=*/0xcul);
+
+    // zext
+    EXPECT_TRUE(bv.zext(3).identical_to(bv.concat(ps::BitVector(false))));
+    EXPECT_TRUE(bv.zext(4).identical_to(bv.concat(ps::BitVector(2, false))));
+    EXPECT_EQ(bv_3.zext(8).zext_value(), 3);
+
+    // sext
+    EXPECT_TRUE(bv.sext(3).identical_to(bv.concat(ps::BitVector(1, bv[1]))));
+    EXPECT_TRUE(bv.sext(4).identical_to(bv.concat(ps::BitVector(2, bv[1]))));
+    EXPECT_EQ(bv_3.sext(8).zext_value(), 3);
+    EXPECT_EQ(bv_c.sext(8).zext_value(), 0xfc);
 }
 
 TEST_F(BitVectorTests, concat) {

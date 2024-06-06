@@ -584,10 +584,11 @@ BitVector BitVector::zext(const size_t width) const {
 }
 
 BitVector BitVector::sext(const size_t width) const {
-    assert(this->width() < width && !this->empty());
+    assert(this->width() < width);
     BitVector res(*this);
     res.bv.reserve(width);
-    res.bv.insert(res.bv.end(), width - this->width(), this->bv.back());
+    res.bv.insert(res.bv.end(), width - this->width(),
+                  (this->empty() ? sylvan::Bdd::bddZero() : this->bv.back()));
     return res;
 }
 
