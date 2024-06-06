@@ -110,7 +110,18 @@ public:
      * For example, bv:[1,0,1,1,0] is interpreted as 13.
      */
     uint64_t zext_value(size_t width = 64) const;
+    /**
+     * Returns true if this bit-vector is syntactically identical to the `other`
+     * bit-vector.
+     */
+    bool identical_to(const BitVector &other) const;
+    /**
+     * Returns the bit-vector in the ASCII string format.
+     */
     std::string to_string() const;
+    /**
+     * Outputs the bit-vector.
+     */
     void to_dot_file(const std::filesystem::path &) const;
 
     /**
@@ -146,7 +157,7 @@ public:
     BitVector operator>(const BitVector &other) const;
     BitVector operator>=(const BitVector &other) const;
 
-    // Bitwise binary operators
+    // Bitwise logical operators
     BitVector bv_and(const BitVector &other) const;
     BitVector bv_or(const BitVector &other) const;
     BitVector bv_xor(const BitVector &other) const;

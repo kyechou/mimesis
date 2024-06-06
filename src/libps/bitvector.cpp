@@ -140,6 +140,10 @@ uint64_t BitVector::zext_value(size_t width) const {
     return value;
 }
 
+bool BitVector::identical_to(const BitVector &other) const {
+    return this->bv == other.bv;
+}
+
 std::string BitVector::to_string() const {
     std::string res = std::to_string(this->width()) + "-bits bit-vector";
     for (size_t i = 0; i < this->width(); ++i) {
