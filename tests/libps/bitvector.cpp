@@ -302,7 +302,76 @@ TEST_F(BitVectorTests, relational_ops) {
 }
 
 TEST_F(BitVectorTests, bitwise_logical_ops) {
-    //
+    ps::BitVector bv(var_name);
+    ps::BitVector one_mask(/*width=*/nbits, true);
+    ps::BitVector zero_mask(/*width=*/nbits, false);
+    ps::BitVector bv_3(/*width=*/nbits, /*value=*/3ul);
+    ps::BitVector res;
+
+    // and
+    EXPECT_TRUE((bv & bv).identical_to(bv));
+    EXPECT_TRUE((bv & one_mask).identical_to(bv));
+    EXPECT_TRUE((bv & zero_mask).identical_to(zero_mask));
+    EXPECT_TRUE((bv_3 & one_mask).identical_to(bv_3));
+    EXPECT_TRUE((bv_3 & zero_mask).identical_to(zero_mask));
+    res = bv & bv_3;
+    EXPECT_EQ(res.num_bdd_boolean_vars(), 2);
+    EXPECT_EQ(res.to_string(), "4-bits bit-vector\n"
+                               "-- bit 0: [\n"
+                               "  node(1,0,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 1: [\n"
+                               "  node(1,1,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 2: [\n"
+                               "],[0,]\n"
+                               "-- bit 3: [\n"
+                               "],[0,]");
+
+    // or
+    EXPECT_TRUE((bv | bv).identical_to(bv));
+    EXPECT_TRUE((bv | one_mask).identical_to(one_mask));
+    EXPECT_TRUE((bv | zero_mask).identical_to(bv));
+    EXPECT_TRUE((bv_3 | one_mask).identical_to(one_mask));
+    EXPECT_TRUE((bv_3 | zero_mask).identical_to(bv_3));
+    res = bv | bv_3;
+    EXPECT_EQ(res.num_bdd_boolean_vars(), 2);
+    EXPECT_EQ(res.to_string(), "4-bits bit-vector\n"
+                               "-- bit 0: [\n"
+                               "],[~0,]\n"
+                               "-- bit 1: [\n"
+                               "],[~0,]\n"
+                               "-- bit 2: [\n"
+                               "  node(1,2,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 3: [\n"
+                               "  node(1,3,0,~0),\n"
+                               "],[1,]");
+
+    // xor
+    EXPECT_TRUE((bv ^ bv).identical_to(zero_mask));
+    EXPECT_TRUE((bv ^ one_mask).identical_to(~bv));
+    EXPECT_TRUE((bv ^ zero_mask).identical_to(bv));
+    EXPECT_TRUE((bv_3 ^ one_mask).identical_to(~bv_3));
+    EXPECT_TRUE((bv_3 ^ zero_mask).identical_to(bv_3));
+    res = bv ^ bv_3;
+    bv[1] = ~bv[1];
+    bv[0] = ~bv[0];
+    EXPECT_TRUE(res.identical_to(bv));
+    EXPECT_EQ(res.num_bdd_boolean_vars(), nbits);
+    EXPECT_EQ(res.to_string(), "4-bits bit-vector\n"
+                               "-- bit 0: [\n"
+                               "  node(1,0,0,~0),\n"
+                               "],[~1,]\n"
+                               "-- bit 1: [\n"
+                               "  node(1,1,0,~0),\n"
+                               "],[~1,]\n"
+                               "-- bit 2: [\n"
+                               "  node(1,2,0,~0),\n"
+                               "],[1,]\n"
+                               "-- bit 3: [\n"
+                               "  node(1,3,0,~0),\n"
+                               "],[1,]");
 }
 
 TEST_F(BitVectorTests, shift_ops) {
