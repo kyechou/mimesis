@@ -617,8 +617,7 @@ BitVector BitVector::select(const BitVector &condition,
     BitVector res;
     res.bv.reserve(true_result.width());
     for (size_t i = 0; i < true_result.width(); ++i) {
-        res.bv.push_back((condition[0] & true_result[i]) |
-                         (~condition[0] & false_result[i]));
+        res.bv.push_back(condition[0].Ite(true_result[i], false_result[i]));
     }
     return res;
 }

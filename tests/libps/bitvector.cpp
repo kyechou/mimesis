@@ -520,13 +520,49 @@ TEST_F(BitVectorTests, casting) {
 }
 
 TEST_F(BitVectorTests, concat) {
-    //
+    ps::BitVector bv(var_name);
+    ps::BitVector bv_01(var_name, 0, 2);
+    ps::BitVector bv_23(var_name, 2, 2);
+    EXPECT_TRUE(bv_01.concat(bv_23).identical_to(bv));
 }
 
 TEST_F(BitVectorTests, extract) {
-    //
+    ps::BitVector bv(var_name);
+    ps::BitVector bv_01(var_name, 0, 2);
+    ps::BitVector bv_23(var_name, 2, 2);
+    EXPECT_TRUE(bv.extract(0, 2).identical_to(bv_01));
+    EXPECT_TRUE(bv.extract(2, 2).identical_to(bv_23));
 }
 
 TEST_F(BitVectorTests, select) {
-    //
+    ps::BitVector bv1(var_name);
+    ps::BitVector bv2(nbits, true);
+    ps::BitVector bv3(var_name, 0, 1);
+    ps::BitVector bv_true(true);
+    ps::BitVector bv_false(false);
+    ps::BitVector res;
+
+    for (size_t i = 0; i < nbits; ++i) {
+        for (size_t j = 0; j < i; ++j) {
+            bv2[i] &= bv1[j];
+        }
+    }
+
+    EXPECT_TRUE(ps::BitVector::select(bv_true, bv1, bv2).identical_to(bv1));
+    EXPECT_TRUE(ps::BitVector::select(bv_true, bv2, bv1).identical_to(bv2));
+    EXPECT_TRUE(ps::BitVector::select(bv_false, bv1, bv2).identical_to(bv2));
+    EXPECT_TRUE(ps::BitVector::select(bv_false, bv2, bv1).identical_to(bv1));
+    res = ps::BitVector::select(bv3, bv1, bv2);
+    EXPECT_TRUE(res.identical_to((bv1 & ps::BitVector(nbits, bv1[0])) |
+                                 ps::BitVector(nbits, 1ul)));
+
+    const std::string new_var_name = var_name + "_n";
+    ps::Manager::get().register_symbolic_variable(new_var_name, nbits);
+    ps::BitVector nbv(var_name);
+    res = ps::BitVector::select(bv3, bv1, nbv);
+    ps::BitVector expected(nbits, false);
+    for (size_t i = 0; i < nbits; ++i) {
+        expected[i] = (bv3[0] & bv1[i]) | (~bv3[0] & nbv[i]);
+    }
+    EXPECT_TRUE(res.identical_to(expected));
 }
