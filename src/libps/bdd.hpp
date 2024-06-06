@@ -52,6 +52,9 @@ public:
      * Write the given BDD into a one-line string for debugging purposes only.
      * The string cannot be turned back into a BDD.
      *
+     * NOTE: Avoid using this function. There seems to be some inconsistencies
+     * in terms of the keys from the Sylvan library.
+     *
      * One-line (`sylvan_fprint`) format of a BDD:
      * [(<key>,<level>,<key_low>,<key_high>,<complement_high>),...]
      */

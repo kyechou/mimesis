@@ -141,12 +141,11 @@ uint64_t BitVector::zext_value(size_t width) const {
 }
 
 std::string BitVector::to_string() const {
-    std::string res;
+    std::string res = std::to_string(this->width()) + "-bits bit-vector";
     for (size_t i = 0; i < this->width(); ++i) {
-        res += "bit " + std::to_string(i) + ": " +
-               Bdd::to_string_oneline(this->bv[i]) + "\n";
+        res += "\n-- bit " + std::to_string(i) + ": " +
+               Bdd::to_string(this->bv[i]);
     }
-    res.pop_back();
     return res;
 }
 
