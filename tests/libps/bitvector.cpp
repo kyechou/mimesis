@@ -466,7 +466,40 @@ TEST_F(BitVectorTests, negation) {
 }
 
 TEST_F(BitVectorTests, arithmetic_ops) {
-    //
+    ps::BitVector bv(var_name);
+    ps::BitVector bv_0(/*width=*/nbits, /*value=*/0ul);
+    ps::BitVector bv_1(/*width=*/nbits, /*value=*/1ul);
+    ps::BitVector bv_2(/*width=*/nbits, /*value=*/2ul);
+    ps::BitVector bv_3(/*width=*/nbits, /*value=*/3ul);
+    ps::BitVector bv_4(/*width=*/nbits, /*value=*/4ul);
+    ps::BitVector bv_8(/*width=*/nbits, /*value=*/8ul);
+    ps::BitVector bv_b(/*width=*/nbits, /*value=*/0xbul);
+    ps::BitVector bv_c(/*width=*/nbits, /*value=*/0xcul);
+    ps::BitVector bv_d(/*width=*/nbits, /*value=*/0xdul);
+    ps::BitVector bv_e(/*width=*/nbits, /*value=*/0xeul);
+    ps::BitVector bv_f(/*width=*/nbits, /*value=*/0xful);
+
+    // add (+)
+    EXPECT_TRUE((bv + bv_0).identical_to(bv));
+    EXPECT_TRUE((bv + bv).identical_to(bv << bv_1));
+    EXPECT_TRUE((bv + bv + bv + bv).identical_to(bv << bv_2));
+    EXPECT_TRUE((bv_1 + bv_2).identical_to(bv_3));
+    EXPECT_TRUE((bv_2 + bv_2).identical_to(bv_4));
+    EXPECT_TRUE((bv_3 + bv_8).identical_to(bv_b));
+    EXPECT_TRUE((bv_8 + bv_8).identical_to(bv_0));
+    EXPECT_TRUE((bv_2 + bv_e).identical_to(bv_0));
+    EXPECT_TRUE((bv_8 + bv_b).identical_to(bv_3));
+    EXPECT_TRUE((bv_d + bv_f).identical_to(bv_c));
+
+    // sub (-)
+    EXPECT_TRUE((bv - bv_0).identical_to(bv));
+    EXPECT_TRUE((bv - bv).identical_to(bv_0));
+    EXPECT_TRUE((bv_0 - bv).identical_to(~bv + bv_1));
+    EXPECT_TRUE((bv_3 - bv_1).identical_to(bv_2));
+    EXPECT_TRUE((bv_e - bv_4).identical_to(bv_2 - bv_8));
+    EXPECT_TRUE((bv_e - bv_f).identical_to(bv_f));
+
+    // NOTE: mul (*), div (/), and rem (%) are not implemented yet.
 }
 
 TEST_F(BitVectorTests, casting) {
