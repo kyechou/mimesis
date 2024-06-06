@@ -445,7 +445,24 @@ TEST_F(BitVectorTests, shift_ops) {
 }
 
 TEST_F(BitVectorTests, negation) {
-    //
+    ps::BitVector bv(var_name);
+    ps::BitVector bv_0(/*width=*/nbits, /*value=*/0ul);
+    ps::BitVector bv_1(/*width=*/nbits, /*value=*/1ul);
+    ps::BitVector bv_2(/*width=*/nbits, /*value=*/2ul);
+    ps::BitVector bv_4(/*width=*/nbits, /*value=*/4ul);
+    ps::BitVector bv_8(/*width=*/nbits, /*value=*/8ul);
+    ps::BitVector bv_7(/*width=*/nbits, /*value=*/7ul);
+    ps::BitVector bv_b(/*width=*/nbits, /*value=*/0xbul);
+    ps::BitVector bv_d(/*width=*/nbits, /*value=*/0xdul);
+    ps::BitVector bv_e(/*width=*/nbits, /*value=*/0xeul);
+    ps::BitVector bv_f(/*width=*/nbits, /*value=*/0xful);
+    EXPECT_TRUE((~~bv).identical_to(bv));
+    EXPECT_TRUE((~bv ^ bv).identical_to(bv_f));
+    EXPECT_TRUE((~bv_0).identical_to(bv_f));
+    EXPECT_TRUE((~bv_1).identical_to(bv_e));
+    EXPECT_TRUE((~bv_2).identical_to(bv_d));
+    EXPECT_TRUE((~bv_4).identical_to(bv_b));
+    EXPECT_TRUE((~bv_8).identical_to(bv_7));
 }
 
 TEST_F(BitVectorTests, arithmetic_ops) {
