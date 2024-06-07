@@ -32,9 +32,11 @@ public:
     /**
      * Returns the number of assignments that satisfy the BDD.
      */
-    static size_t
-    num_sat_assignments(const sylvan::Bdd &,
-                        const std::optional<sylvan::BddSet> = std::nullopt);
+    static size_t num_sat_assignments(
+        const sylvan::Bdd &bdd,
+        const std::optional<sylvan::BddSet> variables = std::nullopt);
+    static size_t num_sat_assignments(const sylvan::Bdd &bdd,
+                                      const size_t num_vars);
 
     /**
      * Write the given BDD into an ASCII string for debugging purposes only.

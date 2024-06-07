@@ -99,6 +99,14 @@ TEST_F(BddTests, num_of_sat_assignments) {
     EXPECT_EQ(ps::Bdd::num_sat_assignments(diamond, vars_cube), 4);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(train, vars_cube), 1);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(wildcard, vars_cube), 4);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(vars_cube, 4), 1);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(diamond, 4), 4);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(train, 4), 1);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(wildcard, 4), 4);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(vars_cube, 5), 2);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(diamond, 5), 8);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(train, 5), 2);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(wildcard, 5), 8);
 }
 
 TEST_F(BddTests, print_string) {

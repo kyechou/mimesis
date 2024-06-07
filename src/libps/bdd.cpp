@@ -47,6 +47,10 @@ size_t Bdd::num_sat_assignments(const sylvan::Bdd &bdd,
     }
 }
 
+size_t Bdd::num_sat_assignments(const sylvan::Bdd &bdd, const size_t num_vars) {
+    return bdd.SatCount(num_vars);
+}
+
 std::string Bdd::to_string(const sylvan::Bdd &bdd) {
     char *buf;
     size_t len;
