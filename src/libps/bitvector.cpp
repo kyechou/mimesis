@@ -133,6 +133,16 @@ size_t BitVector::num_nodes() const {
     return Bdd::num_nodes_more(c_bdds.data(), c_bdds.size());
 }
 
+uint64_t BitVector::num_assignments() const {
+    size_t num_bdd_vars = this->num_bdd_boolean_vars();
+    if (num_bdd_vars >= sizeof(uint64_t) * 8) {
+        error("The number of BDD variables (" + std::to_string(num_bdd_vars) +
+              ") exceeds the type range of " +
+              std::to_string(sizeof(uint64_t)) + " bytes.");
+    }
+    return 1 << num_bdd_vars;
+}
+
 uint64_t BitVector::zext_value(size_t width) const {
     assert(width <= 64);
     uint64_t value = 0;
