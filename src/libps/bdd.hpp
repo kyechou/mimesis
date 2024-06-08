@@ -26,6 +26,18 @@ public:
      */
     static size_t num_vars(const sylvan::Bdd &);
     /**
+     * Returns the number of unique nodes (excluding the leaves) in the given
+     * BDDs.
+     */
+    static size_t num_nodes_more(const sylvan::BDD *bdds, size_t count);
+    /**
+     * Returns the number of nodes (excluding the leaves) in the given BDD.
+     *
+     * Note that since we are operating with ROBDDs here, the number of nodes
+     * will be the same as the number of unique nodes.
+     */
+    static size_t num_nodes(const sylvan::Bdd &);
+    /**
      * Returns the number of paths that lead to True.
      */
     static size_t num_true_paths(const sylvan::Bdd &);

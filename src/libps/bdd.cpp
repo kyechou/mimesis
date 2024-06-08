@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <functional>
 #include <set>
 #include <string>
 #include <sylvan.h>
@@ -31,6 +32,52 @@ std::set<uint32_t> Bdd::variables(const sylvan::Bdd &bdd) {
 
 size_t Bdd::num_vars(const sylvan::Bdd &bdd) {
     return Bdd::variables(bdd).size();
+}
+
+size_t Bdd::num_nodes_more(const sylvan::BDD *bdds, size_t num_bdds) {
+    std::function<size_t(const sylvan::BDD &)> nodecount_mark_no_leaves;
+    nodecount_mark_no_leaves =
+        [&nodecount_mark_no_leaves](const sylvan::BDD &bdd) -> size_t {
+        // do not count true/false leaf
+        if (bdd == sylvan::mtbdd_true || bdd == sylvan::mtbdd_false) {
+            return 0;
+        }
+        sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(bdd);
+        if (sylvan::mtbddnode_getmark(n) || sylvan::mtbddnode_isleaf(n)) {
+            return 0;
+        }
+        sylvan::mtbddnode_setmark(n, 1);
+        return 1 + nodecount_mark_no_leaves(sylvan::mtbddnode_getlow(n)) +
+               nodecount_mark_no_leaves(sylvan::mtbddnode_gethigh(n));
+    };
+
+    std::function<void(const sylvan::BDD &)> unmark_rec;
+    unmark_rec = [&unmark_rec](const sylvan::BDD &bdd) -> void {
+        if (bdd == sylvan::mtbdd_true || bdd == sylvan::mtbdd_false) {
+            return;
+        }
+        sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(bdd);
+        if (!sylvan::mtbddnode_getmark(n) || sylvan::mtbddnode_isleaf(n)) {
+            return;
+        }
+        sylvan::mtbddnode_setmark(n, 0);
+        unmark_rec(sylvan::mtbddnode_getlow(n));
+        unmark_rec(sylvan::mtbddnode_gethigh(n));
+    };
+
+    size_t num_nodes = 0;
+    for (size_t i = 0; i < num_bdds; i++) {
+        num_nodes += nodecount_mark_no_leaves(bdds[i]);
+    }
+    for (size_t i = 0; i < num_bdds; i++) {
+        unmark_rec(bdds[i]);
+    }
+    return num_nodes;
+}
+
+size_t Bdd::num_nodes(const sylvan::Bdd &bdd) {
+    sylvan::BDD c_bdd = bdd.GetBDD();
+    return num_nodes_more(&c_bdd, 1);
 }
 
 size_t Bdd::num_true_paths(const sylvan::Bdd &bdd) {

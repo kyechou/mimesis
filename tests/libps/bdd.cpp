@@ -83,6 +83,13 @@ TEST_F(BddTests, num_of_unique_bit_variables_in_bdd) {
     EXPECT_EQ(ps::Bdd::num_vars(wildcard), 2);
 }
 
+TEST_F(BddTests, num_of_nodes_in_bdd) {
+    EXPECT_EQ(ps::Bdd::num_nodes(vars_cube), 4);
+    EXPECT_EQ(ps::Bdd::num_nodes(diamond), 4);
+    EXPECT_EQ(ps::Bdd::num_nodes(train), 4);
+    EXPECT_EQ(ps::Bdd::num_nodes(wildcard), 2);
+}
+
 TEST_F(BddTests, num_of_true_paths) {
     EXPECT_EQ(ps::Bdd::num_true_paths(vars_cube), 1);
     EXPECT_EQ(ps::Bdd::num_true_paths(diamond), 2);
