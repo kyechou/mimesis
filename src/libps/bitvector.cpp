@@ -154,13 +154,27 @@ uint64_t BitVector::zext_value(size_t width) const {
     for (size_t i = 0; i < width; ++i) {
         const sylvan::Bdd &bit_bdd = this->bv[i];
         if (!bit_bdd.isConstant()) {
-            error("Trying to get zext value from a symbolic bit-vector.");
+            error("Trying to get zext_value from a symbolic bit-vector.");
         }
         if (bit_bdd.isOne()) {
-            value |= (1 << i);
+            value |= (1ul << i);
         }
     }
 
+    return value;
+}
+
+llvm::APInt BitVector::uint_value() const {
+    size_t width = this->width();
+    llvm::APInt value(/*numBits=*/width, /*val=*/0, /*isSigned=*/false);
+
+    for (size_t i = 0; i < width; ++i) {
+        const sylvan::Bdd &bit_bdd = this->bv[i];
+        if (!bit_bdd.isConstant()) {
+            error("Trying to get uint_value from a symbolic bit-vector.");
+        }
+        value.setBitVal(i, bit_bdd.isOne());
+    }
     return value;
 }
 

@@ -115,7 +115,8 @@ public:
      * `pow(2, num_bdd_boolean_vars())`.
      */
     uint64_t num_assignments() const;
-     * Returns the concrete value as zero-extended 64-bit unsigned integer if
+    /**
+     * Returns the concrete value as a zero-extended 64-bit unsigned integer if
      * the bit-vector is constant. Otherwise, abort with an error message.
      * `width` must be no greater than 64.
      *
@@ -123,6 +124,14 @@ public:
      * For example, bv:[1,0,1,1,0] is interpreted as 13.
      */
     uint64_t zext_value(size_t width = 64) const;
+    /**
+     * Returns the concrete value as an unsigned APInt integer if the bit-vector
+     * is constant. Otherwise, abort with an error message.
+     *
+     * Bits with smaller bit-vector indices are interpreted as less significant.
+     * For example, bv:[1,0,1,1,0] is interpreted as 13.
+     */
+    llvm::APInt uint_value() const;
     /**
      * Returns true if this bit-vector is syntactically identical to the `other`
      * bit-vector.
