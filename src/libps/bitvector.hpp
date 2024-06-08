@@ -5,12 +5,18 @@
 #include <filesystem>
 #include <functional>
 #include <llvm/ADT/APInt.h>
+#include <map>
 #include <set>
 #include <string>
 #include <sylvan_obj.hpp>
 #include <vector>
 
 namespace ps {
+
+class APIntLess {
+public:
+    bool operator()(const llvm::APInt &a, const llvm::APInt &b) const;
+};
 
 class BitVector {
 private:
@@ -115,6 +121,18 @@ public:
      * `pow(2, num_bdd_boolean_vars())`.
      */
     uint64_t num_assignments() const;
+    /**
+     * Returns all valid values represented by the bit-vector, along with the
+     * constraint corresponding to each valid value.
+     *
+     * A value is valid if there exists an assignment that makes the bit-vector
+     * evaluated to that value.
+     */
+    std::map<llvm::APInt, sylvan::Bdd, APIntLess> valid_values() const;
+    /**
+     * Returns the number of valid values represented by the bit-vector.
+     */
+    size_t num_valid_values() const;
     /**
      * Returns the concrete value as a zero-extended 64-bit unsigned integer if
      * the bit-vector is constant. Otherwise, abort with an error message.

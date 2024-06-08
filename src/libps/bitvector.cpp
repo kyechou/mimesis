@@ -19,6 +19,10 @@
 
 namespace ps {
 
+bool APIntLess::operator()(const llvm::APInt &a, const llvm::APInt &b) const {
+    return a.ult(b);
+}
+
 BitVector::BitVector(const std::string &var_name) {
     auto [var_offset, nbits] = Manager::get().get_variable_offset(var_name);
     this->bv.reserve(nbits);
@@ -141,6 +145,57 @@ uint64_t BitVector::num_assignments() const {
               std::to_string(sizeof(uint64_t)) + " bytes.");
     }
     return 1 << num_bdd_vars;
+}
+
+std::map<llvm::APInt, sylvan::Bdd, APIntLess> BitVector::valid_values() const {
+    std::map<llvm::APInt, sylvan::Bdd, APIntLess> values;
+    const std::vector<sylvan::Bdd> &bv = this->bv;
+
+    if (bv.empty()) {
+        return {};
+    }
+
+    std::function<void(size_t bit_pos, llvm::APInt value,
+                       const sylvan::Bdd &constraint)>
+        valid_values_rec;
+    valid_values_rec = [&valid_values_rec, &values,
+                        &bv](const size_t bit_pos, llvm::APInt value,
+                             const sylvan::Bdd &constraint) -> void {
+        // terminal condition
+        if (bit_pos >= bv.size()) {
+            auto res = values.insert({value, constraint});
+            if (!res.second) {
+                error("Duplicate bit-vector value.");
+            }
+            return;
+        }
+
+        const sylvan::Bdd &bdd = bv.at(bit_pos).Constrain(constraint);
+
+        if (bdd.isConstant()) {
+            value.setBitVal(bit_pos, bdd.isOne());
+            valid_values_rec(bit_pos + 1, value, constraint);
+        } else {
+            // "0" case
+            value.clearBit(bit_pos);
+            valid_values_rec(bit_pos + 1, value,
+                             constraint & bdd.Xnor(sylvan::Bdd::bddZero()));
+            // "1" case
+            value.setBit(bit_pos);
+            valid_values_rec(bit_pos + 1, value,
+                             constraint & bdd.Xnor(sylvan::Bdd::bddOne()));
+        }
+    };
+
+    valid_values_rec(
+        0,
+        llvm::APInt(/*numBits=*/this->width(), /*val=*/0, /*isSigned=*/false),
+        sylvan::Bdd::bddOne());
+    return values;
+}
+
+size_t BitVector::num_valid_values() const {
+    return this->valid_values().size();
 }
 
 uint64_t BitVector::zext_value(size_t width) const {
