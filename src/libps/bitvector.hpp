@@ -218,11 +218,4 @@ public:
 
 } // namespace ps
 
-// Maybe useful functions in sylvan:
-//
-// mtbdd_nodecount(bdd): compute the number of nodes (and leaves) in the BDD.
-//
-// mtbdd_nodecount_more(array, length): compute the number of nodes (and leaves)
-// in the array of BDDs.
-
 #endif // LIBPS_BITVECTOR_HPP
