@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <gtest/gtest.h>
+#include <iostream>
 #include <linux/if_ether.h>
 #include <string>
 #include <sylvan_obj.hpp>
@@ -14,7 +15,7 @@ protected:
     sylvan::Bdd bdd_1;
     sylvan::Bdd bdd_2;
     sylvan::Bdd bdd_3;
-    sylvan::Bdd vars_cube, diamond, train, wildcard;
+    sylvan::Bdd vars_cube, diamond, train, wildcard, tower;
 
     void SetUp() override {
         // Initialize libps
@@ -62,6 +63,18 @@ protected:
         //      \
         //       T
         wildcard = bdd_0 & bdd_3;
+        //      0
+        //    ~/ \
+        //    1   2
+        //   |~\~/ \
+        //   |  x  |
+        //   \~/~\ /
+        //    3   3
+        //    ~\ /
+        //      T
+        // In Sylvan, the `3` nodes will be merged as one using negated links.
+        tower = (bdd_0 & bdd_2 & bdd_3) | (bdd_0 & ~bdd_2 & ~bdd_3) |
+                (~bdd_0 & bdd_1 & ~bdd_3) | (~bdd_0 & ~bdd_1 & bdd_3);
     }
 
     void TearDown() override { ps::Manager::get().reset(); }
@@ -74,6 +87,7 @@ TEST_F(BddTests, bit_variables_in_bdd) {
     EXPECT_EQ(ps::Bdd::variables(diamond), all_vars);
     EXPECT_EQ(ps::Bdd::variables(train), all_vars);
     EXPECT_EQ(ps::Bdd::variables(wildcard), vars_03);
+    EXPECT_EQ(ps::Bdd::variables(tower), all_vars);
 }
 
 TEST_F(BddTests, num_of_unique_bit_variables_in_bdd) {
@@ -81,6 +95,7 @@ TEST_F(BddTests, num_of_unique_bit_variables_in_bdd) {
     EXPECT_EQ(ps::Bdd::num_vars(diamond), 4);
     EXPECT_EQ(ps::Bdd::num_vars(train), 4);
     EXPECT_EQ(ps::Bdd::num_vars(wildcard), 2);
+    EXPECT_EQ(ps::Bdd::num_vars(tower), 4);
 }
 
 TEST_F(BddTests, num_of_nodes_in_bdd) {
@@ -88,6 +103,7 @@ TEST_F(BddTests, num_of_nodes_in_bdd) {
     EXPECT_EQ(ps::Bdd::num_nodes(diamond), 4);
     EXPECT_EQ(ps::Bdd::num_nodes(train), 4);
     EXPECT_EQ(ps::Bdd::num_nodes(wildcard), 2);
+    EXPECT_EQ(ps::Bdd::num_nodes(tower), 4);
 }
 
 TEST_F(BddTests, num_of_true_paths) {
@@ -95,6 +111,7 @@ TEST_F(BddTests, num_of_true_paths) {
     EXPECT_EQ(ps::Bdd::num_true_paths(diamond), 2);
     EXPECT_EQ(ps::Bdd::num_true_paths(train), 1);
     EXPECT_EQ(ps::Bdd::num_true_paths(wildcard), 1);
+    EXPECT_EQ(ps::Bdd::num_true_paths(tower), 4);
 }
 
 TEST_F(BddTests, num_of_sat_assignments) {
@@ -102,18 +119,22 @@ TEST_F(BddTests, num_of_sat_assignments) {
     EXPECT_EQ(ps::Bdd::num_sat_assignments(diamond), 4);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(train), 1);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(wildcard), 1);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(tower), 8);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(vars_cube, vars_cube), 1);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(diamond, vars_cube), 4);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(train, vars_cube), 1);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(wildcard, vars_cube), 4);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(tower, vars_cube), 8);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(vars_cube, 4), 1);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(diamond, 4), 4);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(train, 4), 1);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(wildcard, 4), 4);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(tower, 4), 8);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(vars_cube, 5), 2);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(diamond, 5), 8);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(train, 5), 2);
     EXPECT_EQ(ps::Bdd::num_sat_assignments(wildcard, 5), 8);
+    EXPECT_EQ(ps::Bdd::num_sat_assignments(tower, 5), 16);
 }
 
 TEST_F(BddTests, print_string) {
@@ -239,6 +260,39 @@ TEST_F(BddTests, print_string) {
     EXPECT_EQ(ps::Bdd::to_string(wildcard), wildcard_str);
     EXPECT_EQ(ps::Bdd::to_string_oneline(wildcard), wildcard_oneline_str);
     EXPECT_EQ(ps::Bdd::to_dot_string(wildcard), wildcard_dot_str);
+
+    const std::string tower_str = "[\n"
+                                  "  node(1,3,0,~0),\n"
+                                  "  node(2,1,1,~1),\n"
+                                  "  node(3,2,1,~1),\n"
+                                  "  node(4,0,2,~3),\n"
+                                  "],[4,]";
+    const std::string tower_oneline_str =
+        "4,[(1,3,0,0,1),(2,1,5,5,1),(3,2,5,5,1),(4,0,35,28,1),]";
+    const std::string tower_dot_str =
+        "digraph \"DD\" {\n"
+        "graph [dpi = 300];\n"
+        "center = true;\n"
+        "edge [dir = forward];\n"
+        "root [style=invis];\n"
+        "root -> 36 [style=solid dir=both arrowtail=none];\n"
+        "36 [label=\"0\"];\n"
+        "35 [label=\"1\"];\n"
+        "5 [label=\"3\"];\n"
+        "0 [shape=box, style=filled, label=\"F\"];\n"
+        "5 -> 0 [style=dashed];\n"
+        "5 -> 0 [style=solid dir=both arrowtail=dot];\n"
+        "35 -> 5 [style=dashed];\n"
+        "35 -> 5 [style=solid dir=both arrowtail=dot];\n"
+        "28 [label=\"2\"];\n"
+        "28 -> 5 [style=dashed];\n"
+        "28 -> 5 [style=solid dir=both arrowtail=dot];\n"
+        "36 -> 35 [style=dashed];\n"
+        "36 -> 28 [style=solid dir=both arrowtail=dot];\n"
+        "}\n";
+    EXPECT_EQ(ps::Bdd::to_string(tower), tower_str);
+    EXPECT_EQ(ps::Bdd::to_string_oneline(tower), tower_oneline_str);
+    EXPECT_EQ(ps::Bdd::to_dot_string(tower), tower_dot_str);
 }
 
 TEST_F(BddTests, file_io) {
@@ -251,6 +305,8 @@ TEST_F(BddTests, file_io) {
               util::get_testdata_str("ps_bdd_train.dot"));
     EXPECT_EQ(ps::Bdd::to_dot_string(wildcard),
               util::get_testdata_str("ps_bdd_wildcard.dot"));
+    EXPECT_EQ(ps::Bdd::to_dot_string(tower),
+              util::get_testdata_str("ps_bdd_tower.dot"));
 
     // Test `to_ascii_file` via `to_string`.
     EXPECT_EQ(ps::Bdd::to_string(vars_cube) + "\n",
@@ -261,6 +317,8 @@ TEST_F(BddTests, file_io) {
               util::get_testdata_str("ps_bdd_train.txt"));
     EXPECT_EQ(ps::Bdd::to_string(wildcard) + "\n",
               util::get_testdata_str("ps_bdd_wildcard.txt"));
+    EXPECT_EQ(ps::Bdd::to_string(tower) + "\n",
+              util::get_testdata_str("ps_bdd_tower.txt"));
 
     // Test `to_binary_file` via `to_byte_vector`.
     EXPECT_EQ(ps::Bdd::to_byte_vector(vars_cube),
@@ -271,6 +329,8 @@ TEST_F(BddTests, file_io) {
               util::get_testdata_byte_vector("ps_bdd_train.bin"));
     EXPECT_EQ(ps::Bdd::to_byte_vector(wildcard),
               util::get_testdata_byte_vector("ps_bdd_wildcard.bin"));
+    EXPECT_EQ(ps::Bdd::to_byte_vector(tower),
+              util::get_testdata_byte_vector("ps_bdd_tower.bin"));
 
     // Test `from_binary_file`.
     EXPECT_EQ(vars_cube, ps::Bdd::from_binary_file(
@@ -281,4 +341,6 @@ TEST_F(BddTests, file_io) {
                          util::get_testdata_path("ps_bdd_train.bin")));
     EXPECT_EQ(wildcard, ps::Bdd::from_binary_file(
                             util::get_testdata_path("ps_bdd_wildcard.bin")));
+    EXPECT_EQ(tower, ps::Bdd::from_binary_file(
+                         util::get_testdata_path("ps_bdd_tower.bin")));
 }
