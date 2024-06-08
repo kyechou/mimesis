@@ -232,6 +232,9 @@ public:
     static BitVector ite(const BitVector &condition,
                          const BitVector &true_result,
                          const BitVector &false_result);
+
+    // Constrain
+    BitVector constrain(const sylvan::Bdd &constraint) const;
 };
 
 } // namespace ps

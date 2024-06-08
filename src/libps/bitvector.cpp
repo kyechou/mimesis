@@ -663,4 +663,12 @@ BitVector BitVector::ite(const BitVector &condition,
     return BitVector::select(condition, true_result, false_result);
 }
 
+BitVector BitVector::constrain(const sylvan::Bdd &constraint) const {
+    BitVector res(this->width(), false);
+    for (size_t i = 0; i < this->width(); ++i) {
+        res.bv[i] = this->bv[i].Constrain(constraint);
+    }
+    return res;
+}
+
 } // namespace ps
