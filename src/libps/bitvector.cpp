@@ -110,16 +110,16 @@ size_t BitVector::num_var_bits() const {
     return res;
 }
 
-size_t BitVector::num_bdd_boolean_vars() const {
-    return this->bdd_boolean_vars().size();
-}
-
 std::set<uint32_t> BitVector::bdd_boolean_vars() const {
     std::set<uint32_t> vars;
     for (const sylvan::Bdd &bdd : this->bv) {
         vars.merge(Bdd::variables(bdd));
     }
     return vars;
+}
+
+size_t BitVector::num_bdd_boolean_vars() const {
+    return this->bdd_boolean_vars().size();
 }
 
 uint64_t BitVector::zext_value(size_t width) const {

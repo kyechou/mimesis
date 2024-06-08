@@ -22,7 +22,7 @@ public:
      */
     static std::set<uint32_t> variables(const sylvan::Bdd &);
     /**
-     * Returns the number of unique variables in the given BDD. Not thread-safe!
+     * Returns the number of unique variables in the given BDD.
      */
     static size_t num_vars(const sylvan::Bdd &);
     /**

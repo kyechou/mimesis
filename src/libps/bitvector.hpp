@@ -97,14 +97,13 @@ public:
      */
     size_t num_var_bits() const;
     /**
-     * Returns the number of unique Boolean variables in all bit BDDs. Not
-     * thread-safe!
-     */
-    size_t num_bdd_boolean_vars() const;
-    /**
-     * Returns the unique Boolean variables in all bit BDDs. Not thread-safe!
+     * Returns the unique Boolean variables in all bit BDDs.
      */
     std::set<uint32_t> bdd_boolean_vars() const;
+    /**
+     * Returns the number of unique Boolean variables in all bit BDDs.
+     */
+    size_t num_bdd_boolean_vars() const;
     /**
      * Returns the concrete value as zero-extended 64-bit unsigned integer if
      * the bit-vector is constant. Otherwise, abort with an error message.
