@@ -64,7 +64,9 @@ main() {
 
     # Run the tests
     cd "$BUILD_DIR"
+    set +e
     ctest "${ctest_flags[@]}"
+    set -e
 
     # Convert dot files to PNG.
     if command -v dot &>/dev/null; then
