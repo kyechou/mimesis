@@ -105,6 +105,10 @@ public:
      */
     size_t num_bdd_boolean_vars() const;
     /**
+     * Returns the number of unique BDD nodes (excluding the leaves).
+     */
+    size_t num_nodes() const;
+    /**
      * Returns the concrete value as zero-extended 64-bit unsigned integer if
      * the bit-vector is constant. Otherwise, abort with an error message.
      * `width` must be no greater than 64.

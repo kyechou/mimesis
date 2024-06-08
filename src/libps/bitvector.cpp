@@ -122,6 +122,17 @@ size_t BitVector::num_bdd_boolean_vars() const {
     return this->bdd_boolean_vars().size();
 }
 
+size_t BitVector::num_nodes() const {
+    std::vector<sylvan::BDD> c_bdds;
+    c_bdds.reserve(this->bv.size());
+
+    for (const sylvan::Bdd &bdd : this->bv) {
+        c_bdds.push_back(bdd.GetBDD());
+    }
+
+    return Bdd::num_nodes_more(c_bdds.data(), c_bdds.size());
+}
+
 uint64_t BitVector::zext_value(size_t width) const {
     assert(width <= 64);
     uint64_t value = 0;

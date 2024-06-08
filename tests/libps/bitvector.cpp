@@ -37,6 +37,7 @@ TEST_F(BitVectorTests, ctors_and_getters) {
         EXPECT_EQ(bv.num_var_bits(), nbits);
         EXPECT_EQ(bv.num_bdd_boolean_vars(), nbits);
         EXPECT_EQ(bv.bdd_boolean_vars(), (std::set<uint32_t>{0, 1, 2, 3}));
+        EXPECT_EQ(bv.num_nodes(), 4);
         const std::string bv_str = "4-bits bit-vector\n"
                                    "-- bit 0: [\n"
                                    "  node(1,0,0,~0),\n"
@@ -61,6 +62,7 @@ TEST_F(BitVectorTests, ctors_and_getters) {
         EXPECT_EQ(bv.num_var_bits(), 2);
         EXPECT_EQ(bv.num_bdd_boolean_vars(), 2);
         EXPECT_EQ(bv.bdd_boolean_vars(), (std::set<uint32_t>{0, 1}));
+        EXPECT_EQ(bv.num_nodes(), 2);
         const std::string bv_str = "2-bits bit-vector\n"
                                    "-- bit 0: [\n"
                                    "  node(1,0,0,~0),\n"
@@ -83,6 +85,7 @@ TEST_F(BitVectorTests, ctors_and_getters) {
         EXPECT_EQ(bv.num_var_bits(), nbits);
         EXPECT_EQ(bv.num_bdd_boolean_vars(), 1);
         EXPECT_EQ(bv.bdd_boolean_vars(), (std::set<uint32_t>{0}));
+        EXPECT_EQ(bv.num_nodes(), 1);
         const std::string bv_str = "4-bits bit-vector\n"
                                    "-- bit 0: [\n"
                                    "  node(1,0,0,~0),\n"
@@ -107,6 +110,7 @@ TEST_F(BitVectorTests, ctors_and_getters) {
         EXPECT_EQ(bv.num_var_bits(), 0);
         EXPECT_EQ(bv.num_bdd_boolean_vars(), 0);
         EXPECT_EQ(bv.bdd_boolean_vars(), (std::set<uint32_t>{}));
+        EXPECT_EQ(bv.num_nodes(), 0);
         EXPECT_EQ(bv.zext_value(), (1UL << nbits) - 1);
         const std::string bv_str = "4-bits bit-vector\n"
                                    "-- bit 0: [\n"
@@ -130,6 +134,7 @@ TEST_F(BitVectorTests, ctors_and_getters) {
         EXPECT_EQ(bv1.num_var_bits(), 0);
         EXPECT_EQ(bv1.num_bdd_boolean_vars(), 0);
         EXPECT_EQ(bv1.bdd_boolean_vars(), (std::set<uint32_t>{}));
+        EXPECT_EQ(bv1.num_nodes(), 0);
         EXPECT_EQ(bv1.zext_value(), 9527);
         bv1 -= bv2;
         EXPECT_EQ(bv1.zext_value(), 9500);
@@ -146,6 +151,7 @@ TEST_F(BitVectorTests, setters) {
     EXPECT_EQ(bv.num_var_bits(), nbits);
     EXPECT_EQ(bv.num_bdd_boolean_vars(), nbits);
     EXPECT_EQ(bv.bdd_boolean_vars(), (std::set<uint32_t>{0, 1, 2, 3}));
+    EXPECT_EQ(bv.num_nodes(), 4);
     EXPECT_EQ(bv.to_string(), "4-bits bit-vector\n"
                               "-- bit 0: [\n"
                               "  node(1,0,0,~0),\n"
@@ -170,6 +176,7 @@ TEST_F(BitVectorTests, setters) {
     EXPECT_EQ(bv.num_var_bits(), 2);
     EXPECT_EQ(bv.num_bdd_boolean_vars(), nbits);
     EXPECT_EQ(bv.bdd_boolean_vars(), (std::set<uint32_t>{0, 1, 2, 3}));
+    EXPECT_EQ(bv.num_nodes(), 7);
     EXPECT_EQ(bv.to_string(), "4-bits bit-vector\n"
                               "-- bit 0: [\n"
                               "  node(1,3,0,~0),\n"
@@ -196,6 +203,7 @@ TEST_F(BitVectorTests, setters) {
     EXPECT_EQ(bv.num_var_bits(), 0);
     EXPECT_EQ(bv.num_bdd_boolean_vars(), 0);
     EXPECT_EQ(bv.bdd_boolean_vars(), (std::set<uint32_t>{}));
+    EXPECT_EQ(bv.num_nodes(), 0);
     EXPECT_EQ(bv.zext_value(), 0);
     EXPECT_EQ(bv.to_string(), "0-bits bit-vector");
 }
