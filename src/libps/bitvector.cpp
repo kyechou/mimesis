@@ -577,13 +577,13 @@ BitVector BitVector::sub(const BitVector &other [[maybe_unused]]) const {
 }
 
 BitVector BitVector::mul(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented");
+    error("Unimplemented mul");
     return {};
 }
 
 BitVector BitVector::udiv(const BitVector &divisor [[maybe_unused]],
                           BitVector &remainder [[maybe_unused]]) const {
-    error("Unimplemented");
+    error("Unimplemented udiv");
     return {};
 }
 
@@ -600,7 +600,7 @@ BitVector BitVector::urem(const BitVector &divisor) const {
 
 BitVector BitVector::sdiv(const BitVector &divisor [[maybe_unused]],
                           BitVector &remainder [[maybe_unused]]) const {
-    error("Unimplemented");
+    error("Unimplemented sdiv");
     return {};
 }
 
