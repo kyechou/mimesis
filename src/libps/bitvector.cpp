@@ -561,7 +561,7 @@ BitVector BitVector::add(const BitVector &other) const {
     return res;
 }
 
-BitVector BitVector::sub(const BitVector &other [[maybe_unused]]) const {
+BitVector BitVector::sub(const BitVector &other) const {
     assert(this->width() == other.width());
     BitVector res;
     sylvan::Bdd borrow = sylvan::Bdd::bddZero();
@@ -581,10 +581,21 @@ BitVector BitVector::mul(const BitVector &other [[maybe_unused]]) const {
     return {};
 }
 
-BitVector BitVector::udiv(const BitVector &divisor [[maybe_unused]],
-                          BitVector &remainder [[maybe_unused]]) const {
-    error("Unimplemented udiv");
-    return {};
+BitVector BitVector::udiv(const BitVector &divisor,
+                          BitVector &remainder) const {
+    assert(this->width() == divisor.width());
+    size_t width = this->width();
+    BitVector quotient(width, false);
+    remainder = *this; // `remainder` will be the running dividend.
+
+    for (int64_t i = width - 1; i >= 0; --i) {
+        BitVector bit_pos(llvm::APInt(sizeof(width) * 8, i));
+        sylvan::Bdd c = ((remainder >> bit_pos) >= divisor).bv.at(0);
+        quotient.bv[i] = c; // ite(c, 1, 0)
+        remainder = select(c, remainder - (divisor << bit_pos), remainder);
+    }
+
+    return quotient;
 }
 
 BitVector BitVector::udiv(const BitVector &divisor) const {
