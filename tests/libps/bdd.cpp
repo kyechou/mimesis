@@ -1,6 +1,5 @@
 #include <cstdint>
 #include <gtest/gtest.h>
-#include <iostream>
 #include <linux/if_ether.h>
 #include <string>
 #include <sylvan_obj.hpp>
