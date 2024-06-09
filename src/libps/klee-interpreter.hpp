@@ -11,20 +11,29 @@ namespace ps {
 class KleeInterpreter {
 private:
     static BitVector translate_constant_expr(const klee::ref<klee::Expr> &e);
-    static BitVector translate_read_expr_concrete_index(
-        const klee::ref<klee::ReadExpr> &e,
-        const uint64_t index,
-        const sylvan::Bdd &constraint = sylvan::Bdd::bddOne());
-    static BitVector translate_read_expr(const klee::ref<klee::Expr> &e);
-    static BitVector translate_select_expr(const klee::ref<klee::Expr> &e);
-    static BitVector translate_concat_expr(const klee::ref<klee::Expr> &e);
-    static BitVector translate_extract_expr(const klee::ref<klee::Expr> &e);
-    static BitVector translate_not_expr(const klee::ref<klee::Expr> &e);
-    static BitVector translate_cast_expr(const klee::ref<klee::Expr> &e);
-    static BitVector translate_binary_expr(const klee::ref<klee::Expr> &e);
+    static BitVector
+    translate_read_expr_concrete_index(const klee::ref<klee::ReadExpr> &e,
+                                       const uint64_t index,
+                                       const sylvan::Bdd &constraint);
+    static BitVector translate_read_expr(const klee::ref<klee::Expr> &e,
+                                         const sylvan::Bdd &constraint);
+    static BitVector translate_select_expr(const klee::ref<klee::Expr> &e,
+                                           const sylvan::Bdd &constraint);
+    static BitVector translate_concat_expr(const klee::ref<klee::Expr> &e,
+                                           const sylvan::Bdd &constraint);
+    static BitVector translate_extract_expr(const klee::ref<klee::Expr> &e,
+                                            const sylvan::Bdd &constraint);
+    static BitVector translate_not_expr(const klee::ref<klee::Expr> &e,
+                                        const sylvan::Bdd &constraint);
+    static BitVector translate_cast_expr(const klee::ref<klee::Expr> &e,
+                                         const sylvan::Bdd &constraint);
+    static BitVector translate_binary_expr(const klee::ref<klee::Expr> &e,
+                                           const sylvan::Bdd &constraint);
 
 public:
-    static BitVector translate(const klee::ref<klee::Expr> &e);
+    static BitVector
+    translate(const klee::ref<klee::Expr> &e,
+              const sylvan::Bdd &constraint = sylvan::Bdd::bddOne());
 };
 
 } // namespace ps

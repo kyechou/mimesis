@@ -5,7 +5,6 @@
 #include <klee/util/Ref.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/Support/Casting.h>
-#include <map>
 #include <string>
 #include <sylvan_obj.hpp>
 
@@ -14,23 +13,24 @@
 
 namespace ps {
 
-BitVector KleeInterpreter::translate(const klee::ref<klee::Expr> &e) {
+BitVector KleeInterpreter::translate(const klee::ref<klee::Expr> &e,
+                                     const sylvan::Bdd &constraint) {
     switch (e->getKind()) {
     case klee::Expr::Constant:
         return translate_constant_expr(e);
     case klee::Expr::Read:
-        return translate_read_expr(e);
+        return translate_read_expr(e, constraint);
     case klee::Expr::Select:
-        return translate_select_expr(e);
+        return translate_select_expr(e, constraint);
     case klee::Expr::Concat:
-        return translate_concat_expr(e);
+        return translate_concat_expr(e, constraint);
     case klee::Expr::Extract:
-        return translate_extract_expr(e);
+        return translate_extract_expr(e, constraint);
     case klee::Expr::Not:
-        return translate_not_expr(e);
+        return translate_not_expr(e, constraint);
     case klee::Expr::ZExt:
     case klee::Expr::SExt:
-        return translate_cast_expr(e);
+        return translate_cast_expr(e, constraint);
     case klee::Expr::Add:
     case klee::Expr::Sub:
     case klee::Expr::Mul:
@@ -54,7 +54,7 @@ BitVector KleeInterpreter::translate(const klee::ref<klee::Expr> &e) {
     case klee::Expr::Sle:
     case klee::Expr::Sgt:
     case klee::Expr::Sge:
-        return translate_binary_expr(e);
+        return translate_binary_expr(e, constraint);
     default:
         error("Invalid klee expr kind: " + std::to_string(e->getKind()));
         return {};
@@ -79,7 +79,7 @@ BitVector KleeInterpreter::translate_read_expr_concrete_index(
         const klee::ref<klee::Expr> &ui = un->getIndex();
         if (auto cui = llvm::dyn_cast<klee::ConstantExpr>(ui)) {
             if (cui->getZExtValue() == index) {
-                return translate(un->getValue()).constrain(constraint);
+                return translate(un->getValue(), constraint);
             }
         } else {
             // update node index is symbolic, which may or may not be
@@ -93,8 +93,7 @@ BitVector KleeInterpreter::translate_read_expr_concrete_index(
     // Return the concrete byte directly if this is a concrete array.
     if (ul->getRoot()->isConstantArray() && index < ul->getRoot()->getSize()) {
         return translate_constant_expr(
-                   ul->getRoot()->getConstantValues()[index])
-            .constrain(constraint);
+            ul->getRoot()->getConstantValues()[index]);
     }
 
     // Get the indexed byte from the symbolic array.
@@ -103,12 +102,14 @@ BitVector KleeInterpreter::translate_read_expr_concrete_index(
         .constrain(constraint);
 }
 
-BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
+BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e,
+                                               const sylvan::Bdd &constraint) {
     const klee::ref<klee::ReadExpr> &re = llvm::cast<klee::ReadExpr>(e);
     const klee::ref<klee::Expr> &index = re->getIndex();
 
     if (auto cidx = llvm::dyn_cast<klee::ConstantExpr>(index)) {
-        return translate_read_expr_concrete_index(re, cidx->getZExtValue());
+        return translate_read_expr_concrete_index(re, cidx->getZExtValue(),
+                                                  constraint);
     }
 
     // Symbolic array index.
@@ -120,7 +121,7 @@ BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
     // Alternatively, we can trade soundness for performance by concretizing
     // the index to only a subset of all possible values.
 
-    BitVector index_bv = translate(index);
+    BitVector index_bv = translate(index, constraint);
     auto index_values = index_bv.valid_values();
     BitVector result;
 
@@ -148,36 +149,41 @@ BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
 }
 
 BitVector
-KleeInterpreter::translate_select_expr(const klee::ref<klee::Expr> &e) {
+KleeInterpreter::translate_select_expr(const klee::ref<klee::Expr> &e,
+                                       const sylvan::Bdd &constraint) {
     const klee::ref<klee::SelectExpr> &se = llvm::cast<klee::SelectExpr>(e);
-    return BitVector::select(translate(se->getCondition()),
-                             translate(se->getTrue()),
-                             translate(se->getFalse()));
+    return BitVector::select(translate(se->getCondition(), constraint),
+                             translate(se->getTrue(), constraint),
+                             translate(se->getFalse(), constraint));
 }
 
 BitVector
-KleeInterpreter::translate_concat_expr(const klee::ref<klee::Expr> &e) {
+KleeInterpreter::translate_concat_expr(const klee::ref<klee::Expr> &e,
+                                       const sylvan::Bdd &constraint) {
     const klee::ref<klee::ConcatExpr> &ce = llvm::cast<klee::ConcatExpr>(e);
-    BitVector left = translate(ce->getLeft());
-    BitVector right = translate(ce->getRight());
+    BitVector left = translate(ce->getLeft(), constraint);
+    BitVector right = translate(ce->getRight(), constraint);
     return left.concat(right);
 }
 
 BitVector
-KleeInterpreter::translate_extract_expr(const klee::ref<klee::Expr> &e) {
+KleeInterpreter::translate_extract_expr(const klee::ref<klee::Expr> &e,
+                                        const sylvan::Bdd &constraint) {
     const klee::ref<klee::ExtractExpr> &ee = llvm::cast<klee::ExtractExpr>(e);
-    BitVector src = translate(ee->getExpr());
+    BitVector src = translate(ee->getExpr(), constraint);
     return src.extract(ee->getOffset(), ee->getWidth());
 }
 
-BitVector KleeInterpreter::translate_not_expr(const klee::ref<klee::Expr> &e) {
+BitVector KleeInterpreter::translate_not_expr(const klee::ref<klee::Expr> &e,
+                                              const sylvan::Bdd &constraint) {
     const klee::ref<klee::NotExpr> &not_ex = llvm::cast<klee::NotExpr>(e);
-    return translate(not_ex->getExpr()).bv_not();
+    return translate(not_ex->getExpr(), constraint).bv_not();
 }
 
-BitVector KleeInterpreter::translate_cast_expr(const klee::ref<klee::Expr> &e) {
+BitVector KleeInterpreter::translate_cast_expr(const klee::ref<klee::Expr> &e,
+                                               const sylvan::Bdd &constraint) {
     const klee::ref<klee::CastExpr> &cast = llvm::cast<klee::CastExpr>(e);
-    BitVector src = translate(cast->getSrc());
+    BitVector src = translate(cast->getSrc(), constraint);
     klee::Expr::Width width = cast->getWidth();
 
     switch (cast->getKind()) {
@@ -192,10 +198,11 @@ BitVector KleeInterpreter::translate_cast_expr(const klee::ref<klee::Expr> &e) {
 }
 
 BitVector
-KleeInterpreter::translate_binary_expr(const klee::ref<klee::Expr> &e) {
+KleeInterpreter::translate_binary_expr(const klee::ref<klee::Expr> &e,
+                                       const sylvan::Bdd &constraint) {
     const klee::ref<klee::BinaryExpr> &bin = llvm::cast<klee::BinaryExpr>(e);
-    BitVector left = translate(bin->getLeft());
-    BitVector right = translate(bin->getRight());
+    BitVector left = translate(bin->getLeft(), constraint);
+    BitVector right = translate(bin->getRight(), constraint);
 
     switch (bin->getKind()) {
     case klee::Expr::Add:
