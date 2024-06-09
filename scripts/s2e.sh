@@ -142,8 +142,8 @@ EOM
     local plugin_cfg=
     plugin_cfg+='add_plugin("Mimesis")\n'
     plugin_cfg+='pluginsConfig.Mimesis = {}\n'
-    local klee_args=                                  # "--help" to show the available options
-    klee_args+='        "--const-array-opt=false",\n' # const array optimizations
+    local klee_args=
+    klee_args+='        "--const-array-opt",\n' # const array optimizations
     klee_args+='        "--debug-constraints",\n'
     # klee_args+='        "--debug-expr-simplifier",\n'
     klee_args+='        "--debug-log-state-merge",\n'
@@ -152,7 +152,7 @@ EOM
     klee_args+='        "--end-solver=z3",\n'
     klee_args+='        "--end-solver-increm=stack",\n' # none, stack, assumptions
     # klee_args+='        "--log-partial-queries-early",\n'
-    klee_args+='        "--print-concretized-expression",\n'
+    # klee_args+='        "--print-concretized-expression",\n'
     # klee_args+='        "--print-expr-simplifier",\n'
     klee_args+='        "--print-mode-switch",\n'
     klee_args+='        "--s2e-debug-edge-detector",\n'
@@ -172,11 +172,12 @@ EOM
     klee_args+='        "--use-query-log=all:smt2,solver:smt2",\n'
     klee_args+='        "--use-visitor-hash",\n'
     klee_args+='        "--validate-expr-simplifier",\n'
-    klee_args+='        "--verbose-fork-info",\n'
+    # klee_args+='        "--verbose-fork-info",\n'
     klee_args+='        "--verbose-state-switching",\n'
-    klee_args+='        "--z3-debug-solver-stack",\n'
+    # klee_args+='        "--z3-debug-solver-stack",\n'
     # klee_args+='        "--z3-array-cons-mode=ite",\n' # ite, stores, asserts
     # klee_args+='        "--z3-use-hash-consing",\n'
+    # klee_args+='        "--help",\n' # "--help" to show the available options
     sed -i "$S2E_PROJ_DIR/s2e-config.lua" \
         -e "s,^\(-- .* User-specific scripts begin here .*\)$,\1\n$plugin_cfg," \
         -e 's,^\(.*add_plugin("Lua\(Bindings\|CoreEvents\)").*\)$,-- \1,' \
