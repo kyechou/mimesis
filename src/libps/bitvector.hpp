@@ -244,9 +244,15 @@ public:
     // Others (Concat, Extract, Select/Ite)
     BitVector concat(const BitVector &other) const;
     BitVector extract(const size_t offset, const size_t width) const;
+    static BitVector select(const sylvan::Bdd &condition,
+                            const BitVector &true_result,
+                            const BitVector &false_result);
     static BitVector select(const BitVector &condition,
                             const BitVector &true_result,
                             const BitVector &false_result);
+    static BitVector ite(const sylvan::Bdd &condition,
+                         const BitVector &true_result,
+                         const BitVector &false_result);
     static BitVector ite(const BitVector &condition,
                          const BitVector &true_result,
                          const BitVector &false_result);

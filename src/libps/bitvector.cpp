@@ -699,17 +699,29 @@ BitVector BitVector::extract(const size_t offset, const size_t width) const {
     return res;
 }
 
-BitVector BitVector::select(const BitVector &condition,
+BitVector BitVector::select(const sylvan::Bdd &condition,
                             const BitVector &true_result,
                             const BitVector &false_result) {
-    assert(condition.width() == 1);
     assert(true_result.width() == false_result.width());
     BitVector res;
     res.bv.reserve(true_result.width());
     for (size_t i = 0; i < true_result.width(); ++i) {
-        res.bv.push_back(condition[0].Ite(true_result[i], false_result[i]));
+        res.bv.push_back(condition.Ite(true_result[i], false_result[i]));
     }
     return res;
+}
+
+BitVector BitVector::select(const BitVector &condition,
+                            const BitVector &true_result,
+                            const BitVector &false_result) {
+    assert(condition.width() == 1);
+    return select(condition[0], true_result, false_result);
+}
+
+BitVector BitVector::ite(const sylvan::Bdd &condition,
+                         const BitVector &true_result,
+                         const BitVector &false_result) {
+    return BitVector::select(condition, true_result, false_result);
 }
 
 BitVector BitVector::ite(const BitVector &condition,
