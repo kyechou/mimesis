@@ -5,7 +5,9 @@
 #include <klee/util/Ref.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/Support/Casting.h>
+#include <map>
 #include <string>
+#include <sylvan_obj.hpp>
 
 #include "lib/logger.hpp"
 #include "libps/bitvector.hpp"
@@ -65,34 +67,23 @@ KleeInterpreter::translate_constant_expr(const klee::ref<klee::Expr> &e) {
     return ce->getAPValue();
 }
 
-BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
-    const klee::ref<klee::ReadExpr> &re = llvm::cast<klee::ReadExpr>(e);
-    const klee::ref<klee::Expr> &index = re->getIndex();
-
-    if (!llvm::isa<klee::ConstantExpr>(index)) {
-        // Consider `klee::ExecutionState::toConstant` to concretize the index
-        // value, or construct a BDD for the symbolic index and see how many
-        // possible values it can be (sat count?)
-        error("Symbolic array indices are not currently supported (consider "
-              "concretization).");
-    }
-
-    const uint64_t array_idx =
-        llvm::cast<klee::ConstantExpr>(index)->getZExtValue();
-
+BitVector KleeInterpreter::translate_read_expr_concrete_index(
+    const klee::ref<klee::ReadExpr> &e,
+    const uint64_t index,
+    const sylvan::Bdd &constraint) {
     // Evaluate the read expression.
     // See `klee::ExprEvaluator::evalRead` for reference.
-    const klee::UpdateListPtr &ul = re->getUpdates();
+    const klee::UpdateListPtr &ul = e->getUpdates();
 
     for (klee::UpdateNodePtr un = ul->getHead(); un; un = un->getNext()) {
         const klee::ref<klee::Expr> &ui = un->getIndex();
         if (auto cui = llvm::dyn_cast<klee::ConstantExpr>(ui)) {
-            if (cui->getZExtValue() == array_idx) {
-                return translate(un->getValue());
+            if (cui->getZExtValue() == index) {
+                return translate(un->getValue()).constrain(constraint);
             }
         } else {
             // update node index is symbolic, which may or may not be
-            // `array_idx`. This is not supported for now. Consider exploring
+            // `index`. This is not supported for now. Consider exploring
             // the possible values in the future.
             error("Symbolic array update node index are not currently "
                   "supported (consider concretization)");
@@ -100,15 +91,60 @@ BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
     }
 
     // Return the concrete byte directly if this is a concrete array.
-    if (ul->getRoot()->isConstantArray() &&
-        array_idx < ul->getRoot()->getSize()) {
+    if (ul->getRoot()->isConstantArray() && index < ul->getRoot()->getSize()) {
         return translate_constant_expr(
-            ul->getRoot()->getConstantValues()[array_idx]);
+                   ul->getRoot()->getConstantValues()[index])
+            .constrain(constraint);
     }
 
     // Get the indexed byte from the symbolic array.
     return BitVector(/*var_name=*/ul->getRoot()->getName(),
-                     /*offset=*/array_idx * 8, /*width=*/8);
+                     /*offset=*/index * 8, /*width=*/8)
+        .constrain(constraint);
+}
+
+BitVector KleeInterpreter::translate_read_expr(const klee::ref<klee::Expr> &e) {
+    const klee::ref<klee::ReadExpr> &re = llvm::cast<klee::ReadExpr>(e);
+    const klee::ref<klee::Expr> &index = re->getIndex();
+
+    if (auto cidx = llvm::dyn_cast<klee::ConstantExpr>(index)) {
+        return translate_read_expr_concrete_index(re, cidx->getZExtValue());
+    }
+
+    // Symbolic array index.
+    //
+    // Here we explicitly enumerate all possible concrete values of the symbolic
+    // index, evaluate the contrained content for each value, and then aggregate
+    // the results together with a chain of `select` (`ite`) operations.
+    //
+    // Alternatively, we can trade soundness for performance by concretizing
+    // the index to only a subset of all possible values.
+
+    BitVector index_bv = translate(index);
+    auto index_values = index_bv.valid_values();
+    BitVector result;
+
+    for (const auto &[ap_idx, constraint] : index_values) {
+        BitVector content = translate_read_expr_concrete_index(
+            re, ap_idx.getZExtValue(), constraint);
+        if (result.empty()) {
+            result = content;
+        } else {
+            result = ps::BitVector::select(constraint, content, result);
+        }
+    }
+
+    // // Debugging use only.
+    // warn("Symbolic array index:");
+    // index->dump();
+    // warn("Symbolic array read result:");
+    // info(" --> # varbits: " + std::to_string(result.num_var_bits()));
+    // info(" --> # bdd var: " + std::to_string(result.num_bdd_boolean_vars()));
+    // info(" --> # nodes:   " + std::to_string(result.num_nodes()));
+    // info(" --> # assign:  " + std::to_string(result.num_assignments()));
+    // info(" --> # values:  " + std::to_string(result.num_valid_values()));
+
+    return result;
 }
 
 BitVector
