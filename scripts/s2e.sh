@@ -152,7 +152,7 @@ EOM
     klee_args+='        "--end-solver=z3",\n'
     klee_args+='        "--end-solver-increm=stack",\n' # none, stack, assumptions
     # klee_args+='        "--log-partial-queries-early",\n'
-    # klee_args+='        "--print-concretized-expression",\n'
+    klee_args+='        "--print-concretized-expression",\n'
     # klee_args+='        "--print-expr-simplifier",\n'
     klee_args+='        "--print-mode-switch",\n'
     klee_args+='        "--s2e-debug-edge-detector",\n'
