@@ -27,8 +27,8 @@ This will define the following variables:
 #]=======================================================================]
 
 set(Z3_VERSION 4.7.1)
-set(Z3_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/s2e/s2e/install/include)
-set(Z3_LIBRARIES ${CMAKE_SOURCE_DIR}/s2e/s2e/install/lib/libz3.a;gomp)
+set(Z3_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/s2e/install/include)
+set(Z3_LIBRARIES ${CMAKE_SOURCE_DIR}/s2e/install/lib/libz3.a;gomp)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Z3

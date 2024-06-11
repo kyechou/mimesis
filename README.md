@@ -39,11 +39,11 @@ $ ./scripts/build.sh --mimesis --stap --s2e
 
 To analyze a given network function program with Mimesis, the first step is to
 create a new analysis project with S2E with the following command. The created
-project will be located at `s2e/s2e/projects/mimesis`.
+project will be located at `s2e/projects/mimesis`.
 
 > **Note**<br/>
-> This step will also patch `s2e/s2e/projects/mimesis/bootstrap.sh` to load
-> *all* the compiled systemtap kernel modules. You can manually edit the
+> This step will also patch `s2e/projects/mimesis/bootstrap.sh` to load *all*
+> the compiled systemtap kernel modules. You can manually edit the
 > `bootstrap.sh` afterwards according to your needs.
 
 ```sh

@@ -300,13 +300,13 @@ main() {
     PROJECT_DIR="$(dirname "${SCRIPT_DIR}")"
     BUILD_DIR="$PROJECT_DIR/build"
     S2E_PROJ_NAME=mimesis
-    S2E_DIR="$PROJECT_DIR/s2e/s2e"
+    S2E_DIR="$PROJECT_DIR/s2e"
     S2E_PROJ_DIR="$S2E_DIR/projects/$S2E_PROJ_NAME"
     S2E_INSTALL_DIR="$S2E_DIR/install"
     NUM_INTFS_FILE="$S2E_PROJ_DIR/num_interfaces.txt"
 
     if [[ $RM -eq 1 ]]; then
-        rm -rf "$PROJECT_DIR/s2e/s2e/projects"/*
+        rm -rf "$PROJECT_DIR/s2e/projects"/*
     fi
 
     if [[ $NEW -eq 1 ]]; then

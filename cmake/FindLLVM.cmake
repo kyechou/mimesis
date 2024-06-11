@@ -26,7 +26,7 @@ This will define the following variables:
 
 #]=======================================================================]
 
-find_package(LLVM REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/s2e/build/llvm-release/lib/cmake/llvm NO_DEFAULT_PATH)
+find_package(LLVM REQUIRED CONFIG PATHS ${CMAKE_SOURCE_DIR}/s2e/build/llvm-release/lib/cmake/llvm NO_DEFAULT_PATH)
 
 set(LLVM_VERSION ${LLVM_PACKAGE_VERSION})
 set(LLVM_INCLUDE_DIRS ${LLVM_INCLUDE_DIR})

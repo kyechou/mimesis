@@ -237,7 +237,7 @@ EOM
     # https://github.com/S2E/s2e-env#configuring
 }
 
-# This will build llvm, z3, gtest, and klee from within S2E.
+# This will build llvm, z3, and klee from within S2E.
 build_s2e_libps_deps() {
     local image='s2e:latest'
     local build_cmd
@@ -329,7 +329,7 @@ main() {
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     BUILD_DIR="$PROJECT_DIR/build"
     S2E_ENV_DIR="$PROJECT_DIR/src/s2e-env"
-    S2E_DIR="$PROJECT_DIR/s2e/s2e"
+    S2E_DIR="$PROJECT_DIR/s2e"
 
     if [[ $MIMESIS -eq 1 ]]; then
         build_mimesis_programs

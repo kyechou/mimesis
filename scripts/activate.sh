@@ -10,8 +10,8 @@ _activate() {
     local s2e_activate
     script_dir="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     project_dir="$(dirname "${script_dir}")"
-    s2e_env_activate="$project_dir/s2e/s2e-env/venv/bin/activate"
-    s2e_activate="$project_dir/s2e/s2e/s2e_activate"
+    s2e_env_activate="$project_dir/src/s2e-env/venv/bin/activate"
+    s2e_activate="$project_dir/s2e/s2e_activate"
 
     if [[ ! -f "$s2e_env_activate" ]]; then
         echo -e "[!] $s2e_env_activate doesn't exist or isn't a file" >&2
