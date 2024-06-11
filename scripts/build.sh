@@ -214,14 +214,6 @@ EOM
         -i "$PATCH_DIR/02-qemu-glfs_io_cbk.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
-    out="$(patch -d "$S2E_DIR/source/qemu" -Np1 \
-        -i "$PATCH_DIR/03-qemu-x11-window-type.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
-    out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
-        -i "$PATCH_DIR/04-s2e-guest-images-ubuntu-iso.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
     out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
         -i "$PATCH_DIR/05-s2e-guest-images-additional-pkgs.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
