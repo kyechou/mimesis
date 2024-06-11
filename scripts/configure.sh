@@ -67,8 +67,7 @@ reset_files() {
     git -C "$PROJECT_DIR" submodule update --init --recursive
 
     # Clean up old builds
-    git -C "$PROJECT_DIR" submodule foreach --recursive \
-        "if [ \"\$name\" != s2e-env ]; then git clean -xdf; fi"
+    git -C "$PROJECT_DIR" submodule foreach --recursive git clean -xdf
     rm -rf "$BUILD_DIR"
 
     if [[ $CLEAN -ne 0 ]]; then

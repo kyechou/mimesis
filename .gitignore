@@ -23,6 +23,7 @@ __pycache__
 .vscode/
 .cache/
 .venv/
+.s2e.venv/
 
 # Trashed files
 .Trash*/

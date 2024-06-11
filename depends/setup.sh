@@ -192,8 +192,7 @@ main() {
     DISTRO="$(get_distro)"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     git -C "$PROJECT_DIR" submodule update --init --recursive
-    git -C "$PROJECT_DIR" submodule foreach --recursive \
-        "if [ \"\$name\" != s2e-env ]; then git clean -xdf; fi"
+    git -C "$PROJECT_DIR" submodule foreach --recursive git clean -xdf
 
     if [ "$DISTRO" = "arch" ]; then
         if ! pacman -Q paru >/dev/null 2>&1; then

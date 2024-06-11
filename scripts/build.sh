@@ -139,8 +139,8 @@ build_s2e_env() {
     build_cmd="$(
         cat <<-EOM
         set -euo pipefail
-        python3 -m venv --upgrade-deps $S2E_ENV_DIR/venv
-        source $S2E_ENV_DIR/venv/bin/activate
+        python3 -m venv --upgrade-deps $S2E_ENV_VENV_DIR
+        source $S2E_ENV_VENV_DIR/bin/activate
         python3 -m pip install build installer wheel
         python3 -m pip install --compile $S2E_ENV_DIR
         deactivate
@@ -158,7 +158,7 @@ s2e_init() {
         build_cmd="$(
             cat <<-EOM
             set -euo pipefail
-            source $S2E_ENV_DIR/venv/bin/activate
+            source $S2E_ENV_VENV_DIR/bin/activate
             s2e init -f --skip-dependencies $S2E_DIR
             deactivate
 EOM
@@ -167,7 +167,7 @@ EOM
         build_cmd="$(
             cat <<-EOM
             set -euo pipefail
-            source $S2E_ENV_DIR/venv/bin/activate
+            source $S2E_ENV_VENV_DIR/bin/activate
             s2e init --skip-dependencies $S2E_DIR
             deactivate
 EOM
@@ -258,7 +258,7 @@ build_s2e() {
         # Use our own S2E in place of the manifest S2E repo.
         rsync -a --delete-after $PROJECT_DIR/src/s2e/ $S2E_DIR/source/s2e
 
-        source $S2E_ENV_DIR/venv/bin/activate
+        source $S2E_ENV_VENV_DIR/bin/activate
         source $S2E_DIR/s2e_activate
         s2e build
         s2e_deactivate
@@ -297,7 +297,7 @@ build_s2e_image() {
     build_cmd="$(
         cat <<-EOM
         set -euo pipefail
-        source $S2E_ENV_DIR/venv/bin/activate
+        source $S2E_ENV_VENV_DIR/bin/activate
         source $S2E_DIR/s2e_activate
         s2e image_build ubuntu-22.04-x86_64
         s2e_deactivate
@@ -321,6 +321,7 @@ main() {
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     BUILD_DIR="$PROJECT_DIR/build"
     S2E_ENV_DIR="$PROJECT_DIR/src/s2e-env"
+    S2E_ENV_VENV_DIR="$PROJECT_DIR/.s2e.venv"
     S2E_DIR="$PROJECT_DIR/s2e"
 
     if [[ $MIMESIS -eq 1 ]]; then
