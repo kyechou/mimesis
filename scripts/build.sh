@@ -123,7 +123,7 @@ build_systemtap_programs() {
         mkdir -p $PROJECT_DIR/build/src
         cd $PROJECT_DIR/build/src
         for stp_file in $PROJECT_DIR/src/*.stp; do
-            stap -r 4.9.3-s2e -g -p4 -m \$(basename -s .stp \$stp_file) \$stp_file &
+            stap -r 6.8.2-s2e -g -p4 -m \$(basename -s .stp \$stp_file) \$stp_file &
         done
         wait
         chown -R $(id -u):$(id -g) $PROJECT_DIR/build/src
