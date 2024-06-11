@@ -24,7 +24,8 @@ RUN dpkg --add-architecture i386 && \
     libboost-regex-dev libbsd-dev libpixman-1-dev libglib2.0-dev \
     libglib2.0-dev:i386 python3-docutils libpng-dev gcc-multilib g++-multilib \
     libcapstone-dev libsoci-dev rapidjson-dev libgtest-dev libgmock-dev \
-    libprotobuf-dev fuse3 wine-stable \
+    libprotobuf-dev protobuf-compiler protobuf-c-compiler fuse3 wine-stable \
+    libzstd-dev \
     # S2E image build dependencies
     libguestfs-tools genisoimage xz-utils docker.io p7zip-full libhivex-bin \
     jigdo-file cloud-image-utils linux-image-generic \
