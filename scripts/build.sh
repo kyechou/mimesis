@@ -134,15 +134,6 @@ EOM
 }
 
 build_s2e_env() {
-    local S2E_ENV_URL='https://github.com/s2e/s2e-env.git'
-    local S2E_ENV_REV='81aeeaa58b827f0464530232a3e417d214d85dcb'
-
-    if [[ ! -e "$S2E_ENV_DIR" ]]; then
-        mkdir -p "$(dirname "$S2E_ENV_DIR")"
-        git clone "$S2E_ENV_URL" "$S2E_ENV_DIR"
-    fi
-    git -C "$S2E_ENV_DIR" reset --hard "$S2E_ENV_REV"
-
     local image='s2e:latest'
     local build_cmd
     build_cmd="$(
@@ -155,6 +146,7 @@ build_s2e_env() {
         deactivate
 EOM
     )"
+    git -C "$S2E_ENV_DIR" clean -xdf
     docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
@@ -194,11 +186,11 @@ EOM
     )
     local s2e_repo_commits=(
         a523ec2ec1ca1e1369b33db755bed135af57e09c # decree
-        2eba2ba2a3fe1d5dab21984195f104b3af52763e # guest-images
+        94831c833b80ff2050df12d69a3f1aca3b72b491 # guest-images
         6a865ba1b1c9f5e32cd2cd9dc12ed5972addd567 # qemu
-        8cb79cebef60f5f10b3091c30492ed08c8255e5f # s2e-env
-        81dcf04137d1ff68989d7823dc0689751affe3cd # s2e-linux-kernel
-        c0bb3ac35c4b3a47158d03138b5c476571208958 # scripts
+        f9815b1c4ad3ac9d9f50b120272a8d5e2d10a55c # s2e-env
+        ec84db78b9ccb658c00f5a3b3c75647ada95f061 # s2e-linux-kernel
+        2e61f0e026f156a3df5fd46b625d150ce30c0b85 # scripts
     )
 
     # Check out the specified revisions.
@@ -336,7 +328,7 @@ main() {
     SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     BUILD_DIR="$PROJECT_DIR/build"
-    S2E_ENV_DIR="$PROJECT_DIR/s2e/s2e-env"
+    S2E_ENV_DIR="$PROJECT_DIR/src/s2e-env"
     S2E_DIR="$PROJECT_DIR/s2e/s2e"
 
     if [[ $MIMESIS -eq 1 ]]; then

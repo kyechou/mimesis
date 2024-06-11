@@ -37,7 +37,8 @@ RUN dpkg --add-architecture i386 && \
     netcat vim apport psmisc libsvn1 libcurl4 gdb libssl-dev libstdc++6:i386 \
     libpixman-1-0 libxml2-dev libicu-dev libxslt1-dev libffi-dev lsof \
     libgettextpo0 libpcre3 libpcre3-dev libpcre3:i386 liblua5.1-0 liblua5.2-0 \
-    libsigc++-2.0-dev jq libpng16-16 time libsdl1.2-dev libmagic1 lcov rsync \
+    libsigc++-2.0-dev jq libpng16-16 time libsdl1.2-dev libmagic1 \
+    libprotobuf-dev rapidjson-dev libsoci-dev libcapstone-dev lcov rsync \
     # qemu dependencies
     $(apt-cache depends qemu-system-x86 | grep Depends | sed "s/.*ends:\ //" \
     | grep -v '<' | tr '\n' ' ') \
