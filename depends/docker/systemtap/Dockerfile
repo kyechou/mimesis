@@ -21,7 +21,6 @@ ARG STAP_VER=5.1
 RUN git clone https://github.com/S2E/systemtap.git && \
     cd systemtap && \
     git checkout release-${STAP_VER} && \
-    git reset --hard release-${STAP_VER} && \
     mkdir build && cd build && \
     ../configure --disable-docs --disable-refdocs --disable-htmldocs && \
     make -j $(nproc) && \
