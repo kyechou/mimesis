@@ -7,3 +7,6 @@
 [submodule "sylvan"]
 	path = third_party/sylvan/sylvan
 	url = https://github.com/trolando/sylvan.git
+[submodule "s2e-env"]
+	path = src/s2e-env
+	url = https://github.com/S2E/s2e-env.git
