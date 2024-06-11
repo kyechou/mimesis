@@ -92,7 +92,7 @@ private function s2e_make_symbolic(buf:long, size:long, name:string) %{
  */
 private function info(message:string) {
     printf("%s: %s\n", probefunc(), message);
-    msg = sprintf("%s: %s\n", probefunc(), message);
+    msg = sprintf("%s: [%s] %s\n", probefunc(), execname(), message);
     s2e_message(msg);
 }
 
@@ -162,19 +162,17 @@ probe kernel.function("__netif_receive_skb") {
         next;
     }
 
-    # msg = sprintf("[%s] len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x",
-    #     execname(), $skb->len, $skb->data_len, $skb->dev->ifindex, $skb->head, eth_dst_addr, ethertype, $skb->data);
-    # info(msg);
+    msg = sprintf("len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x",
+        $skb->len, $skb->data_len, $skb->dev->ifindex, $skb->head, eth_dst_addr, ethertype, $skb->data);
+    info(msg);
 
     // L3
     if (ethertype == 0xdead) {
         // Demo
-        eth_len = $skb->data - eth_hdr;
-        demo_len = %{ sizeof(struct DemoHeader) %};
-        // Option 1: Make the whole packet one symbolic variable. (current)
-        // Option 2: Make separate symbolic variables for each header field.
+        # eth_len = $skb->data - eth_hdr;
+        # demo_len = %{ sizeof(struct DemoHeader) %};
         info("Received a demo packet. Creating the symbolic input...");
-        s2e_make_symbolic(eth_hdr, eth_len + demo_len, "ingress_packet");
+        # s2e_make_symbolic(eth_hdr, eth_len + demo_len, "ingress_packet");
     } else if (ethertype == 0x0800) {
         // IPv4
         info("IPv4 protocol");
@@ -187,6 +185,21 @@ probe kernel.function("__netif_receive_skb") {
     # msg = sprintf("[symbolic_ingress] %s: len=%d datalen=%d\n", probefunc(), $skb->len, $skb->data_len)
     # s2e_message(msg)
     # s2e_inject_symbolic_ip_optionlength($skb->data)
+}
+
+probe kernel.function("dev_queue_xmit") {
+    msg = sprintf("dev_queue_xmit");
+    info(msg);
+}
+
+probe kernel.function("dev_queue_xmit_accel") {
+    msg = sprintf("dev_queue_xmit_accel");
+    info(msg);
+}
+
+probe kernel.function("__dev_queue_xmit") {
+    msg = sprintf("__dev_queue_xmit");
+    info(msg);
 }
 
 /**
@@ -213,13 +226,60 @@ probe kernel.function("dev_hard_start_xmit") {
         next; // returns immediately from the enclosing probe handler.
     }
 
+    # s2e_kill_state(0, "Terminate at dev_hard_start_xmit...");
+
     // TODO: Implement.
-    // eth_hdr = skb_mac_header($first)
-    // eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
-    // ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
-    // msg = sprintf("len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x",
-    //     $first->len, $first->data_len, $first->dev->ifindex, $first->head, eth_dst_addr, ethertype, $first->data);
-    // info(msg);
+    eth_hdr = skb_mac_header($first)
+    eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
+    ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
+
+    msg = sprintf("len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x eth_hdr=%x",
+        $first->len, $first->data_len, $first->dev->ifindex, $first->head,
+        eth_dst_addr, ethertype, $first->data, eth_hdr);
+    info(msg);
+}
+
+probe kernel.function("xmit_one") {
+    msg = sprintf("xmit_one");
+    info(msg);
+}
+
+probe kernel.function("packet_direct_xmit") {
+    msg = sprintf("packet_direct_xmit");
+    info(msg);
+}
+
+probe kernel.function("netpoll_start_xmit") {
+    msg = sprintf("netpoll_start_xmit");
+    info(msg);
+}
+
+probe kernel.function("netdev_start_xmit") {
+    msg = sprintf("netdev_start_xmit");
+    info(msg);
+}
+
+/**
+ * netdev_tx_t __netdev_start_xmit(
+ *      const struct net_device_ops *ops,
+ *      struct sk_buff *skb,
+ *      struct net_device *dev,
+ *      bool more
+ * );
+ *
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/netdevice.h#L4042
+ *
+ * Kernel calls this function to invoke the corresponding NIC drivers to start
+ * transmitting packets.
+ *
+ * (struct sk_buff):
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L633
+ * (struct net_device):
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/netdevice.h#L1641
+ */
+probe kernel.function("__netdev_start_xmit") {
+    msg = sprintf("__netdev_start_xmit");
+    info(msg);
 }
 
 # vim: ts=4 sw=4 et cms=#%s :
