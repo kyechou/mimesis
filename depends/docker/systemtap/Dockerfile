@@ -1,6 +1,6 @@
 # This is used to compile the systemtap scripts.
 
-FROM debian:9.3
+FROM debian:12.5
 
 LABEL org.opencontainers.image.authors="kychou2@illinois.edu"
 
@@ -11,20 +11,19 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     sudo apt-file flex bison patch python python-setuptools unzip git bc bzip2 \
     wget less g++ gcc file libc6-dev make fakeroot build-essential devscripts \
-    libncurses5-dev libdw-dev elfutils gettext apt-utils vim curl \
-    # mimesis required packages
-    clang cmake ninja-build pkgconf && \
+    libncurses5-dev pahole libdw-dev elfutils gettext rsync cpio kmod \
+    libssl-dev debhelper-compat && \
     apt-get clean && \
     apt-file update
 
-ARG STAP_VER=4.9
+ARG STAP_VER=5.1
 
-RUN curl --insecure -LO https://sourceware.org/ftp/systemtap/releases/systemtap-${STAP_VER}.tar.gz && \
-    tar xf systemtap-${STAP_VER}.tar.gz && \
-    cd systemtap-${STAP_VER} && \
+RUN git clone https://github.com/S2E/systemtap.git && \
+    cd systemtap && \
+    git checkout release-${STAP_VER} && \
+    git reset --hard release-${STAP_VER} && \
     mkdir build && cd build && \
-    ../configure --disable-docs --disable-refdocs --disable-htmldocs \
-    && \
+    ../configure --disable-docs --disable-refdocs --disable-htmldocs && \
     make -j $(nproc) && \
     sudo make install
 
@@ -35,6 +34,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     /kernel-packages/*.deb
 
 # Clean up
-RUN rm -rf systemtap-${STAP_VER}* /kernel-packages
+RUN rm -rf systemtap /kernel-packages
 
 ENTRYPOINT ["/bin/bash"]
