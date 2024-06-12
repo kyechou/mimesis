@@ -44,6 +44,9 @@ RUN dpkg --add-architecture i386 && \
     $(apt-cache depends qemu-system-x86 | grep Depends | sed "s/.*ends:\ //" \
     | grep -v '<' | tr '\n' ' ') \
     libcap-dev libattr1-dev \
+    # DPDK dependencies
+    build-essential python3 meson ninja-build python3-pyelftools libnuma-dev \
+    libarchive-dev libelf-dev libbpf-dev \
     && \
     apt-get clean && \
     apt-file update
