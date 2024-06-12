@@ -10,7 +10,7 @@ Imported Targets
 This module provides the following imported targets, if found:
 
 ``llvm``
-The LLVM library
+  The LLVM library
 
 Result Variables
 ^^^^^^^^^^^^^^^^

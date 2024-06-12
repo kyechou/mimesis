@@ -10,7 +10,7 @@ Imported Targets
 This module provides the following imported targets, if found:
 
 ``z3``
-The Z3 library
+  The Z3 library
 
 Result Variables
 ^^^^^^^^^^^^^^^^
