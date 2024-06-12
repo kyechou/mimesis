@@ -8,6 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="${PROJECT_DIR}/build"
+DPDK_BUILD_DIR="${PROJECT_DIR}/build.dpdk"
 
 die() {
     echo -e "[!] ${1-}" >&2
@@ -24,6 +25,7 @@ usage() {
     -h, --help          Print this message and exit
     -d, --debug         Enable debugging
     --clean             Clean all build files without configuring
+    --dpdk              Configure DPDK instead
     --gcc               Use GCC
     --clang             Use Clang (default)
 EOF
@@ -32,6 +34,7 @@ EOF
 parse_args() {
     DEBUG=0
     CLEAN=0
+    DPDK=0
     COMPILER=clang
     BOOTSTRAP_FLAGS=()
 
@@ -47,6 +50,9 @@ parse_args() {
             ;;
         --clean)
             CLEAN=1
+            ;;
+        --dpdk)
+            DPDK=1
             ;;
         --gcc)
             COMPILER=gcc
@@ -66,12 +72,17 @@ parse_args() {
 reset_files() {
     git -C "$PROJECT_DIR" submodule update --init --recursive
 
-    # Clean up old builds
-    git -C "$PROJECT_DIR" submodule foreach --recursive git clean -xdf
-    rm -rf "$BUILD_DIR"
-
     if [[ $CLEAN -ne 0 ]]; then
+        git -C "$PROJECT_DIR" submodule foreach --recursive git clean -xdf
+        rm -rf "$BUILD_DIR" "$DPDK_BUILD_DIR"
         exit 0
+    fi
+
+    if [[ $DPDK -eq 1 ]]; then
+        rm -rf "$DPDK_BUILD_DIR"
+    else
+        git -C "$PROJECT_DIR" submodule foreach --recursive git clean -xdf
+        rm -rf "$BUILD_DIR"
     fi
 }
 
@@ -82,11 +93,22 @@ prepare_flags() {
         "-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
         "-DCMAKE_GENERATOR=Ninja"
     )
+    MESON_ARGS=(
+        "--prefix=/"
+        "--libdir=lib"
+        "--default-library=static"
+        "--warnlevel=0"    # 0, 1, 2, 3, everything
+        "--optimization=g" # 0, g, 1, 2, 3, s
+        "-Dplatform=generic"
+        "-Dexamples=all"
+    )
 
     if [[ $DEBUG -ne 0 ]]; then
         CMAKE_ARGS+=('-DCMAKE_BUILD_TYPE=Debug')
+        MESON_ARGS+=('--buildtype=debug' '--debug')
     else
         CMAKE_ARGS+=('-DCMAKE_BUILD_TYPE=Release')
+        MESON_ARGS+=('--buildtype=debugoptimized')
     fi
     if [[ "$COMPILER" = 'clang' ]]; then
         CMAKE_ARGS+=('-DCMAKE_C_COMPILER=clang' '-DCMAKE_CXX_COMPILER=clang++')
@@ -112,7 +134,13 @@ main() {
     prepare_flags
 
     # Configure
-    cmake -B "$BUILD_DIR" -S "$PROJECT_DIR" "${CMAKE_ARGS[@]}"
+    if [[ $DPDK -eq 1 ]]; then
+        pushd "$PROJECT_DIR/third_party/dpdk" >/dev/null
+        meson setup "${MESON_ARGS[@]}" "$DPDK_BUILD_DIR"
+        popd >/dev/null
+    else
+        cmake -B "$BUILD_DIR" -S "$PROJECT_DIR" "${CMAKE_ARGS[@]}"
+    fi
 }
 
 main "$@"

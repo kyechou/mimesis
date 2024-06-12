@@ -7,7 +7,7 @@
 # Executables
 
 # Intermediate build files
-build/
+build*/
 s2e/
 
 # Coverage files

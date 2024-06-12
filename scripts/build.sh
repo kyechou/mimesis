@@ -97,6 +97,17 @@ build_mimesis_programs() {
         cat <<-EOM
         set -eo pipefail
         export CONAN_HOME='$HOME/.conan2'
+
+        # DPDK
+        if [[ $RECONF -eq 1 ]] || [[ ! -e '$DPDK_BUILD_DIR' ]]; then
+            '$PROJECT_DIR/scripts/configure.sh' --dpdk
+        fi
+        source '$SCRIPT_DIR/bootstrap.sh'
+        activate_conan_env
+        ninja -C '$DPDK_BUILD_DIR' -j $NUM_TASKS
+        meson install -C '$DPDK_BUILD_DIR' --quiet --destdir '$S2E_DIR/install'
+
+        # Mimesis
         if [[ $RECONF -eq 1 ]] || [[ ! -e '$BUILD_DIR' ]]; then
             '$PROJECT_DIR/scripts/configure.sh'
         fi
@@ -320,6 +331,7 @@ main() {
     SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     BUILD_DIR="$PROJECT_DIR/build"
+    DPDK_BUILD_DIR="${PROJECT_DIR}/build.dpdk"
     S2E_ENV_DIR="$PROJECT_DIR/src/s2e-env"
     S2E_ENV_VENV_DIR="$PROJECT_DIR/.s2e.venv"
     S2E_DIR="$PROJECT_DIR/s2e"
