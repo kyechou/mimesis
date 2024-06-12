@@ -76,8 +76,8 @@ main() {
 
         # Mount the huge pages as a file system
         mkdir -p "$mount_path"
-        sudo umount -q "$mount_path"
-        sudo mount -t hugetlbfs -o nodev,mode=01770,gid=kvm "$mount_path"
+        sudo umount -q "$mount_path" || true
+        sudo mount -t hugetlbfs nodev -o mode=0775,gid=1000 "$mount_path"
     fi
 }
 
