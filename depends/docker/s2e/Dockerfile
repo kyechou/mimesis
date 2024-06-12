@@ -46,7 +46,8 @@ RUN dpkg --add-architecture i386 && \
     libcap-dev libattr1-dev \
     # DPDK dependencies
     build-essential python3 meson ninja-build python3-pyelftools libnuma-dev \
-    libarchive-dev libelf-dev libbpf-dev \
+    libarchive-dev libelf-dev libbpf-dev libpcap-dev libmnl-dev libbsd-dev \
+    libjansson-dev libssl-dev zlib1g-dev \
     && \
     apt-get clean && \
     apt-file update
