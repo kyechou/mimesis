@@ -150,7 +150,7 @@ build_systemtap_programs() {
         mkdir -p $PROJECT_DIR/build/src
         cd $PROJECT_DIR/build/src
         for stp_file in $PROJECT_DIR/src/*.stp; do
-            stap -r 6.8.2-s2e -g -p4 -m \$(basename -s .stp \$stp_file) \$stp_file &
+            stap -r 4.9.3-s2e -g -p4 -m \$(basename -s .stp \$stp_file) \$stp_file &
         done
         wait
         chown -R $(id -u):$(id -g) $PROJECT_DIR/build/src
@@ -213,11 +213,11 @@ EOM
     )
     local s2e_repo_commits=(
         a523ec2ec1ca1e1369b33db755bed135af57e09c # decree
-        94831c833b80ff2050df12d69a3f1aca3b72b491 # guest-images
+        2eba2ba2a3fe1d5dab21984195f104b3af52763e # guest-images
         6a865ba1b1c9f5e32cd2cd9dc12ed5972addd567 # qemu
         f9815b1c4ad3ac9d9f50b120272a8d5e2d10a55c # s2e-env
-        ec84db78b9ccb658c00f5a3b3c75647ada95f061 # s2e-linux-kernel
-        2e61f0e026f156a3df5fd46b625d150ce30c0b85 # scripts
+        81dcf04137d1ff68989d7823dc0689751affe3cd # s2e-linux-kernel
+        c0bb3ac35c4b3a47158d03138b5c476571208958 # scripts
     )
 
     # Check out the specified revisions.
@@ -242,9 +242,18 @@ EOM
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
     out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
-        -i "$PATCH_DIR/05-s2e-guest-images-additional-pkgs.patch")" ||
+        -i "$PATCH_DIR/03-s2e-guest-images-iso-url.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
+    out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
+        -i "$PATCH_DIR/04-s2e-guest-images-additional-pkgs.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+    out="$(patch -d "$S2E_DIR/source/s2e-linux-kernel" -Np1 \
+        -i "$PATCH_DIR/05-s2e-linux-kernel-enable-uprobes.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
+
     # Change the maximum number of interfaces allowed in QEMU.
     sed -i "$S2E_DIR/source/qemu/include/net/net.h" \
         -e "s,^#define \+MAX_NICS .*$,#define MAX_NICS $MAX_INTFS,"

@@ -98,7 +98,7 @@ private function info(message:string) {
 
 /**
  * Check whether the mac_header field of the given sk_buff is set.
- * https://elixir.bootlin.com/linux/v6.8.2/source/include/linux/skbuff.h#L2904
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L2172
  */
 private function skb_mac_header_was_set:long(skb:long) %{ /* pure */
     struct sk_buff *skb = (struct sk_buff *)STAP_ARG_skb;
@@ -108,7 +108,7 @@ private function skb_mac_header_was_set:long(skb:long) %{ /* pure */
 
 /**
  * Get the Ethernet header of the given sk_buff.
- * https://elixir.bootlin.com/linux/v6.8.2/source/include/linux/skbuff.h#L2909
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L2167
  */
 private function skb_mac_header:long(skb:long) { /* pure */
     return @cast(skb, "sk_buff")->head + @cast(skb, "sk_buff")->mac_header;
@@ -139,14 +139,14 @@ private function check_eth_addr:long(eth_addr:long) %{ /* pure */
 /**
  * static int __netif_receive_skb(struct sk_buff *skb);
  *
- * https://elixir.bootlin.com/linux/v6.8.2/source/net/core/dev.c#L5628
+ * https://elixir.bootlin.com/linux/v4.9.3/source/net/core/dev.c#L4225
  *
  * NIC drivers call this function when they are ready to give the received
  * packet to the kernel. At this moment, `skb->data` points to the end of the
  * Ethernet header.
  *
  * (struct sk_buff):
- * https://elixir.bootlin.com/linux/v6.8.2/source/include/linux/skbuff.h#L852
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L633
  */
 probe kernel.function("__netif_receive_skb") {
     /**
@@ -197,11 +197,6 @@ probe kernel.function("__netif_receive_skb") {
     # s2e_inject_symbolic_ip_optionlength($skb->data)
 }
 
-probe kernel.function("__netif_receive_skb_one_core") {
-    msg = sprintf("__netif_receive_skb_one_core");
-    info(msg);
-}
-
 probe kernel.function("__netif_receive_skb_core") {
     msg = sprintf("__netif_receive_skb_core");
     info(msg);
@@ -222,6 +217,11 @@ probe kernel.function("xmit_one") {
     info(msg);
 }
 
+probe kernel.function("packet_direct_xmit") {
+    msg = sprintf("packet_direct_xmit");
+    info(msg);
+}
+
 probe kernel.function("netdev_start_xmit") {
     msg = sprintf("netdev_start_xmit");
     info(msg);
@@ -235,34 +235,34 @@ probe kernel.function("netdev_start_xmit") {
  *      bool more
  * );
  *
- * https://elixir.bootlin.com/linux/v6.8.2/source/include/linux/netdevice.h#L4981
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/netdevice.h#L4042
  *
  * Kernel calls this function to invoke the corresponding NIC drivers to start
  * transmitting packets.
  *
  * (struct sk_buff):
- * https://elixir.bootlin.com/linux/v6.8.2/source/include/linux/skbuff.h#L852
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L633
  * (struct net_device):
- * https://elixir.bootlin.com/linux/v6.8.2/source/include/linux/netdevice.h#L2103
+ * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/netdevice.h#L1641
  */
 probe kernel.function("__netdev_start_xmit") {
     msg = sprintf("__netdev_start_xmit");
     info(msg);
 
-    # if (!skb_mac_header_was_set($first)) {
+    # if (!skb_mac_header_was_set($skb)) {
     #     info("mac_header is not set. skipping the sk_buff...");
     #     next; // returns immediately from the enclosing probe handler.
     # }
     #
     # # s2e_kill_state(0, "Terminate at dev_hard_start_xmit...");
     #
-    # eth_hdr = skb_mac_header($first)
+    # eth_hdr = skb_mac_header($skb)
     # eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
     # ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
     #
     # msg = sprintf("len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x eth_hdr=%x",
-    #     $first->len, $first->data_len, $first->dev->ifindex, $first->head,
-    #     eth_dst_addr, ethertype, $first->data, eth_hdr);
+    #     $skb->len, $skb->data_len, $skb->dev->ifindex, $skb->head,
+    #     eth_dst_addr, ethertype, $skb->data, eth_hdr);
     # info(msg);
 }
 

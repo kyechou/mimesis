@@ -13,7 +13,7 @@ s2e:
 	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t $@:latest ./$@
 
 systemtap:
-	cp $(S2E_REPO_DIR)/images/.tmp-output/linux-6.8.2-x86_64/*.deb ./$@/
+	cp $(S2E_REPO_DIR)/images/.tmp-output/linux-4.9.3-x86_64/*.deb ./$@/
 	docker build -t $@:latest ./$@
 
 clean:
