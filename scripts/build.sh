@@ -147,6 +147,7 @@ build_systemtap_programs() {
     build_cmd="$(
         cat <<-EOM
         set -euo pipefail
+        export PATH=$PROJECT_DIR/build/targets:\$PATH
         mkdir -p $PROJECT_DIR/build/src
         cd $PROJECT_DIR/build/src
         for stp_file in $PROJECT_DIR/src/*.stp; do
