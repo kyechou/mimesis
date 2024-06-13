@@ -23,6 +23,7 @@ usage() {
     -h, --help          Print this message and exit
     -r, --reconfigure   Reconfigure the build
     -j, --parallel N    Number of parallel build tasks
+    --dpdk              Build DPDK (default: off)
     --mimesis           Build Mimesis (targets, sender, libps) (default: off)
     --stap              Build the systemtap scripts (default: off)
     --s2e-env           Build s2e-env (default: off)
@@ -37,6 +38,7 @@ EOF
 parse_args() {
     RECONF=0
     NUM_TASKS=$(nproc)
+    DPDK=0
     MIMESIS=0
     STAP=0
     S2E_ENV=0
@@ -58,6 +60,9 @@ parse_args() {
             ;;
         -r | --reconfigure)
             RECONF=1
+            ;;
+        --dpdk)
+            DPDK=1
             ;;
         --mimesis)
             MIMESIS=1
@@ -90,6 +95,28 @@ parse_args() {
     done
 }
 
+build_dpdk() {
+    local image='s2e:latest'
+    local build_cmd
+    build_cmd="$(
+        cat <<-EOM
+        set -eo pipefail
+        export CONAN_HOME='$HOME/.conan2'
+        '$PROJECT_DIR/scripts/configure.sh' --dpdk
+        source '$SCRIPT_DIR/bootstrap.sh'
+        activate_conan_env
+        ninja -C '$DPDK_BUILD_DIR' -j $NUM_TASKS
+        meson install -C '$DPDK_BUILD_DIR' --quiet # --destdir '$S2E_DIR/install'
+EOM
+    )"
+    mkdir -p "$HOME/.conan2"
+    docker run -it --rm -u builder \
+        -v "$PROJECT_DIR:$PROJECT_DIR" \
+        -v "$HOME/.conan2:$HOME/.conan2" \
+        "$image" \
+        -c "$build_cmd"
+}
+
 build_mimesis_programs() {
     local image='s2e:latest'
     local build_cmd
@@ -97,18 +124,7 @@ build_mimesis_programs() {
         cat <<-EOM
         set -eo pipefail
         export CONAN_HOME='$HOME/.conan2'
-
-        # DPDK
-        if [[ $RECONF -eq 1 ]] || [[ ! -e '$DPDK_BUILD_DIR' ]]; then
-            '$PROJECT_DIR/scripts/configure.sh' --dpdk
-        fi
-        source '$SCRIPT_DIR/bootstrap.sh'
-        activate_conan_env
-        ninja -C '$DPDK_BUILD_DIR' -j $NUM_TASKS
-        meson install -C '$DPDK_BUILD_DIR' --quiet --destdir '$S2E_DIR/install'
-
-        # Mimesis
-        if [[ $RECONF -eq 1 ]] || [[ ! -e '$BUILD_DIR' ]]; then
+        if [[ $RECONF -eq 1 ]] || [[ ! -e '$BUILD_DIR/build.ninja' ]]; then
             '$PROJECT_DIR/scripts/configure.sh'
         fi
         source '$SCRIPT_DIR/bootstrap.sh'
@@ -335,6 +351,10 @@ main() {
     S2E_ENV_DIR="$PROJECT_DIR/src/s2e-env"
     S2E_ENV_VENV_DIR="$PROJECT_DIR/.s2e.venv"
     S2E_DIR="$PROJECT_DIR/s2e"
+
+    if [[ $DPDK -eq 1 ]]; then
+        build_dpdk
+    fi
 
     if [[ $MIMESIS -eq 1 ]]; then
         build_mimesis_programs

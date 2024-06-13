@@ -94,7 +94,7 @@ prepare_flags() {
         "-DCMAKE_GENERATOR=Ninja"
     )
     MESON_ARGS=(
-        "--prefix=/"
+        "--prefix=$PROJECT_DIR/s2e/install"
         "--libdir=lib"
         "--default-library=static"
         "--warnlevel=0"    # 0, 1, 2, 3, everything
