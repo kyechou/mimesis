@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.22)
 project(Mimesis VERSION 0.1 HOMEPAGE_URL https://github.com/kyechou/mimesis LANGUAGES C CXX)
 include("ExternalProject")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -38,6 +38,7 @@ find_package(PcapPlusPlus REQUIRED)
 find_package(KLEE REQUIRED)
 find_package(LLVM REQUIRED)
 find_package(Z3 REQUIRED)
+find_package(DPDK REQUIRED)
 
 #
 # build libraries and programs
