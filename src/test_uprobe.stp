@@ -1,5 +1,0 @@
-probe process("hello-world-1").function("*").call {
-    printf("hello world\n")
-}
-
-# vim: ts=4 sw=4 et cms=#%s :

@@ -1,0 +1,122 @@
+#!/usr/bin/env stap
+#
+# https://s2e.systems/docs/Tutorials/SystemTap/index.html
+# https://sourceware.org/systemtap/documentation.html
+#
+
+%{
+struct DemoHeader {
+    uint16_t seed; // egress port
+    uint16_t len;  // payload length
+};
+%}
+
+#
+# S2E functions.
+# We use the embedded C support of SystemTap to access the S2E custom
+# instructions. A comprehensive set of such instructions can be found in
+# src/s2e/guest/common/include/s2e/s2e.h.
+#
+
+/**
+ * Print a message to the S2E log.
+ */
+private function s2e_message(message:string) %{ /* unprivileged */
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x10, 0x00, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : : "a" (STAP_ARG_message));
+%}
+
+# /**
+#  * Print a warning message to the S2E log and S2E stdout.
+#  */
+# private function s2e_warning(message:string) %{
+#     __asm__ __volatile__(
+#             ".byte 0x0f, 0x3f\n"
+#             ".byte 0x00, 0x10, 0x01, 0x00\n"
+#             ".byte 0x00, 0x00, 0x00, 0x00\n"
+#             : : "a" (STAP_ARG_message));
+# %}
+
+/**
+ * Fill a buffer with unconstrained symbolic values.
+ */
+private function s2e_make_symbolic(buf:long, size:long, name:string) %{
+    void *_buf = (void *)STAP_ARG_buf;
+    int _size = STAP_ARG_size;
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x03, 0x00, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : : "a" (_buf), "b" (_size), "c" (STAP_ARG_name));
+%}
+
+# /**
+#  * Returns 1 if the given pointer points to symbolic memory, or 0 otherwise.
+#  */
+# %{
+# static inline int s2e_is_symbolic(void *ptr, size_t size) {
+#     int result;
+#     __asm__ __volatile__(
+#             ".byte 0x0f, 0x3f\n"
+#             ".byte 0x00, 0x04, 0x00, 0x00\n"
+#             ".byte 0x00, 0x00, 0x00, 0x00\n"
+#             : "=a" (result) : "a" (size), "c" (ptr)
+#     );
+#     return result;
+# }
+# %}
+
+/**
+ * Terminate the current state.
+ */
+private function s2e_kill_state(status:long, message:string) %{
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x06, 0x00, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : : "a" ((uint32_t)STAP_ARG_status), "d" (STAP_ARG_message));
+%}
+
+#
+# Helper functions.
+#
+
+/**
+ * Print the given message to both the standard output and S2E log.
+ */
+private function info(message:string) {
+    printf("%s: %s\n", probefunc(), message);
+    msg = sprintf("%s: [%s] %s\n", probefunc(), execname(), message);
+    s2e_message(msg);
+}
+
+#
+# Ingress probes.
+#
+
+probe process("user-demo-r1").function("user_recv") {
+    info("Hello, world!!\n");
+    s2e_kill_state(0, "from user_recv");
+}
+
+# probe process.begin {
+#     info("Hello, world!!\n");
+#     s2e_kill_state(0, "from process.begin");
+# }
+
+# probe process("user-demo-r1").function("user_recv").return {
+#     info("(returning from user_recv) Hello, world!!\n")
+# }
+
+#
+# Egress probes.
+#
+
+probe process("user-demo-r1").function("user_send").call {
+    info("Hello, world!!\n")
+}
+
+# vim: ts=4 sw=4 et cms=#%s :

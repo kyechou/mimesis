@@ -42,5 +42,13 @@ foreach(DPDK_APP ${DPDK_APPS})
     target_link_libraries(dpdk-${STEM} PRIVATE dpdk _logger _net)
 endforeach()
 
+set(USER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/user)
+FILE(GLOB USERSPACE_APPS CONFIGURE_DEPENDS ${USER_DIR}/*.cpp)
+foreach(USERSPACE_APP ${USERSPACE_APPS})
+    get_filename_component(STEM ${USERSPACE_APP} NAME_WE)
+    add_executable(user-${STEM} ${USERSPACE_APP} $<TARGET_OBJECTS:_logger> $<TARGET_OBJECTS:_usernet>)
+    target_link_libraries(user-${STEM} PRIVATE -static _logger _usernet)
+endforeach()
+
 set(HELLO_WORLD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hello-world)
 add_executable(hello-world-1 ${HELLO_WORLD_DIR}/hw1.cpp)
