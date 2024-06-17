@@ -91,7 +91,7 @@ private function s2e_make_symbolic(buf:long, size:long, name:string) %{
  * Print the given message to both the standard output and S2E log.
  */
 private function info(message:string) {
-    printf("%s: %s\n", probefunc(), message);
+    printf("%s: [%s] %s\n", probefunc(), execname(), message);
     msg = sprintf("%s: [%s] %s\n", probefunc(), execname(), message);
     s2e_message(msg);
 }
