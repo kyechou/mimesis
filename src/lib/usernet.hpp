@@ -11,12 +11,12 @@ extern "C" {
 /**
  * Receives a packet frame by the NF from the interface.
  */
-void user_recv(uint32_t *interface, void *buffer, uint32_t len);
+void user_recv(uint32_t *intf, void *buffer, uint32_t len);
 
 /**
  * Sends a packet frame by the NF to the interface.
  */
-void user_send(uint32_t interface, void *buffer, uint32_t len);
+void user_send(uint32_t intf, void *buffer, uint32_t len);
 
 /**
  * @brief Count the existing interfaces on the system, except for loopback and
