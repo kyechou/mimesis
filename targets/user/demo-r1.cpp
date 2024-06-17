@@ -19,21 +19,16 @@ struct DemoHeader {
     uint16_t len;  // payload length
 };
 
-int main(int argc, char **argv) {
-    if (argc != 2) {
-        error("Invalid number of arguments.");
-    }
-
-    uint32_t max_intfs = stoul(argv[1]);
-    uint32_t interface;
+int main() {
+    uint32_t interface = 0;
+    uint32_t max_intfs = num_interfaces();
     DemoHeader pkt = {.seed = 0, .len = 0};
 
     while (1) {
         user_recv(&interface, &pkt, sizeof(pkt));
 
         if (interface >= max_intfs) {
-            error("Invalid interface upon reception: " +
-                  std::to_string(interface));
+            error("Invalid ingress interface: " + std::to_string(interface));
         }
 
         uint16_t egress = ntohs(pkt.seed);
