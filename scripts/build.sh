@@ -143,11 +143,16 @@ EOM
 
 build_systemtap_programs() {
     local image='systemtap:latest'
+    local s2e_home='/home/s2e'
     local build_cmd
     build_cmd="$(
         cat <<-EOM
         set -euo pipefail
-        export PATH=$PROJECT_DIR/build/targets:\$PATH
+
+        mkdir -p $s2e_home
+        export PATH=$s2e_home:\$PATH
+        cp $PROJECT_DIR/build/targets/user-* $s2e_home/
+
         mkdir -p $PROJECT_DIR/build/src
         cd $PROJECT_DIR/build/src
         for stp_file in $PROJECT_DIR/src/*.stp; do

@@ -35,6 +35,7 @@ parse_args() {
     CLEAN=0
     RUN=0
     RM=0
+    USERSPACE=0
 
     while :; do
         case "${1-}" in
@@ -67,6 +68,10 @@ parse_args() {
     if [[ $# -eq 0 ]]; then
         TARGET_PROGRAM=("--no-target")
     else
+        if [[ "$(basename "$1")" == user-* ]]; then
+            USERSPACE=1
+        fi
+
         TARGET_PROGRAM=("$(realpath "$1")")
         shift
         TARGET_PROGRAM+=("$@")
@@ -101,6 +106,12 @@ EOM
     # Prepare systemtap kernel modules
     local systemtap_cmds=
     for mod in "$BUILD_DIR"/src/*.ko; do
+        if [[ $USERSPACE -eq 1 ]] && [[ "$(basename "$mod")" != user_* ]]; then
+            continue
+        elif [[ $USERSPACE -eq 0 ]] && [[ "$(basename "$mod")" == user_* ]]; then
+            continue
+        fi
+
         # Soft-link all compiled kernel modules
         local target_path
         local mod_name

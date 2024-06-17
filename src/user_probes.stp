@@ -99,17 +99,11 @@ private function info(message:string) {
 
 probe process("user-demo-r1").function("user_recv") {
     info("Hello, world!!\n");
-    s2e_kill_state(0, "from user_recv");
 }
 
-# probe process.begin {
-#     info("Hello, world!!\n");
-#     s2e_kill_state(0, "from process.begin");
-# }
-
-# probe process("user-demo-r1").function("user_recv").return {
-#     info("(returning from user_recv) Hello, world!!\n")
-# }
+probe process("user-demo-r1").function("user_recv").return {
+    info("(returning from user_recv) Hello, world!!\n")
+}
 
 #
 # Egress probes.
@@ -117,6 +111,7 @@ probe process("user-demo-r1").function("user_recv") {
 
 probe process("user-demo-r1").function("user_send").call {
     info("Hello, world!!\n")
+    s2e_kill_state(0, "from user_recv");
 }
 
 # vim: ts=4 sw=4 et cms=#%s :
