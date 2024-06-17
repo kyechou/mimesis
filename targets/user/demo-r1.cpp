@@ -6,6 +6,8 @@
  */
 
 #include <cstdint>
+#include <cstring>
+#include <linux/if_ether.h>
 #include <netinet/in.h>
 #include <string>
 
@@ -19,19 +21,26 @@ struct DemoHeader {
     uint16_t len;  // payload length
 };
 
+struct Packet {
+    struct ethhdr eth;
+    DemoHeader demo; // simplified demo L3 protocol
+    char payload[64];
+};
+
 int main() {
-    uint32_t interface = 0;
     uint32_t max_intfs = num_interfaces();
-    DemoHeader pkt = {.seed = 0, .len = 0};
+    uint32_t intf = 0;
+    Packet pkt;
+    memset(&pkt, 0, sizeof(pkt));
 
     while (1) {
-        user_recv(&interface, &pkt, sizeof(pkt));
+        user_recv(&intf, &pkt, sizeof(pkt));
 
-        if (interface >= max_intfs) {
-            error("Invalid ingress interface: " + std::to_string(interface));
+        if (intf >= max_intfs) {
+            error("Invalid ingress interface: " + std::to_string(intf));
         }
 
-        uint16_t egress = ntohs(pkt.seed);
+        uint16_t egress = ntohs(pkt.demo.seed);
         user_send(egress, &pkt, sizeof(pkt));
     }
 
