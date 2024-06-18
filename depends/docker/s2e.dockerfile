@@ -55,7 +55,7 @@ RUN dpkg --add-architecture i386 && \
 
 RUN python3 -m pip install --upgrade pip setuptools wheel
 
-# In libtcg/CMakeLists.txt, pkg-config (pkg_check_modules) fails the find the
+# In libtcg/CMakeLists.txt, pkg-config (pkg_check_modules) fails to find the
 # correct include directories. This is a workaround.
 RUN mkdir -p /usr/lib/glib-2.0/include && \
     ln -s /usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h \
