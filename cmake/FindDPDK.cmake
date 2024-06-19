@@ -29,7 +29,6 @@ This will define the following variables:
 find_package(PkgConfig REQUIRED)
 
 list(APPEND PKG_CONFIG_ARGN "--static")
-list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/s2e/install")
 pkg_check_modules(DPDK REQUIRED IMPORTED_TARGET libdpdk)
 
 if(DPDK_FOUND AND NOT TARGET dpdk)

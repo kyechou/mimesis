@@ -53,7 +53,25 @@ RUN dpkg --add-architecture i386 && \
     apt-get clean && \
     apt-file update
 
+RUN apt-get autoremove --purge && \
+    apt-get clean && \
+    apt-file update
+
 RUN python3 -m pip install --upgrade pip setuptools wheel
+
+ARG DPDK_VER=v24.03
+
+# Install DPDK
+# --warnlevel: 0, 1, 2, 3, everything
+# --optimization: 0, g, 1, 2, 3, s
+RUN git clone https://github.com/DPDK/dpdk.git && \
+    cd dpdk && \
+    git checkout ${DPDK_VER} && \
+    meson setup --prefix=/usr --libdir=lib --default-library=static \
+    --warnlevel=0 --optimization=g -Dplatform=generic -Dexamples=all \
+    --buildtype=debugoptimized build/ && \
+    ninja -C build/ -j 8 && \
+    meson install -C build/ --quiet
 
 # In libtcg/CMakeLists.txt, pkg-config (pkg_check_modules) fails to find the
 # correct include directories. This is a workaround.

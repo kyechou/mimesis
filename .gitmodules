@@ -10,6 +10,3 @@
 [submodule "s2e-env"]
 	path = src/s2e-env
 	url = https://github.com/S2E/s2e-env.git
-[submodule "dpdk"]
-	path = third_party/dpdk
-	url = https://github.com/DPDK/dpdk.git

@@ -23,7 +23,6 @@ usage() {
     -h, --help          Print this message and exit
     -r, --reconfigure   Reconfigure the build
     -j, --parallel N    Number of parallel build tasks
-    --dpdk              Build DPDK (default: off)
     --mimesis           Build Mimesis (targets, sender, libps) (default: off)
     --stap              Build the systemtap scripts (default: off)
     --s2e-env           Build s2e-env (default: off)
@@ -38,7 +37,6 @@ EOF
 parse_args() {
     RECONF=0
     NUM_TASKS=$(nproc)
-    DPDK=0
     MIMESIS=0
     STAP=0
     S2E_ENV=0
@@ -60,9 +58,6 @@ parse_args() {
             ;;
         -r | --reconfigure)
             RECONF=1
-            ;;
-        --dpdk)
-            DPDK=1
             ;;
         --mimesis)
             MIMESIS=1
@@ -93,28 +88,6 @@ parse_args() {
         esac
         shift
     done
-}
-
-build_dpdk() {
-    local image='s2e:latest'
-    local build_cmd
-    build_cmd="$(
-        cat <<-EOM
-        set -eo pipefail
-        export CONAN_HOME='$HOME/.conan2'
-        '$PROJECT_DIR/scripts/configure.sh' --dpdk
-        source '$SCRIPT_DIR/bootstrap.sh'
-        activate_conan_env
-        ninja -C '$DPDK_BUILD_DIR' -j $NUM_TASKS
-        meson install -C '$DPDK_BUILD_DIR' --quiet # --destdir '$S2E_DIR/install'
-EOM
-    )"
-    mkdir -p "$HOME/.conan2"
-    docker run -it --rm -u builder \
-        -v "$PROJECT_DIR:$PROJECT_DIR" \
-        -v "$HOME/.conan2:$HOME/.conan2" \
-        "$image" \
-        -c "$build_cmd"
 }
 
 build_mimesis_programs() {
@@ -156,7 +129,7 @@ build_systemtap_programs() {
         mkdir -p $PROJECT_DIR/build/src
         cd $PROJECT_DIR/build/src
         for stp_file in $PROJECT_DIR/src/*.stp; do
-            stap -r 4.9.3-s2e -g -p4 -m \$(basename -s .stp \$stp_file) \$stp_file &
+            stap -r 6.8.2-s2e -g -p4 -m \$(basename -s .stp \$stp_file) \$stp_file &
         done
         wait
         chown -R $(id -u):$(id -g) $PROJECT_DIR/build/src
@@ -219,11 +192,11 @@ EOM
     )
     local s2e_repo_commits=(
         a523ec2ec1ca1e1369b33db755bed135af57e09c # decree
-        2eba2ba2a3fe1d5dab21984195f104b3af52763e # guest-images
+        94831c833b80ff2050df12d69a3f1aca3b72b491 # guest-images
         6a865ba1b1c9f5e32cd2cd9dc12ed5972addd567 # qemu
         f9815b1c4ad3ac9d9f50b120272a8d5e2d10a55c # s2e-env
-        81dcf04137d1ff68989d7823dc0689751affe3cd # s2e-linux-kernel
-        c0bb3ac35c4b3a47158d03138b5c476571208958 # scripts
+        ec84db78b9ccb658c00f5a3b3c75647ada95f061 # s2e-linux-kernel
+        2e61f0e026f156a3df5fd46b625d150ce30c0b85 # scripts
     )
 
     # Check out the specified revisions.
@@ -362,14 +335,9 @@ main() {
     SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     BUILD_DIR="$PROJECT_DIR/build"
-    DPDK_BUILD_DIR="${PROJECT_DIR}/build.dpdk"
     S2E_ENV_DIR="$PROJECT_DIR/src/s2e-env"
     S2E_ENV_VENV_DIR="$PROJECT_DIR/.s2e.venv"
     S2E_DIR="$PROJECT_DIR/s2e"
-
-    if [[ $DPDK -eq 1 ]]; then
-        build_dpdk
-    fi
 
     if [[ $MIMESIS -eq 1 ]]; then
         build_mimesis_programs
