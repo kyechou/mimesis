@@ -217,11 +217,6 @@ probe kernel.function("xmit_one") {
     info(msg);
 }
 
-probe kernel.function("packet_direct_xmit") {
-    msg = sprintf("packet_direct_xmit");
-    info(msg);
-}
-
 probe kernel.function("netdev_start_xmit") {
     msg = sprintf("netdev_start_xmit");
     info(msg);
