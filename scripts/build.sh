@@ -221,10 +221,6 @@ EOM
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
     out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
-        -i "$PATCH_DIR/03-s2e-guest-images-iso-url.patch")" ||
-        echo "$out" | grep -q 'Skipping patch' ||
-        die "$out"
-    out="$(patch -d "$S2E_DIR/source/guest-images" -Np1 \
         -i "$PATCH_DIR/04-s2e-guest-images-additional-pkgs.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"

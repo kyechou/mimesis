@@ -70,7 +70,7 @@ RUN git clone https://github.com/DPDK/dpdk.git && \
     meson setup --prefix=/usr --libdir=lib --default-library=static \
     --warnlevel=0 --optimization=g -Dplatform=generic -Dexamples=all \
     --buildtype=debugoptimized build/ && \
-    ninja -C build/ -j 8 && \
+    ninja -C build/ -j $(nproc) && \
     meson install -C build/ --quiet
 
 # In libtcg/CMakeLists.txt, pkg-config (pkg_check_modules) fails to find the
