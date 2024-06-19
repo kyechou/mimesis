@@ -93,25 +93,41 @@ private function info(message:string) {
     s2e_message(msg);
 }
 
+/**
+ * TODO: Is this probe executed before the functionn is called, at the
+ * beginning of the function, at the end of the function, or after the
+ * function is called?
+ *
+ * TODO: Find a way to manipulate the sk_buff after the frame has been
+ * received.
+ */
+
+global count = 0;
+
 #
 # Ingress probes.
 #
 
-probe process("user-demo-r1").function("user_recv") {
-    info("Hello, world!!\n");
-}
+# void user_recv(uint32_t *interface, void *buffer, uint32_t len);
 
-probe process("user-demo-r1").function("user_recv").return {
-    info("(returning from user_recv) Hello, world!!\n")
+probe process("user-demo-r1").function("user_recv") {
+    info("Hello, world!!");
+    # msg = sprintf("intf=%x buffer=%x len=%d", $intf, $buffer, $len);
+    # info(msg);
+    count++;
 }
 
 #
 # Egress probes.
 #
 
-probe process("user-demo-r1").function("user_send").call {
-    info("Hello, world!!\n")
-    s2e_kill_state(0, "from user_recv");
+probe process("user-demo-r1").function("user_send") {
+    info("Hello, world!!");
+    count++;
+
+    if (count > 2) {
+        s2e_kill_state(0, "from user_send");
+    }
 }
 
 # vim: ts=4 sw=4 et cms=#%s :
