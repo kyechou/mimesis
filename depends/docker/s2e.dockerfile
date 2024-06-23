@@ -12,8 +12,9 @@ RUN dpkg --add-architecture i386 && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     # Mimesis build dependencies
-    apt-file build-essential curl git clang cmake ninja-build pkg-config sudo \
-    libboost-all-dev tcpdump \
+    apt-file build-essential curl git clang cmake ninja-build python3-jinja2 \
+    pkg-config sudo libboost-all-dev tcpdump zip unzip tar autoconf automake \
+    autoconf-archive libnl-3-dev libnl-genl-3-dev \
     # build dependencies
     ca-certificates sudo apt-file build-essential curl wget flex bison \
     lsb-release autoconf automake libtool gcc g++ cmake git mingw-w64 \
@@ -44,11 +45,6 @@ RUN dpkg --add-architecture i386 && \
     $(apt-cache depends qemu-system-x86 | grep Depends | sed "s/.*ends:\ //" \
     | grep -v '<' | tr '\n' ' ') \
     libcap-dev libattr1-dev \
-    # DPDK dependencies
-    build-essential python3 meson ninja-build python3-pyelftools libnuma-dev \
-    libarchive-dev libelf-dev libbpf-dev libpcap-dev libmnl-dev libbsd-dev \
-    libjansson-dev libssl-dev zlib1g-dev nettle-dev libacl1-dev liblzma-dev \
-    liblz4-dev libbz2-dev \
     && \
     apt-get clean && \
     apt-file update
@@ -58,20 +54,6 @@ RUN apt-get autoremove --purge && \
     apt-file update
 
 RUN python3 -m pip install --upgrade pip setuptools wheel
-
-ARG DPDK_VER=v24.03
-
-# Install DPDK
-# --warnlevel: 0, 1, 2, 3, everything
-# --optimization: 0, g, 1, 2, 3, s
-RUN git clone https://github.com/DPDK/dpdk.git && \
-    cd dpdk && \
-    git checkout ${DPDK_VER} && \
-    meson setup --prefix=/usr --libdir=lib --default-library=static \
-    --warnlevel=0 --optimization=g -Dplatform=generic -Dexamples=all \
-    --buildtype=debugoptimized build/ && \
-    ninja -C build/ -j $(nproc) && \
-    meson install -C build/ --quiet
 
 # In libtcg/CMakeLists.txt, pkg-config (pkg_check_modules) fails to find the
 # correct include directories. This is a workaround.

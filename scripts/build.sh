@@ -96,20 +96,15 @@ build_mimesis_programs() {
     build_cmd="$(
         cat <<-EOM
         set -eo pipefail
-        export CONAN_HOME='$HOME/.conan2'
         if [[ $RECONF -eq 1 ]] || [[ ! -e '$BUILD_DIR/build.ninja' ]]; then
             '$PROJECT_DIR/scripts/configure.sh'
         fi
-        source '$SCRIPT_DIR/bootstrap.sh'
-        activate_conan_env
         cmake --build '$BUILD_DIR' -j $NUM_TASKS
         cmake --install '$BUILD_DIR' --prefix '$S2E_DIR/install'
 EOM
     )"
-    mkdir -p "$HOME/.conan2"
     docker run -it --rm -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
-        -v "$HOME/.conan2:$HOME/.conan2" \
         "$image" \
         -c "$build_cmd"
 }

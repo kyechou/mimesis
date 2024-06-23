@@ -8,7 +8,7 @@ ExternalProject_Add(sylvan
         -S ${CMAKE_CURRENT_SOURCE_DIR}/sylvan
         -DCMAKE_C_COMPILER=clang
         -DCMAKE_CXX_COMPILER=clang++
-        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
         -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/install
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
         -DCMAKE_C_FLAGS=-fPIC

@@ -1,0 +1,22 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+    "name": "mimesis",
+    "version": "0.0.1",
+    "homepage": "https://github.com/kyechou/mimesis",
+    "$disabled_dependencies": [
+        "dpdk"
+    ],
+    "dependencies": [
+        "pcapplusplus",
+        "gtest",
+        "zlib"
+    ],
+    "features": {
+        "tests": {
+            "description": "Unit tests",
+            "dependencies": [
+                "gtest"
+            ]
+        }
+    }
+}

@@ -10,3 +10,6 @@
 [submodule "s2e-env"]
 	path = src/s2e-env
 	url = https://github.com/S2E/s2e-env.git
+[submodule "vcpkg"]
+	path = depends/vcpkg
+	url = https://github.com/microsoft/vcpkg.git

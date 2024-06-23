@@ -33,7 +33,6 @@ parse_args() {
     DEBUG=0
     CLEAN=0
     COMPILER=clang
-    BOOTSTRAP_FLAGS=()
 
     while :; do
         case "${1-}" in
@@ -43,7 +42,6 @@ parse_args() {
             ;;
         -d | --debug)
             DEBUG=1
-            BOOTSTRAP_FLAGS+=("-d")
             ;;
         --clean)
             CLEAN=1
@@ -59,13 +57,18 @@ parse_args() {
         esac
         shift
     done
-
-    BOOTSTRAP_FLAGS+=("--compiler" "$COMPILER")
 }
 
 reset_files() {
+    local in_tree_submods=(
+        "$PROJECT_DIR/third_party/inotify-cpp/inotify-cpp"
+        "$PROJECT_DIR/third_party/sylvan/sylvan"
+    )
+
     git -C "$PROJECT_DIR" submodule update --init --recursive
-    git -C "$PROJECT_DIR" submodule foreach --recursive git clean -xdf
+    for submod in "${in_tree_submods[@]}"; do
+        git -C "$submod" clean -xdf
+    done
     rm -rf "$BUILD_DIR"
 
     if [[ $CLEAN -ne 0 ]]; then
@@ -74,11 +77,9 @@ reset_files() {
 }
 
 prepare_flags() {
-    local toolchain_file
-    toolchain_file="$(get_generators_dir)/conan_toolchain.cmake"
     CMAKE_ARGS=(
-        "-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
         "-DCMAKE_GENERATOR=Ninja"
+        "-DCMAKE_MAKE_PROGRAM=ninja"
     )
 
     if [[ $DEBUG -ne 0 ]]; then
@@ -94,20 +95,9 @@ prepare_flags() {
 }
 
 main() {
-    # Parse script arguments
     parse_args "$@"
-    # Reset intermediate files if needed
     reset_files
-    # Bootstrap the python and conan environment
-    set +u
-    source "$SCRIPT_DIR/bootstrap.sh"
-    bootstrap "${BOOTSTRAP_FLAGS[@]}"
-    # Activate the conan environment
-    activate_conan_env
-    # Prepare build parameters
     prepare_flags
-
-    # Configure
     cmake -B "$BUILD_DIR" -S "$PROJECT_DIR" "${CMAKE_ARGS[@]}"
 }
 
