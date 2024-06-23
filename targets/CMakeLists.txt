@@ -1,18 +1,7 @@
 #
-# Unset compile flags for target programs.
-#
-unset(CMAKE_C_FLAGS_RELEASE)
-unset(CMAKE_CXX_FLAGS_RELEASE)
-unset(CMAKE_C_FLAGS_RELWITHDEBINFO)
-unset(CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-unset(CMAKE_C_FLAGS_DEBUG)
-unset(CMAKE_CXX_FLAGS_DEBUG)
-unset(CMAKE_EXE_LINKER_FLAGS_DEBUG)
-
-#
 # Add debugging compile options for analysis.
 #
-add_compile_options(-g -O0)
+add_compile_options(-g3)
 
 #
 # Configure the include directories.

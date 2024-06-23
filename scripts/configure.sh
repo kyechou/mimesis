@@ -83,8 +83,6 @@ prepare_flags() {
 
     if [[ $DEBUG -ne 0 ]]; then
         CMAKE_ARGS+=('-DCMAKE_BUILD_TYPE=Debug')
-    else
-        CMAKE_ARGS+=('-DCMAKE_BUILD_TYPE=Release')
     fi
     if [[ "$COMPILER" = 'clang' ]]; then
         CMAKE_ARGS+=('-DCMAKE_C_COMPILER=clang' '-DCMAKE_CXX_COMPILER=clang++')

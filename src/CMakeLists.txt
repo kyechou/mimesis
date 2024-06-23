@@ -11,6 +11,7 @@ target_link_libraries(_net PUBLIC PcapPlusPlus::PcapPlusPlus)
 
 add_library(_usernet OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/lib/usernet.cpp)
 target_include_directories(_usernet PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_options(_usernet PUBLIC -g3)
 
 #
 # sender
