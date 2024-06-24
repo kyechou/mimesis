@@ -285,10 +285,10 @@ run_s2e() {
 
         ./launch-s2e.sh ${qemu_flags[@]}
 
-        # Dump all pcap files into text form
-        for pcap in *.pcap; do
-            tcpdump -e -xx -r \$pcap &>$S2E_PROJ_DIR/\$pcap.log
-        done
+        # # Dump all pcap files into text form
+        # for pcap in *.pcap; do
+        #     tcpdump -e -xx -r \$pcap &>$S2E_PROJ_DIR/\$pcap.log
+        # done
 
         for i in {1..$interfaces}; do
             sudo ip link set dev tap\$i down
