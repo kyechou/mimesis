@@ -38,7 +38,7 @@ int main() {
 
         if (intf >= max_intfs) {
             error("Invalid ingress interface: " + std::to_string(intf));
-            break; // NOTE: What if this is `continue`?
+            continue;
         }
 
         uint16_t egress = ntohs(ingress_pkt.demo.seed);
