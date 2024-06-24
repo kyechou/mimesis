@@ -1,7 +1,7 @@
 If:
   PathMatch: src/s2e/.*
 CompileFlags:
-  CompilationDatabase: s2e/s2e/build/libs2e-release/x86_64-s2e-softmmu/libs2eplugins/
+  CompilationDatabase: s2e/build/libs2e-release/x86_64-s2e-softmmu/libs2eplugins/
 ---
 If:
   PathMatch: targets/.*
