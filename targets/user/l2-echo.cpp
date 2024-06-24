@@ -1,14 +1,14 @@
 /**
- * Demo Router 1: Stateless forwarding
+ * Stateless L2 Echo
  *
- * The egress port of an incoming packet is directly determined by the `seed`
- * header field of the packet.
+ * Echo back the incoming packet and reverse the L2 addresses.
  */
 
 #include <cstdint>
 #include <cstring>
 #include <linux/if_ether.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <string>
 
 #include "lib/logger.hpp"
@@ -16,33 +16,29 @@
 
 using namespace std;
 
-struct DemoHeader {
-    uint16_t seed; // egress port
-    uint16_t len;  // payload length
-};
-
 struct Packet {
     struct ethhdr eth;
-    DemoHeader demo; // simplified demo L3 protocol
-    char payload[64];
+    struct iphdr ip;
 };
 
 int main() {
     uint32_t max_intfs = num_interfaces();
     uint32_t intf = 0;
-    Packet ingress_pkt;
+    Packet ingress_pkt, egress_pkt;
     memset(&ingress_pkt, 0, sizeof(ingress_pkt));
+    info("Total interfaces: " + std::to_string(max_intfs));
 
     while (1) {
         user_recv(&intf, &ingress_pkt, sizeof(ingress_pkt));
 
         if (intf >= max_intfs) {
-            error("Invalid ingress interface: " + std::to_string(intf));
             continue;
         }
 
-        uint16_t egress = ntohs(ingress_pkt.demo.seed);
-        user_send(egress, &ingress_pkt, sizeof(ingress_pkt));
+        memcpy(&egress_pkt, &ingress_pkt, sizeof(ingress_pkt));
+        memcpy(egress_pkt.eth.h_dest, ingress_pkt.eth.h_source, ETH_ALEN);
+        memcpy(egress_pkt.eth.h_source, ingress_pkt.eth.h_dest, ETH_ALEN);
+        user_send(intf, &egress_pkt, sizeof(egress_pkt));
     }
 
     info("Bye");
