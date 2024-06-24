@@ -6,8 +6,10 @@
 
 #include "lib/logger.hpp"
 
-void user_recv(uint32_t *intf, void *buffer, uint32_t len) {
-    memset(buffer, 0, len);
+void user_recv(uint32_t *intf, void *buffer, uint32_t *len, uint32_t max_len) {
+    memset(buffer, 0, max_len);
+    *len = max_len;
+    *intf = 0;
     info("NF receiving a packet from " + std::to_string(*intf));
 }
 
