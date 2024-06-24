@@ -29,12 +29,12 @@ struct Packet {
 
 int main() {
     uint32_t max_intfs = num_interfaces();
-    uint32_t intf = 0, len = 0;
+    uint32_t intf = 0;
     Packet ingress_pkt;
     memset(&ingress_pkt, 0, sizeof(ingress_pkt));
 
     while (1) {
-        user_recv(&intf, &ingress_pkt, &len, sizeof(ingress_pkt));
+        user_recv(&intf, &ingress_pkt, sizeof(ingress_pkt));
 
         if (intf >= max_intfs) {
             error("Invalid ingress interface: " + std::to_string(intf));
@@ -42,7 +42,7 @@ int main() {
         }
 
         uint16_t egress = ntohs(ingress_pkt.demo.seed);
-        user_send(egress, &ingress_pkt, len);
+        user_send(egress, &ingress_pkt, sizeof(ingress_pkt));
     }
 
     info("Bye");

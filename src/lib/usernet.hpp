@@ -11,7 +11,7 @@ extern "C" {
 /**
  * Receives a packet frame by the NF from the interface.
  */
-void user_recv(uint32_t *intf, void *buffer, uint32_t *len, uint32_t max_len);
+void user_recv(uint32_t *intf, void *buffer, uint32_t len);
 
 /**
  * Sends a packet frame by the NF to the interface.
