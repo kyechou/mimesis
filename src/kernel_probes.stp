@@ -31,17 +31,6 @@ private function s2e_message(message:string) %{ /* unprivileged */
             : : "a" (STAP_ARG_message));
 %}
 
-# /**
-#  * Print a warning message to the S2E log and S2E stdout.
-#  */
-# private function s2e_warning(message:string) %{
-#     __asm__ __volatile__(
-#             ".byte 0x0f, 0x3f\n"
-#             ".byte 0x00, 0x10, 0x01, 0x00\n"
-#             ".byte 0x00, 0x00, 0x00, 0x00\n"
-#             : : "a" (STAP_ARG_message));
-# %}
-
 /**
  * Fill a buffer with unconstrained symbolic values.
  */
@@ -52,35 +41,19 @@ private function s2e_make_symbolic(buf:long, size:long, name:string) %{
             ".byte 0x0f, 0x3f\n"
             ".byte 0x00, 0x03, 0x00, 0x00\n"
             ".byte 0x00, 0x00, 0x00, 0x00\n"
-            : : "a" (_buf), "b" (_size), "c" (STAP_ARG_name));
+            : : "a" (_buf), "d" (_size), "c" (STAP_ARG_name) : "memory");
 %}
 
-# /**
-#  * Returns 1 if the given pointer points to symbolic memory, or 0 otherwise.
-#  */
-# %{
-# static inline int s2e_is_symbolic(void *ptr, size_t size) {
-#     int result;
-#     __asm__ __volatile__(
-#             ".byte 0x0f, 0x3f\n"
-#             ".byte 0x00, 0x04, 0x00, 0x00\n"
-#             ".byte 0x00, 0x00, 0x00, 0x00\n"
-#             : "=a" (result) : "a" (size), "c" (ptr)
-#     );
-#     return result;
-# }
-# %}
-
-# /**
-#  * Terminate the current state.
-#  */
-# private function s2e_kill_state(status:long, message:string) %{
-#     __asm__ __volatile__(
-#             ".byte 0x0f, 0x3f\n"
-#             ".byte 0x00, 0x06, 0x00, 0x00\n"
-#             ".byte 0x00, 0x00, 0x00, 0x00\n"
-#             : : "a" ((uint32_t)STAP_ARG_status), "d" (STAP_ARG_message));
-# %}
+/**
+ * Terminate the current state.
+ */
+private function s2e_kill_state(status:long, message:string) %{
+    __asm__ __volatile__(
+            ".byte 0x0f, 0x3f\n"
+            ".byte 0x00, 0x06, 0x00, 0x00\n"
+            ".byte 0x00, 0x00, 0x00, 0x00\n"
+            : : "a" ((uint32_t)STAP_ARG_status), "d" (STAP_ARG_message));
+%}
 
 
 #
@@ -121,15 +94,6 @@ private function check_eth_addr:long(eth_addr:long) %{ /* pure */
     uint8_t id_mac[6] = { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
     STAP_RETURN(memcmp((uint8_t *)STAP_ARG_eth_addr, id_mac, 6) == 0);
 %}
-
-# # Take a pointer to the IP header, and make the options length field symbolic.
-# private function s2e_inject_symbolic_ip_optionlength(ipheader:long) %{
-#     uint8_t *data = (uint8_t*)((uintptr_t)(THIS->l_ipheader + 0));
-#     uint8_t len;
-#     s2e_make_symbolic(&len, 1, "ip_headerlength");
-#     *data = *data & 0xF0;
-#     *data = *data | ((len) & 0xF);
-# %}
 
 
 #

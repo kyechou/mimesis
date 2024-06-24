@@ -29,55 +29,36 @@ private function s2e_message(message:string) %{ /* unprivileged */
             : : "a" (STAP_ARG_message));
 %}
 
-# /**
-#  * Print a warning message to the S2E log and S2E stdout.
-#  */
-# private function s2e_warning(message:string) %{
-#     __asm__ __volatile__(
-#             ".byte 0x0f, 0x3f\n"
-#             ".byte 0x00, 0x10, 0x01, 0x00\n"
-#             ".byte 0x00, 0x00, 0x00, 0x00\n"
-#             : : "a" (STAP_ARG_message));
-# %}
-
 /**
- * Fill a buffer with unconstrained symbolic values.
+ * Set `intf` and `buffer` to be symbolic.
+ *
+ * References:
+ *   src/s2e/guest/common/include/s2e/s2e.h
+ *   src/s2e/guest/common/include/s2e/opcodes.h
  */
-private function s2e_make_symbolic(buf:long, size:long, name:string) %{
-    void *_buf = (void *)STAP_ARG_buf;
-    int _size = STAP_ARG_size;
+private function s2e_mimesis_user_recv(intf:long, buffer:long, len:long) %{
     __asm__ __volatile__(
-            ".byte 0x0f, 0x3f\n"
-            ".byte 0x00, 0x03, 0x00, 0x00\n"
-            ".byte 0x00, 0x00, 0x00, 0x00\n"
-            : : "a" (_buf), "b" (_size), "c" (STAP_ARG_name));
+        ".byte 0x0F, 0x3F\n"
+        ".byte 0x00, 0x99, 0x00, 0x00\n"
+        ".byte 0x00, 0x00, 0x00, 0x00\n"
+        : : "a" (STAP_ARG_intf), "c" (STAP_ARG_buffer), "d" (STAP_ARG_len) : "memory"
+    );
 %}
 
-# /**
-#  * Returns 1 if the given pointer points to symbolic memory, or 0 otherwise.
-#  */
-# %{
-# static inline int s2e_is_symbolic(void *ptr, size_t size) {
-#     int result;
-#     __asm__ __volatile__(
-#             ".byte 0x0f, 0x3f\n"
-#             ".byte 0x00, 0x04, 0x00, 0x00\n"
-#             ".byte 0x00, 0x00, 0x00, 0x00\n"
-#             : "=a" (result) : "a" (size), "c" (ptr)
-#     );
-#     return result;
-# }
-# %}
-
 /**
- * Terminate the current state.
+ * Record the egress packet traces and terminate the execution path.
+ *
+ * References:
+ *   src/s2e/guest/common/include/s2e/s2e.h
+ *   src/s2e/guest/common/include/s2e/opcodes.h
  */
-private function s2e_kill_state(status:long, message:string) %{
+private function s2e_mimesis_user_send(intf:long, buffer:long, len:long) %{
     __asm__ __volatile__(
-            ".byte 0x0f, 0x3f\n"
-            ".byte 0x00, 0x06, 0x00, 0x00\n"
-            ".byte 0x00, 0x00, 0x00, 0x00\n"
-            : : "a" ((uint32_t)STAP_ARG_status), "d" (STAP_ARG_message));
+        ".byte 0x0F, 0x3F\n"
+        ".byte 0x00, 0x99, 0x01, 0x00\n"
+        ".byte 0x00, 0x00, 0x00, 0x00\n"
+        : : "a" (STAP_ARG_intf), "c" (STAP_ARG_buffer), "d" (STAP_ARG_len) : "memory"
+    );
 %}
 
 #
@@ -93,41 +74,26 @@ private function info(message:string) {
     s2e_message(msg);
 }
 
-/**
- * TODO: Is this probe executed before the functionn is called, at the
- * beginning of the function, at the end of the function, or after the
- * function is called?
- *
- * TODO: Find a way to manipulate the sk_buff after the frame has been
- * received.
- */
-
-global count = 0;
-
 #
 # Ingress probes.
 #
 
-# void user_recv(uint32_t *interface, void *buffer, uint32_t len);
-
-probe process("user-demo-r1").function("user_recv") {
-    info("Hello, world!!");
-    # msg = sprintf("intf=%x buffer=%x len=%d", $intf, $buffer, $len);
-    # info(msg);
-    count++;
+/**
+ * void user_recv(uint32_t *intf, void *buffer, uint32_t len);
+ */
+probe process("user-demo-r1").function("user_recv").return {
+    s2e_mimesis_user_recv(@entry($intf), @entry($buffer), @entry($len));
 }
 
 #
 # Egress probes.
 #
 
+/**
+ * void user_send(uint32_t intf, void *buffer, uint32_t len);
+ */
 probe process("user-demo-r1").function("user_send") {
-    info("Hello, world!!");
-    count++;
-
-    if (count > 2) {
-        s2e_kill_state(0, "from user_send");
-    }
+    s2e_mimesis_user_send($intf, $buffer, $len);
 }
 
 # vim: ts=4 sw=4 et cms=#%s :
