@@ -165,7 +165,7 @@ EOM
     # klee_args+='        "--log-partial-queries-early",\n'
     klee_args+='        "--print-concretized-expression",\n'
     # klee_args+='        "--print-expr-simplifier",\n'
-    klee_args+='        "--print-mode-switch",\n'
+    # klee_args+='        "--print-mode-switch",\n'
     klee_args+='        "--s2e-debug-edge-detector",\n'
     klee_args+='        "--simplify-sym-indices",\n'
     klee_args+='        "--smtlib-abbreviation-mode=let",\n' # none, let, named
@@ -278,9 +278,10 @@ run_s2e() {
             sudo ip link set dev tap\$i up
         done
 
-        sudo setcap '$capabilities' \$(realpath sender)
-        ./sender &>$S2E_PROJ_DIR/sender.log &
-        sleep 0.5 # Wait for the sender to create the command file
+        # Temporarily disable sender for userspace NFs.
+        # sudo setcap '$capabilities' \$(realpath sender)
+        # ./sender &>$S2E_PROJ_DIR/sender.log &
+        # sleep 0.5 # Wait for the sender to create the command file
 
         ./launch-s2e.sh ${qemu_flags[@]}
 
