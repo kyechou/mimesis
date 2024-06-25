@@ -9,12 +9,11 @@
 void user_recv(uint32_t *intf, void *buffer, uint32_t len) {
     memset(buffer, 0, len);
     *intf = 0;
-    info("NF receiving a packet from " + std::to_string(*intf));
 }
 
 void user_send(uint32_t intf, void *buffer, uint32_t len) {
     memset(buffer, 0, len);
-    info("NF sending a packet to " + std::to_string(intf));
+    volatile uint32_t dummy [[maybe_unused]] = intf;
 }
 
 size_t num_interfaces(bool tap_only) {
