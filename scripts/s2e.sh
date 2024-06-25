@@ -184,7 +184,8 @@ EOM
     klee_args+='        "--use-visitor-hash",\n'
     klee_args+='        "--validate-expr-simplifier",\n'
     # klee_args+='        "--verbose-fork-info",\n'
-    klee_args+='        "--verbose-state-switching",\n'
+    # klee_args+='        "--verbose-state-deletion",\n'
+    # klee_args+='        "--verbose-state-switching",\n'
     # klee_args+='        "--z3-debug-solver-stack",\n'
     # klee_args+='        "--z3-array-cons-mode=ite",\n' # ite, stores, asserts
     # klee_args+='        "--z3-use-hash-consing",\n'
