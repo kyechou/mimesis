@@ -16,14 +16,12 @@
 using namespace std;
 
 struct DemoHeader {
-    uint16_t port; // egress port
-    uint16_t len;  // payload length
+    uint8_t version;
+    uint8_t port; // egress port
 };
 
 struct Packet {
-    struct ethhdr eth;
-    struct DemoHeader demo; // simplified demo L3 protocol
-    char payload[64];
+    struct DemoHeader demo; // simplified demo protocol
 };
 
 int main() {
@@ -38,6 +36,10 @@ int main() {
 
         if (intf >= max_intfs) {
             continue; // drop the incoming packet
+        }
+
+        if (ingress_pkt.demo.version != 3) {
+            continue;
         }
 
         uint16_t egress = ingress_pkt.demo.port; // all output in network order
