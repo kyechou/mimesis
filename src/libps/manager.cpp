@@ -50,8 +50,10 @@ void Manager::reset() {
     lace_stop();
 }
 
-void Manager::register_symbolic_variable(const std::string &var_name,
-                                         uint32_t nbits) {
+void Manager::register_symbolic_variable(
+    const std::string &var_name,
+    uint32_t nbits,
+    const std::optional<std::string> &klee_var_name) {
     if (!_initialized) {
         warn("libps is not initialized");
         return;
@@ -61,21 +63,30 @@ void Manager::register_symbolic_variable(const std::string &var_name,
         var_name, {_starting_bddnode_index, nbits}
     });
 
-    if (!res.second) {
-        error("Attempting to register symbolic variable '" + var_name +
-              "' more than once");
+    if (res.second) {
+        _starting_bddnode_index += nbits;
     }
 
-    _starting_bddnode_index += nbits;
+    if (klee_var_name) {
+        _klee_var_name_to_orig_name[*klee_var_name] = var_name;
+    }
 }
 
 std::pair<uint32_t, uint32_t>
 Manager::get_variable_offset(const std::string &var_name) const {
-    auto it = _variables.find(var_name);
-    if (it == _variables.end()) {
-        error("Variable '" + var_name + "' not found");
+    std::string real_var_name = var_name;
+
+    if (auto it = _klee_var_name_to_orig_name.find(var_name);
+        it != _klee_var_name_to_orig_name.end()) {
+        real_var_name = it->second;
     }
-    return it->second;
+
+    if (auto it = _variables.find(real_var_name); it != _variables.end()) {
+        return it->second;
+    }
+
+    error("Variable '" + real_var_name + "' not found");
+    return {};
 }
 
 sylvan::BddSet Manager::get_all_variables() const {

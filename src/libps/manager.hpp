@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <optional>
 #include <string>
 #include <sylvan_obj.hpp>
 #include <unordered_map>
@@ -15,6 +16,7 @@ private:
     bool _initialized = false;
     uint32_t _starting_bddnode_index = 0;
     std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> _variables;
+    std::unordered_map<std::string, std::string> _klee_var_name_to_orig_name;
 
     Manager() = default;
 
@@ -49,8 +51,10 @@ public:
      * All symbolic variables must be registered before being used to create
      * BDDs.
      */
-    void register_symbolic_variable(const std::string &var_name,
-                                    uint32_t nbits);
+    void register_symbolic_variable(
+        const std::string &var_name,
+        uint32_t nbits,
+        const std::optional<std::string> &klee_var_name = std::nullopt);
     /**
      * Returns the bit offset information (starting bit, number of bits) of the
      * symbolic variable `var_name`.
