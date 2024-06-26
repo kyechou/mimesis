@@ -15,6 +15,10 @@ namespace ps {
 
 BitVector KleeInterpreter::translate(const klee::ref<klee::Expr> &e,
                                      const sylvan::Bdd &constraint) {
+    if (!e) {
+        return {};
+    }
+
     switch (e->getKind()) {
     case klee::Expr::Constant:
         return translate_constant_expr(e);
