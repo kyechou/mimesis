@@ -48,10 +48,6 @@ main() {
 
     # Parse script arguments
     parse_args "$@"
-    # Activate the conan environment
-    set +u
-    source "$SCRIPT_DIR/bootstrap.sh"
-    activate_conan_env
 
     # Prepare test parameters
     local ctest_flags=(
