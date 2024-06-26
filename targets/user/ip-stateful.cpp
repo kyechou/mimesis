@@ -1,11 +1,15 @@
 /**
- * Stateless IP forwarding
+ * Stateful IP forwarding
  *
- * Forward packets based on destination IP addresses.
- *  - dstIP 10.1.2.0/24 -> intf 0 (src_mac 00:00:00:00:00:00)
- *  - dstIP 10.1.0.0/16 -> intf 1 (src_mac 00:00:00:00:00:01)
- *  - dstIP 10.2.0.0/16 -> intf 2 (src_mac 00:00:00:00:00:02)
- *  - dstIP 10.0.0.0/8  -> intf 3 (src_mac 00:00:00:00:00:03)
+ * Initial rules
+ *  - srcIP 10.0.0.0/8, dstIP *  -> drop
+ *  - srcIP *, dstIP 10.0.0.0/8  -> intf 0 (src_mac 00:00:00:00:00:00)
+ *  - srcIP *, dstIP 11.0.0.0/8  -> intf 1 (src_mac 00:00:00:00:00:01)
+ *  - (otherwise) -> drop
+ *
+ * Once a packet is forwarded to intf 0, the rules is updated as
+ *  - srcIP *, dstIP 10.0.0.0/8  -> intf 0 (src_mac 00:00:00:00:00:00)
+ *  - srcIP *, dstIP 11.0.0.0/8  -> intf 1 (src_mac 00:00:00:00:00:01)
  *  - (otherwise) -> drop
  */
 
@@ -29,32 +33,18 @@ struct Packet {
 int dst_ip_matching(uint32_t dst_addr) {
     // TODO: Do we need a htonl conversion for the IP address?
 
-    // 10.1.2.0/24 -> intf 0
-    uint32_t lb = (10ul << 24) + (1ul << 16) + (2ul << 8);
-    uint32_t mask = 24;
+    // 10.0.0.0/8 -> intf 0
+    uint32_t lb = (10ul << 24);
+    uint32_t mask = 8;
     if (dst_addr >= lb && dst_addr < lb + (1ul << (32 - mask))) {
         return 0;
     }
 
-    // 10.1.0.0/16 -> intf 1
-    lb = (10ul << 24) + (1ul << 16);
-    mask = 16;
-    if (dst_addr >= lb && dst_addr < lb + (1ul << (32 - mask))) {
-        return 1;
-    }
-
-    // 10.2.0.0/16 -> intf 2
-    lb = (10ul << 24) + (2ul << 16);
-    mask = 16;
-    if (dst_addr >= lb && dst_addr < lb + (1ul << (32 - mask))) {
-        return 2;
-    }
-
-    // 10.0.0.0/8  -> intf 3
-    lb = (10ul << 24);
+    // 11.0.0.0/8 -> intf 1
+    lb = (11ul << 24);
     mask = 8;
     if (dst_addr >= lb && dst_addr < lb + (1ul << (32 - mask))) {
-        return 3;
+        return 1;
     }
 
     return -1;
@@ -70,6 +60,9 @@ int main() {
         error("Total number of interfaces < 4");
     }
 
+    // State variable
+    bool seen_a_pkt_to_10_8 = false;
+
     while (1) {
         user_recv(&intf, &ingress_pkt, sizeof(ingress_pkt));
 
@@ -77,9 +70,22 @@ int main() {
             continue;
         }
 
+        // Stateful rule
+        if (!seen_a_pkt_to_10_8) {
+            // Filter out the packet if the src IP falls within 10/8
+            uint32_t lb = (10ul << 24);
+            uint32_t mask = 8;
+            if (ingress_pkt.ip.saddr >= lb &&
+                ingress_pkt.ip.saddr < lb + (1ul << (32 - mask))) {
+                continue;
+            }
+        }
+
         int eg_intf = dst_ip_matching(ingress_pkt.ip.daddr);
         if (eg_intf == -1) {
             continue;
+        } else if (eg_intf == 0) {
+            seen_a_pkt_to_10_8 = true;
         }
 
         memset(ingress_pkt.eth.h_source, 0, ETH_ALEN);
