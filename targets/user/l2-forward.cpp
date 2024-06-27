@@ -28,7 +28,7 @@ struct Packet {
 
 int main() {
     uint32_t max_intfs = num_interfaces();
-    uint32_t intf = 0;
+    uint8_t intf = 0;
     Packet ingress_pkt, egress_pkt;
     memset(&ingress_pkt, 0, sizeof(ingress_pkt));
     info("Total interfaces: " + std::to_string(max_intfs));

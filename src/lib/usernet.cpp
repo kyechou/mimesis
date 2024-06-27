@@ -6,14 +6,14 @@
 
 #include "lib/logger.hpp"
 
-void user_recv(uint32_t *intf, void *buffer, uint32_t len) {
+void user_recv(uint8_t *intf, void *buffer, uint32_t len) {
     memset(buffer, 0, len);
     *intf = 0;
 }
 
-void user_send(uint32_t intf, void *buffer, uint32_t len) {
+void user_send(uint8_t intf, void *buffer, uint32_t len) {
     memset(buffer, 0, len);
-    volatile uint32_t dummy [[maybe_unused]] = intf;
+    volatile uint8_t dummy [[maybe_unused]] = intf;
 }
 
 size_t num_interfaces(bool tap_only) {

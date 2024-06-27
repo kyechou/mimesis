@@ -52,7 +52,7 @@ int dst_ip_matching(uint32_t dst_addr) {
 
 int main() {
     uint32_t max_intfs = num_interfaces();
-    uint32_t intf = 0;
+    uint8_t intf = 0;
     Packet ingress_pkt;
     memset(&ingress_pkt, 0, sizeof(ingress_pkt));
     info("Total interfaces: " + std::to_string(max_intfs));
@@ -65,10 +65,6 @@ int main() {
 
     while (1) {
         user_recv(&intf, &ingress_pkt, sizeof(ingress_pkt));
-
-        if (intf >= max_intfs) {
-            continue;
-        }
 
         // Stateful rule
         if (!seen_a_pkt_to_10_8) {
