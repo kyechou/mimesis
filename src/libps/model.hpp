@@ -43,6 +43,7 @@ public:
     SingleStateTable *current_table() const { return _current_table; }
     SingleStateTable *child_table() const { return _child_table; }
     std::shared_ptr<TableEntry> parent_entry() const;
+    int depth() const;
     std::string to_string() const;
 
     void set_child_table(SingleStateTable *const child_table) {
@@ -57,12 +58,27 @@ private:
     std::set<std::shared_ptr<TableEntry>> _table;
 
 public:
-    SingleStateTable(int depth, std::shared_ptr<TableEntry> parent_entry)
-        : _depth(depth), _parent_entry(parent_entry) {}
+    SingleStateTable(std::shared_ptr<TableEntry> parent_entry)
+        : _depth(parent_entry ? parent_entry->depth() + 1 : 1),
+          _parent_entry(parent_entry) {}
 
     int depth() const { return _depth; }
     std::shared_ptr<TableEntry> parent_entry() const { return _parent_entry; }
+    sylvan::Bdd cumulative_parent_constraint() const;
     bool insert(const std::shared_ptr<TableEntry> &entry);
+
+    typedef decltype(_table)::iterator iterator;
+    typedef decltype(_table)::const_iterator const_iterator;
+    typedef decltype(_table)::reverse_iterator reverse_iterator;
+    typedef decltype(_table)::const_reverse_iterator const_reverse_iterator;
+    iterator begin() { return _table.begin(); }
+    const_iterator begin() const { return _table.begin(); }
+    iterator end() { return _table.end(); }
+    const_iterator end() const { return _table.end(); }
+    reverse_iterator rbegin() { return _table.rbegin(); }
+    const_reverse_iterator rbegin() const { return _table.rbegin(); }
+    reverse_iterator rend() { return _table.rend(); }
+    const_reverse_iterator rend() const { return _table.rend(); }
 };
 
 class Model {
@@ -79,7 +95,7 @@ public:
                 const klee::ref<klee::Expr> &in_pkt,
                 const klee::ref<klee::Expr> &eg_intf,
                 const klee::ref<klee::Expr> &eg_pkt,
-                const klee::ref<klee::Expr> &path_constraints);
+                const klee::ref<klee::Expr> &path_constraint);
     // void finalize();
     // void export_to();
     // void import_from();
