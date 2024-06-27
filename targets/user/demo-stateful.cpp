@@ -31,10 +31,6 @@ int main() {
     while (1) {
         user_recv(&intf, &ingress_pkt, sizeof(ingress_pkt));
 
-        if (ingress_pkt.port >= max_intfs) {
-            continue;
-        }
-
         if (!seen_pkt_from_port_0) {
             if (intf == 0) {
                 seen_pkt_from_port_0 = true;
