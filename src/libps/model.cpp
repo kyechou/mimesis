@@ -155,9 +155,11 @@ Model::query(int depth, const klee::ref<klee::Expr> &constraint) const {
                 res.insert(new_entry);
             }
             // Add child table to the queue.
-            if (entry->child_table()) {
-                q.push(std::make_tuple(entry->child_table(), real_cons,
-                                       new_entry));
+            if (entry->child_table() && entry->depth() < depth) {
+                q.push(std::make_tuple(
+                    entry->child_table(),
+                    real_cons.Constrain(entry->cumulative_constraint()),
+                    new_entry));
             }
         }
     }
