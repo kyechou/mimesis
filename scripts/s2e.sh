@@ -284,7 +284,9 @@ run_s2e() {
         # ./sender &>$S2E_PROJ_DIR/sender.log &
         # sleep 0.5 # Wait for the sender to create the command file
 
-        ./launch-s2e.sh ${qemu_flags[@]}
+        date '+Timestamp: %s.%N'
+        /usr/bin/time ./launch-s2e.sh ${qemu_flags[@]}
+        date '+Timestamp: %s.%N'
 
         # # Dump all pcap files into text form
         # for pcap in *.pcap; do
