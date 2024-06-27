@@ -3,6 +3,7 @@
 
 #include <klee/Expr.h>
 #include <klee/util/Ref.h>
+#include <llvm/Support/raw_ostream.h>
 #include <map>
 #include <memory>
 #include <set>
@@ -21,6 +22,9 @@ private:
     sylvan::Bdd _constraint_at_current_depth;
     SingleStateTable *_current_table = nullptr;
     SingleStateTable *_child_table = nullptr;
+
+    // This is only used for query results.
+    std::set<std::shared_ptr<TableEntry>> _next_entries;
 
 public:
     TableEntry(const BitVector &in_intf,
@@ -42,12 +46,19 @@ public:
     sylvan::Bdd cumulative_constraint() const;
     SingleStateTable *current_table() const { return _current_table; }
     SingleStateTable *child_table() const { return _child_table; }
+    const decltype(_next_entries) &next_entries() const {
+        return _next_entries;
+    }
     std::shared_ptr<TableEntry> parent_entry() const;
     int depth() const;
     std::string to_string() const;
 
     void set_child_table(SingleStateTable *const child_table) {
         _child_table = child_table;
+    }
+
+    void add_next_entry(const std::shared_ptr<TableEntry> &e) {
+        _next_entries.insert(e);
     }
 };
 
@@ -95,11 +106,13 @@ public:
                 const klee::ref<klee::Expr> &in_pkt,
                 const klee::ref<klee::Expr> &eg_intf,
                 const klee::ref<klee::Expr> &eg_pkt,
-                const klee::ref<klee::Expr> &path_constraint);
+                const klee::ref<klee::Expr> &path_constraint,
+                llvm::raw_ostream *os = nullptr);
     // void finalize();
     // void export_to();
     // void import_from();
-    // void query();
+    std::set<std::shared_ptr<TableEntry>>
+    query(int depth, const klee::ref<klee::Expr> &constraint) const;
 };
 
 } // namespace ps

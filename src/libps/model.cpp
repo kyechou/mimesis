@@ -1,8 +1,11 @@
 #include "libps/model.hpp"
 
 #include <memory>
+#include <queue>
 #include <string>
 #include <sylvan_obj.hpp>
+#include <tuple>
+#include <utility>
 
 #include "lib/logger.hpp"
 #include "libps/bdd.hpp"
@@ -67,7 +70,8 @@ bool Model::insert(int depth,
                    const klee::ref<klee::Expr> &in_pkt,
                    const klee::ref<klee::Expr> &eg_intf,
                    const klee::ref<klee::Expr> &eg_pkt,
-                   const klee::ref<klee::Expr> &path_constraint) {
+                   const klee::ref<klee::Expr> &path_constraint,
+                   llvm::raw_ostream *os) {
     BitVector pc_bv = KleeInterpreter::translate(path_constraint);
     assert(pc_bv.width() == 1);
     sylvan::Bdd pc = pc_bv[0];
@@ -108,13 +112,55 @@ bool Model::insert(int depth,
         KleeInterpreter::translate(eg_pkt, pc),
         pc.Constrain(current_table->cumulative_parent_constraint()),
         current_table);
-    bool res = current_table->insert(entry);
+    if (os) {
+        *os << "Model insert: " << entry->to_string();
+    }
+    return current_table->insert(entry);
+}
 
-    // if (res) {
-    //     info("Insert symbolic entry: " + entry->to_string());
-    // } else {
-    //     warn("Failed to insert entry: " + entry->to_string());
-    // }
+std::set<std::shared_ptr<TableEntry>>
+Model::query(int depth, const klee::ref<klee::Expr> &constraint) const {
+    assert(depth <= (int)_model.size());
+    BitVector initial_constraint = KleeInterpreter::translate(constraint);
+    assert(initial_constraint.width() == 1);
+
+    // Do a BFS with constraint to build the response tree of symbolic entries.
+    std::set<std::shared_ptr<TableEntry>> res;
+    std::queue<std::tuple<SingleStateTable * /*next table*/,
+                          sylvan::Bdd /*constraint*/,
+                          std::shared_ptr<TableEntry> /*parent entry in res*/>>
+        q;
+    q.push(std::make_tuple(_root_table.get(), initial_constraint[0], nullptr));
+
+    while (!q.empty()) {
+        auto [current_table, constraint, parent_entry] = q.front();
+        q.pop();
+
+        for (const auto &entry : *current_table) {
+            if (entry->constraint().Disjoint(constraint)) {
+                continue;
+            }
+
+            // Make a new entry for the response.
+            sylvan::Bdd real_cons = entry->constraint() & constraint;
+            auto new_entry = std::make_shared<TableEntry>(
+                entry->in_intf().constrain(real_cons),
+                entry->in_pkt().constrain(real_cons),
+                entry->eg_intf().constrain(real_cons),
+                entry->eg_pkt().constrain(real_cons), real_cons, current_table);
+            // Populate the returning response.
+            if (parent_entry) {
+                parent_entry->add_next_entry(new_entry);
+            } else {
+                res.insert(new_entry);
+            }
+            // Add child table to the queue.
+            if (entry->child_table()) {
+                q.push(std::make_tuple(entry->child_table(), real_cons,
+                                       new_entry));
+            }
+        }
+    }
 
     return res;
 }
