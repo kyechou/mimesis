@@ -44,7 +44,7 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
 set(CMAKE_C_FLAGS_DEBUG   "-DENABLE_DEBUG -g3 -fsanitize=address -fno-omit-frame-pointer -fno-common")
 set(CMAKE_CXX_FLAGS_DEBUG "-DENABLE_DEBUG -g3 -fsanitize=address -fno-omit-frame-pointer -fno-common")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address")
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
@@ -71,7 +71,7 @@ add_subdirectory(targets)
 #
 # build tests targets
 #
-if (BUILD_TESTS)
+if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
