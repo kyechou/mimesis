@@ -5,6 +5,7 @@
 
 set -euo pipefail
 
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 cd "$SCRIPT_DIR"
 
@@ -169,6 +170,23 @@ aur_install() {
     rm -rf "$TARGET"
 }
 
+# Set up docker engine quick and dirty
+get_docker() {
+    if command -v docker >/dev/null 2>&1; then
+        return
+    fi
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh ./get-docker.sh
+    rm -f ./get-docker.sh
+}
+
+# Add the current user to group `docker` if they aren't in it already.
+set_docker_group() {
+    if ! getent group docker | grep -qw "$USER"; then
+        sudo gpasswd -a "$USER" docker
+    fi
+}
+
 build_s2e_docker_image() {
     pushd "$SCRIPT_DIR/docker" >/dev/null
     make s2e
@@ -213,16 +231,23 @@ main() {
     elif [[ "$DISTRO" == "ubuntu" ]]; then
         script_deps=(build-essential curl git)
         build_deps=(g++ clang cmake ninja-build python3-jinja2 pkgconf
-            docker.io python3-venv libboost-all-dev graphviz)
+            python3-venv libboost-all-dev graphviz)
         style_deps=(clang-format yapf3)
         # experiment_deps=(time python3-matplotlib python3-numpy python3-pandas python3-networkx)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
         sudo apt-get update -y -qq
         sudo apt-get install -y -qq "${depends[@]}"
+        get_docker
 
     else
         die "Unsupported distribution: $DISTRO"
+    fi
+
+    # Make sure docker is working by this point.
+    set_docker_group
+    if ! docker ps &>/dev/null; then
+        exec sg docker "$SCRIPT_PATH"
     fi
 
     build_s2e_docker_image
