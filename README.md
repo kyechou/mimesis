@@ -79,9 +79,9 @@ $ ./scripts/s2e.sh -n ./build/targets/user-demo-stateless
 
 ### Run the symbolic execution
 
-Once the project is created, you can start the analysis with by running the
-following command. The `-c` option force-removes any previous run, and the `-r`
-option runs the symbolic execution.
+Once the project is created, you can start the analysis by running the following
+command. The `-c` option force-removes any previous run, and the `-r` option
+runs the symbolic execution.
 
 ```sh
 $ ./scripts/s2e.sh [-c] -r
