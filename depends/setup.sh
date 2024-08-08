@@ -185,6 +185,10 @@ set_docker_group() {
     if ! getent group docker | grep -qw "$USER"; then
         sudo gpasswd -a "$USER" docker
     fi
+    # Make sure docker is working by this point.
+    if ! docker ps &>/dev/null; then
+        exec sg docker "exec sg $(id -gn) $SCRIPT_PATH"
+    fi
 }
 
 build_s2e_docker_image() {
@@ -244,12 +248,7 @@ main() {
         die "Unsupported distribution: $DISTRO"
     fi
 
-    # Make sure docker is working by this point.
     set_docker_group
-    if ! docker ps &>/dev/null; then
-        exec sg docker "$SCRIPT_PATH"
-    fi
-
     build_s2e_docker_image
     "$PROJECT_DIR/scripts/build.sh" --s2e-env
     "$PROJECT_DIR/scripts/build.sh" --s2e-init
