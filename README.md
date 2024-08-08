@@ -80,12 +80,14 @@ $ ./scripts/s2e.sh -n ./build/targets/user-demo-stateless
 ### Run the symbolic execution
 
 Once the project is created, you can start the analysis by running the following
-command. The `-c` option force-removes any previous run, and the `-r` option
-runs the symbolic execution.
+command. The `-c` option force-removes any files of previous runs, and the `-r`
+option starts the symbolic execution.
 
 ```sh
 $ ./scripts/s2e.sh [-c] -r
 ```
+
+(TODO: Explain how to interpret the result.)
 
 ### Remove the analysis projects (Optional)
 
@@ -102,4 +104,4 @@ The current prototype is built upon S2E and KLEE. However, the core idea of
 Mimesis is not tied to a specific implementation. It is possible to implement
 Mimesis on other symbolic analysis tools such as Angr. This may be helpful to
 expand the scope of supported programs to DPDK-based network functions, which
-are not currently due to the limitation of S2E's QEMU.
+are not currently supported due to the limitation of S2E's QEMU.
