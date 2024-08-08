@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-#
-# Run tests
-#
 
 set -euo pipefail
 
@@ -10,7 +7,9 @@ die() {
     exit 1
 }
 
-[ $UID -eq 0 ] && die 'Please run this script without root privilege'
+if [[ $UID -eq 0 ]]; then
+    die 'Please run this script without root privilege'
+fi
 
 usage() {
     cat <<EOF
@@ -18,21 +17,15 @@ usage() {
 
     Options:
     -h, --help          Print this message and exit
-    -v, --verbose       Enable verbose test output
 EOF
 }
 
 parse_args() {
-    VERBOSE=0
-
     while :; do
         case "${1-}" in
         -h | --help)
             usage
             exit
-            ;;
-        -v | --verbose)
-            VERBOSE=1
             ;;
         -?*) die "Unknown option: $1\n$(usage)" ;;
         *) break ;;
@@ -41,33 +34,26 @@ parse_args() {
     done
 }
 
-main() {
-    SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-    PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-    BUILD_DIR="${PROJECT_DIR}/build"
-
-    # Parse script arguments
-    parse_args "$@"
-
-    # Prepare test parameters
-    local ctest_flags=(
-        --progress
-        --output-on-failure
-    )
-    if [[ $VERBOSE -eq 1 ]]; then
-        ctest_flags+=(--extra-verbose)
-    fi
-
-    # Run the tests
-    cd "$BUILD_DIR"
-    set +e
-    ctest "${ctest_flags[@]}"
-    set -e
-
+convert_dot_to_png() {
     # Convert dot files to PNG.
     if command -v dot &>/dev/null; then
         find "$BUILD_DIR" -type f -name "*.dot" -exec dot -Tpng {} -o {}.png \;
     fi
+}
+
+main() {
+    SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+    PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+    BUILD_DIR="${PROJECT_DIR}/build"
+    DATA_DIR="${PROJECT_DIR}/tests/data"
+    export DATA_DIR
+
+    # Parse script arguments
+    parse_args "$@"
+
+    # Run the tests
+    trap convert_dot_to_png EXIT
+    "$BUILD_DIR/tests/libps_tests"
 }
 
 main "$@"
