@@ -1,8 +1,19 @@
 cmake_minimum_required(VERSION 3.22)
 
+#
+# cmake configure options
+#
+option(BUILD_TESTS "Build tests" ON)
+
+#
+# vcpkg manifest mode
+#
 set(VCPKG_MANIFEST_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/depends"
     CACHE STRING "Path to vcpkg manifest directory")
+if(BUILD_TESTS)
+    list(APPEND VCPKG_MANIFEST_FEATURES "tests")
+endif()
 set(CMAKE_TOOLCHAIN_FILE
     "${CMAKE_CURRENT_SOURCE_DIR}/depends/vcpkg/scripts/buildsystems/vcpkg.cmake"
     CACHE STRING "Vcpkg toolchain file")
@@ -26,8 +37,8 @@ add_compile_options(-Wall -Wextra -Werror)
 #
 # release/debug compile options
 #
-set(CMAKE_C_FLAGS_RELEASE   "-O3 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g")
+set(CMAKE_C_FLAGS_RELEASE          "-O3 -g")
+set(CMAKE_CXX_FLAGS_RELEASE        "-O3 -g")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO   "-O2 -g")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
 set(CMAKE_C_FLAGS_DEBUG   "-DENABLE_DEBUG -g3 -fsanitize=address -fno-omit-frame-pointer -fno-common")
@@ -44,7 +55,7 @@ include("ExternalProject")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 add_subdirectory(third_party/inotify-cpp EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/sylvan EXCLUDE_FROM_ALL)
-find_package(Threads)
+find_package(Threads REQUIRED)
 find_package(PcapPlusPlus REQUIRED)
 # find_package(DPDK REQUIRED)
 find_package(KLEE REQUIRED) # built in s2e tree
@@ -60,7 +71,6 @@ add_subdirectory(targets)
 #
 # build tests targets
 #
-option(BUILD_TESTS "Build tests" ON)
 if (BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)

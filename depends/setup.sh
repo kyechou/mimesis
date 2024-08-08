@@ -6,7 +6,6 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-
 cd "$SCRIPT_DIR"
 
 msg() {
@@ -18,38 +17,41 @@ die() {
     exit 1
 }
 
-[ $UID -eq 0 ] && die 'Please run this script without root privilege'
+if [[ $UID -eq 0 ]]; then
+    die 'Please run this script without root privilege'
+fi
 
 #
-# Output a short name of the Linux distribution
+# Output a short name (v:DISTRO) of the Linux distribution
 #
 get_distro() {
+    export DISTRO
     if test -f /etc/os-release; then # freedesktop.org and systemd
-        . /etc/os-release
-        echo "$NAME" | cut -f 1 -d ' ' | tr '[:upper:]' '[:lower:]'
+        source /etc/os-release
+        DISTRO="$(echo "$NAME" | cut -f 1 -d ' ' | tr '[:upper:]' '[:lower:]')"
     elif type lsb_release >/dev/null 2>&1; then # linuxbase.org
-        lsb_release -si | tr '[:upper:]' '[:lower:]'
+        DISTRO="$(lsb_release -si | tr '[:upper:]' '[:lower:]')"
     elif test -f /etc/lsb-release; then
         # shellcheck source=/dev/null
         source /etc/lsb-release
-        echo "$DISTRIB_ID" | tr '[:upper:]' '[:lower:]'
+        DISTRO="$(echo "$DISTRIB_ID" | tr '[:upper:]' '[:lower:]')"
     elif test -f /etc/arch-release; then
-        echo "arch"
+        DISTRO="arch"
     elif test -f /etc/debian_version; then
         # Older Debian, Ubuntu
-        echo "debian"
+        DISTRO="debian"
     elif test -f /etc/SuSe-release; then
         # Older SuSE
-        echo "opensuse"
+        DISTRO="opensuse"
     elif test -f /etc/fedora-release; then
         # Older Fedora
-        echo "fedora"
+        DISTRO="fedora"
     elif test -f /etc/redhat-release; then
         # Older Red Hat, CentOS
-        echo "centos"
+        DISTRO="centos"
     elif type uname >/dev/null 2>&1; then
         # Fall back to uname
-        uname -s
+        DISTRO="$(uname -s)"
     else
         die 'Unable to determine the distribution'
     fi
@@ -159,8 +161,7 @@ aur_install() {
         git clone "https://aur.archlinux.org/$TARGET.git"
     fi
 
-    DISTRO="$(get_distro)"
-    if [ "$DISTRO" = "arch" ]; then
+    if [[ "$DISTRO" == "arch" ]]; then
         (makepkg_arch "$TARGET" "$@")
     else
         (makepkg_manual "$TARGET" "$@")
@@ -189,12 +190,12 @@ main() {
     #   https://github.com/S2E/s2e/blob/master/Dockerfile
     #   https://github.com/S2E/scripts/blob/master/Dockerfile.dist
     #
-    DISTRO="$(get_distro)"
+    get_distro
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
     git -C "$PROJECT_DIR" submodule update --init --recursive
     git -C "$PROJECT_DIR" submodule foreach --recursive git clean -xdf
 
-    if [ "$DISTRO" = "arch" ]; then
+    if [[ "$DISTRO" == "arch" ]]; then
         if ! pacman -Q paru >/dev/null 2>&1; then
             aur_install paru --asdeps --needed --noconfirm --removemake
         fi
@@ -203,20 +204,22 @@ main() {
         build_deps=(gcc clang cmake ninja python-jinja docker python boost
             graphviz)
         style_deps=(clang yapf)
+        # experiment_deps=(time python-matplotlib python-numpy python-pandas python-networkx)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
-        paru -S --asdeps --needed --noconfirm --removemake "${depends[@]}"
-        makepkg_arch mimesis-dev -srcfi --asdeps --noconfirm "$@"
+        paru -Sy --asdeps --needed --noconfirm --removemake "${depends[@]}"
+        makepkg_arch mimesis-dev -srcfi --asdeps --noconfirm
 
-    elif [ "$DISTRO" = "ubuntu" ]; then
+    elif [[ "$DISTRO" == "ubuntu" ]]; then
         script_deps=(build-essential curl git)
         build_deps=(g++ clang cmake ninja-build python3-jinja2 pkgconf
             docker.io python3-venv libboost-all-dev graphviz)
         style_deps=(clang-format yapf3)
+        # experiment_deps=(time python3-matplotlib python3-numpy python3-pandas python3-networkx)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
-        sudo apt update -y -qq
-        sudo apt install -y -qq "${depends[@]}"
+        sudo apt-get update -y -qq
+        sudo apt-get install -y -qq "${depends[@]}"
 
     else
         die "Unsupported distribution: $DISTRO"

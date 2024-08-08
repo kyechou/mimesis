@@ -7,7 +7,12 @@ target_include_directories(_logger PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(_net OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/lib/net.cpp)
 target_include_directories(_net PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(_net PUBLIC PCAP::PCAP PcapPlusPlus::Pcap++ PcapPlusPlus::Common++ PcapPlusPlus::Packet++)
+target_link_libraries(_net PUBLIC
+    PCAP::PCAP
+    PcapPlusPlus::Pcap++
+    PcapPlusPlus::Common++
+    PcapPlusPlus::Packet++
+)
 
 add_library(_usernet OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/lib/usernet.cpp)
 target_include_directories(_usernet PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
