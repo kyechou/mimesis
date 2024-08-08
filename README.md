@@ -1,73 +1,105 @@
 # Mimesis
 
-Model extraction for stateful network functions.
+Mimesis is a formal model extraction tool that automatically generates a model
+describing all packet forwarding behavior given a software network function as
+input. It utilizes S2E, KLEE, and LLVM for symbolic execution on the binary of
+the input network function to analyze its packet forwarding behavior, and
+translates the resulting SMT formulas to BDD-based structures. The extracted
+model covers all (potentially stateful) packet forwarding behavior and is
+compactly encoded in our custom format. The model output can be queried
+independently or used in other formal analysis, including network verification.
+
+<!--toc:start-->
+- [Mimesis](#mimesis)
+  - [Environment setup](#environment-setup)
+  - [Build Mimesis and S2E](#build-mimesis-and-s2e)
+  - [Usage](#usage)
+    - [Create a new analysis project](#create-a-new-analysis-project)
+    - [Run the symbolic execution](#run-the-symbolic-execution)
+    - [Remove the analysis projects (Optional)](#remove-the-analysis-projects-optional)
+  - [Future work](#future-work)
+<!--toc:end-->
 
 ## Environment setup
 
-### S2E
+We provide a convenience script `depends/setup.sh` to automate the setup process
+for the dependencies required to build and run Mimesis. Currently the script
+only supports Arch Linux and Ubuntu 22.04. Please read `depends/setup.sh` for
+the details if one wants to install them manually.
 
-You can set up the environment and S2E by running the following command. This
-will set up `s2e-env`, `s2e`, and build the VM image required for analysis. The
-results will be inside the `s2e/` directory.
+After cloning the repository, enter the directory and run the following command.
+This will set up S2E and build the QEMU VM image required for the symbolic
+analysis. The results will be at the `s2e/` directory.
 
 ```sh
 $ ./depends/setup.sh
 ```
 
-> **Note**<br/>
-> The script will automatically detect your Linux distribution. However, only
-> Arch and Ubuntu 22.04 are currently supported.
+> [!IMPORTANT]
+> After running the setup script, it is crucial to logout and re-login again for
+> the new group configuration to take effect. Otherwise, there may be permission
+> errors from Docker. Alternatively, you can also reboot the OS entirely.
 
-If the S2E source code in `src/s2e/` is modified, you can rebuild S2E with
+## Build Mimesis and S2E
 
-```sh
-$ ./scripts/build.sh --s2e
-```
-
-### Mimesis
-
-To build Mimesis, including the core libraries, SystemTap modules, and the S2E
-plugins, please run:
+To build Mimesis, including the core libraries, example target programs,
+SystemTap modules, and the custom S2E plugin, please run:
 
 ```sh
 $ ./scripts/build.sh --mimesis --stap --s2e
 ```
 
+> [!NOTE]
+> If any Mimesis code, SystemTap scripts, or the S2E code in `src/s2e/` are
+> modified, you can rebuild all of them by running the command again.
+
 ## Usage
 
-### Analyze a given program with S2E
+Here we demonstrate step by step how to use Mimesis to extract a formal model
+from the example network function program `user-demo-stateless`, which is
+located at `build/targets/user-demo-stateless`.
 
-To analyze a given network function program with Mimesis, the first step is to
-create a new analysis project with S2E with the following command. The created
-project will be located at `s2e/projects/mimesis`.
+### Create a new analysis project
 
-> **Note**<br/>
-> This step will also patch `s2e/projects/mimesis/bootstrap.sh` to load *all*
-> the compiled systemtap kernel modules. You can manually edit the
-> `bootstrap.sh` afterwards according to your needs.
+The first step is to create a new analysis project via S2E with the following
+command. The created project will be located at `s2e/projects/mimesis/`.
 
 ```sh
-$ ./scripts/s2e.sh [-i <num_intfs>] -n <target program> [<arguments>]
+$ ./scripts/s2e.sh -n ./build/targets/user-demo-stateless
 ```
 
-For example, the following commands create a project for analyzing the
-`hello-world-1` program and the `demo-r1` program, respectively.
+> [!IMPORTANT]
+> Creating a new analysis project will remove the previously created projects
+> (maybe of a different target program). You can manually save the previous
+> project directories if so desired.
+
+> [!NOTE]
+> It is possible to specify the number of interfaces (default: 8) for the
+> extracted model. See `./scripts/s2e.sh -h` for more details.
+
+### Run the symbolic execution
+
+Once the project is created, you can start the analysis with by running the
+following command. The `-c` option force-removes any previous run, and the `-r`
+option runs the symbolic execution.
 
 ```sh
-$ ./scripts/s2e.sh -n ./build/targets/hello-world-1
-$ ./scripts/s2e.sh -n ./build/targets/demo-r1
+$ ./scripts/s2e.sh [-c] -r
 ```
 
-Once an S2E project is created, you can run the analysis with:
+### Remove the analysis projects (Optional)
 
-```sh
-$ ./scripts/s2e.sh -c -r
-```
-
-To remove *all* S2E projects, run:
+When the symbolic execution is completed, you can remove the created projects by
+running the following command.
 
 ```sh
 $ ./scripts/s2e.sh --rm
 ```
 
-Please see `./scripts/s2e.sh -h` for all available options.
+## Future work
+
+The current prototype is built upon S2E and KLEE. However, the core idea of
+Mimesis is not tied to a specific implementation. It is possible to implement
+Mimesis on other symbolic analysis tools such as Angr. This may be helpful to
+expand the scope of supported programs to DPDK-based network functions, which
+are not currently due to the limitation of S2E's QEMU.
