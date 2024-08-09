@@ -1,0 +1,25 @@
+diff --git a/Linux/s2e_home/launch.sh b/Linux/s2e_home/launch.sh
+index 1087901..d67eed9 100755
+--- a/Linux/s2e_home/launch.sh
++++ b/Linux/s2e_home/launch.sh
+@@ -49,7 +49,7 @@ install_packages() {
+
+ remove_packages() {
+     # Preserve environment (-E)
+-    DEBIAN_FRONTEND=noninteractive sudo -E apt-get purge -y cloud-init
++    DEBIAN_FRONTEND=noninteractive sudo -E apt-get purge -y cloud-init apparmor snapd
+ }
+
+ remove_ubuntu_packages() {
+diff --git a/Linux/ubuntu-preseed/user-data b/Linux/ubuntu-preseed/user-data
+index d001b0a..3a82d15 100644
+--- a/Linux/ubuntu-preseed/user-data
++++ b/Linux/ubuntu-preseed/user-data
+@@ -38,6 +38,7 @@ autoinstall:
+     - gettext
+     - libelf1
+     - tmux
++    - tcpdump
+
+
+   late-commands:
