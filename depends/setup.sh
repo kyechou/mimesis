@@ -180,8 +180,9 @@ get_docker() {
     rm -f ./get-docker.sh
 }
 
-# Add the current user to group `docker` if they aren't in it already.
-set_docker_group() {
+set_up_docker() {
+    sudo systemctl enable --now docker
+    # Add the current user to group `docker` if they aren't in it already.
     if ! getent group docker | grep -qw "$USER"; then
         sudo gpasswd -a "$USER" docker
     fi
@@ -248,7 +249,7 @@ main() {
         die "Unsupported distribution: $DISTRO"
     fi
 
-    set_docker_group
+    set_up_docker
     build_s2e_docker_image
     "$PROJECT_DIR/scripts/build.sh" --s2e-env
     "$PROJECT_DIR/scripts/build.sh" --s2e-init
