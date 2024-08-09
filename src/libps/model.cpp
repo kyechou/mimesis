@@ -71,7 +71,7 @@ bool Model::insert(int depth,
                    const klee::ref<klee::Expr> &eg_intf,
                    const klee::ref<klee::Expr> &eg_pkt,
                    const klee::ref<klee::Expr> &path_constraint,
-                   llvm::raw_ostream *os) {
+                   llvm::raw_ostream *os [[maybe_unused]]) {
     BitVector pc_bv = KleeInterpreter::translate(path_constraint);
     assert(pc_bv.width() == 1);
     sylvan::Bdd pc = pc_bv[0];
@@ -112,9 +112,9 @@ bool Model::insert(int depth,
         KleeInterpreter::translate(eg_pkt, pc),
         pc.Constrain(current_table->cumulative_parent_constraint()),
         current_table);
-    if (os) {
-        *os << "Model insert: " << entry->to_string();
-    }
+    // if (os) {
+    //     *os << "Model insert: " << entry->to_string();
+    // }
     return current_table->insert(entry);
 }
 

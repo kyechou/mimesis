@@ -84,7 +84,7 @@ command. The `-c` option force-removes any files of previous runs, and the `-r`
 option starts the symbolic execution.
 
 ```sh
-$ ./scripts/s2e.sh [-c] -r
+$ ./scripts/s2e.sh -c -r
 ```
 
 (TODO: Explain how to interpret the result.)
