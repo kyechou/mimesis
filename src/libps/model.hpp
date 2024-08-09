@@ -106,8 +106,7 @@ public:
                 const klee::ref<klee::Expr> &in_pkt,
                 const klee::ref<klee::Expr> &eg_intf,
                 const klee::ref<klee::Expr> &eg_pkt,
-                const klee::ref<klee::Expr> &path_constraint,
-                llvm::raw_ostream *os = nullptr);
+                const klee::ref<klee::Expr> &path_constraint);
     // void finalize();
     // void export_to();
     // void import_from();
