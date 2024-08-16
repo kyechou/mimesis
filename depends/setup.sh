@@ -220,7 +220,7 @@ main() {
 
     if [[ "$DISTRO" == "arch" ]]; then
         if ! pacman -Q paru >/dev/null 2>&1; then
-            aur_install paru --asdeps --needed --noconfirm --removemake
+            aur_install paru --asdeps --needed --noconfirm
         fi
 
         script_deps=(base-devel curl git)
