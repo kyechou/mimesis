@@ -50,7 +50,7 @@ Vagrant.configure("2") do |config|
     sudo pacman -Sy --needed --noconfirm git
     git clone https://github.com/kyechou/mimesis.git "$HOME/mimesis"
     cd "$HOME/mimesis"
-    ./depends/setup.sh
+    bash -x ./depends/setup.sh
     sudo pacman -Syu --noconfirm
   SCRIPT
 end
