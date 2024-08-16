@@ -90,6 +90,20 @@ parse_args() {
     done
 }
 
+set_docker_group() {
+    if ! systemctl -q is-active docker.service; then
+        die "docker.service is not active. Please run ./depends/setup.sh"
+    fi
+    # Abort if the current user isn't in the group `docker`.
+    if ! getent group docker | grep -qw "$USER"; then
+        die "User '$USER' is not in the group 'docker'. Please run ./depends/setup.sh"
+    fi
+    # Make sure docker is working by this point.
+    if ! docker ps &>/dev/null; then
+        exec sg docker "exec sg $(id -gn) $(realpath "${BASH_SOURCE[0]}")"
+    fi
+}
+
 build_mimesis_programs() {
     local image='s2e:latest'
     local build_cmd
@@ -326,6 +340,7 @@ EOM
 
 main() {
     parse_args "$@"
+    # set_docker_group
 
     SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"

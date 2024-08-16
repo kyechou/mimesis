@@ -24,6 +24,7 @@ __pycache__
 .cache/
 .venv/
 .s2e.venv/
+.vagrant/
 
 # Trashed files
 .Trash*/
