@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
     vb.memory = "32768" # MiB
     # https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm
     vb.customize ["modifyvm", :id,
-                  "--cpus", "12",
+                  "--cpus", "16",
                   "--hwvirtex", "on",
                   "--paravirt-provider", "kvm",
                   "--nested-paging", "on",
