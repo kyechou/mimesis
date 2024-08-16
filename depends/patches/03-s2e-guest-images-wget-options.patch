@@ -1,0 +1,13 @@
+diff --git a/scripts/get_iso.sh b/scripts/get_iso.sh
+index acac7be..79284ce 100755
+--- a/scripts/get_iso.sh
++++ b/scripts/get_iso.sh
+@@ -45,7 +45,7 @@ download()
+     OUTPUT_FILE="$2"
+ 
+     echo "Downloading $IMAGE_URL to $OUTPUT_FILE"
+-    wget --no-use-server-timestamps -O "$OUTPUT_FILE" "$IMAGE_URL"
++    wget -c --retry-on-http-error=401,429 --auth-no-challenge --no-use-server-timestamps -O "$OUTPUT_FILE" "$IMAGE_URL"
+ }
+ 
+ # Note: this assumes that the jigdo and the associated template file are in the same
