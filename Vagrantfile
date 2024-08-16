@@ -47,10 +47,9 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   # https://developer.hashicorp.com/vagrant/docs/provisioning
   config.vm.provision "shell", privileged: false, reboot: true, inline: <<-SCRIPT
-    echo "HOME: $HOME"
     sudo pacman -Syu --noconfirm git
-    git clone https://github.com/kyechou/mimesis.git
-    cd mimesis
+    git clone https://github.com/kyechou/mimesis.git "$HOME/mimesis"
+    cd "$HOME/mimesis"
     ./depends/setup.sh
   SCRIPT
 end
