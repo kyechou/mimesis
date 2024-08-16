@@ -15,6 +15,8 @@ Vagrant.configure("2") do |config|
   config.vm.box_check_update = true
   config.vm.disk :disk, size: "128GB", primary: true
   config.vm.hostname = "mimesis"
+  config.vm.define "mimesis" do |_|
+  end
 
   # Provider-specific configuration
   # https://developer.hashicorp.com/vagrant/docs/providers/virtualbox/configuration
