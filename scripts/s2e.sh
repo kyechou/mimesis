@@ -100,7 +100,7 @@ new_project() {
         _deactivate
 EOM
     )"
-    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+    docker run --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$new_project_cmd"
 
     # Prepare systemtap kernel modules
@@ -250,7 +250,7 @@ create_qemu_snapshot() {
         done
 EOM
     )"
-    docker run -it --rm --privileged -u builder \
+    docker run --rm --privileged -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         "$image" \
         -c "$snapshot_cmd"
@@ -301,7 +301,7 @@ run_s2e() {
 EOM
     )"
 
-    docker run -it --rm --privileged -u builder \
+    docker run --rm --privileged -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         "$image" \
         -c "$run_cmd"

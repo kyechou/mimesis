@@ -117,7 +117,7 @@ build_mimesis_programs() {
         cmake --install '$BUILD_DIR' --prefix '$S2E_DIR/install'
 EOM
     )"
-    docker run -it --rm -u builder \
+    docker run --rm -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         "$image" \
         -c "$build_cmd"
@@ -144,7 +144,7 @@ build_systemtap_programs() {
         chown -R $(id -u):$(id -g) $PROJECT_DIR/build/src
 EOM
     )"
-    docker run -it --rm -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+    docker run --rm -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
 
@@ -162,7 +162,7 @@ build_s2e_env() {
 EOM
     )"
     git -C "$S2E_ENV_DIR" clean -xdf
-    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+    docker run --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
 
@@ -188,7 +188,7 @@ EOM
 EOM
         )"
     fi
-    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+    docker run --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 
     local s2e_repos=(
@@ -268,7 +268,7 @@ build_s2e_libps_deps() {
         make -C \$S2E_BUILD -f \$S2E_SRC/Makefile stamps/klee-release-make
 EOM
     )"
-    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+    docker run --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
 
@@ -289,7 +289,7 @@ build_s2e() {
         deactivate
 EOM
     )"
-    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+    docker run --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
 
@@ -311,7 +311,7 @@ build_s2e_local() {
         make -C \$S2E_BUILD -f \$S2E_SRC/Makefile all install
 EOM
     )"
-    docker run -it --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
+    docker run --rm -u builder -v "$PROJECT_DIR:$PROJECT_DIR" "$image" \
         -c "$build_cmd"
 }
 
@@ -328,7 +328,7 @@ build_s2e_image() {
         deactivate
 EOM
     )"
-    docker run -it --rm --privileged \
+    docker run --rm --privileged \
         -u builder \
         --group-add "$(getent group docker | cut -d: -f3)" \
         --group-add "$(getent group kvm | cut -d: -f3)" \
