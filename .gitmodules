@@ -1,6 +1,6 @@
 [submodule "s2e"]
 	path = src/s2e
-	url = git@github.com:kyechou/s2e.git
+	url = ../s2e.git
 [submodule "inotify-cpp"]
 	path = third_party/inotify-cpp/inotify-cpp
 	url = https://github.com/erikzenker/inotify-cpp.git
