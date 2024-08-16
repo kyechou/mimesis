@@ -181,7 +181,11 @@ get_docker() {
 }
 
 set_up_docker() {
-    sudo systemctl enable --now docker
+    # Enable and start the docker service.
+    if ! sudo systemctl enable --now docker; then
+        journalctl -eu docker.service
+        die "Failed to start docker.service"
+    fi
     # Add the current user to group `docker` if they aren't in it already.
     if ! getent group docker | grep -qw "$USER"; then
         sudo gpasswd -a "$USER" docker
