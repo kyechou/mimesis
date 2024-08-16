@@ -219,10 +219,6 @@ main() {
     git -C "$PROJECT_DIR" submodule foreach --recursive git clean -xdf
 
     if [[ "$DISTRO" == "arch" ]]; then
-        if ! pacman -Q paru >/dev/null 2>&1; then
-            aur_install paru --asdeps --needed --noconfirm
-        fi
-
         script_deps=(base-devel curl git)
         build_deps=(gcc clang cmake ninja python-jinja docker python boost
             graphviz)
@@ -230,6 +226,10 @@ main() {
         # experiment_deps=(time python-matplotlib python-numpy python-pandas python-networkx)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}")
 
+        sudo pacman -Sy --needed --noconfirm "${script_deps[@]}"
+        if ! pacman -Q paru >/dev/null 2>&1; then
+            aur_install paru --asdeps --needed --noconfirm
+        fi
         paru -Sy --asdeps --needed --noconfirm --removemake "${depends[@]}"
         makepkg_arch mimesis-dev -srcfi --asdeps --noconfirm
 
