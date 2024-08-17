@@ -17,7 +17,7 @@ RUN dpkg --add-architecture i386 && \
     autoconf-archive libnl-3-dev libnl-genl-3-dev \
     # build dependencies
     ca-certificates sudo apt-file build-essential curl wget flex bison \
-    lsb-release autoconf automake libtool gcc g++ cmake git mingw-w64 \
+    lsb-release autoconf automake libtool gcc g++ cmake git mingw-w64 gnupg \
     # S2E dependencies
     libdwarf-dev libelf-dev libelf-dev:i386 libboost-dev zlib1g-dev \
     libjemalloc-dev nasm pkg-config libmemcached-dev libpq-dev libc6-dev \
