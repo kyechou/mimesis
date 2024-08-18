@@ -48,7 +48,15 @@ Vagrant.configure("2") do |config|
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
   # https://developer.hashicorp.com/vagrant/docs/provisioning
-  config.vm.provision "shell", privileged: false, reboot: true, inline: <<-SCRIPT
+
+  config.vm.provision "resize", type: "shell", privileged: true, inline: <<-SCRIPT
+    set -ex
+    pacman -Sy --needed --noconfirm parted
+    echo -e 'Fix\\n3\\nYes\\n100%\\n' | parted ---pretend-input-tty /dev/sda resizepart 3 100%
+    btrfs filesystem resize max /
+  SCRIPT
+
+  config.vm.provision "setup", type: "shell", after: "resize", privileged: false, reboot: true, inline: <<-SCRIPT
     set -ex
     sudo pacman -Sy --needed --noconfirm git
     git clone https://github.com/kyechou/mimesis.git "$HOME/mimesis"
