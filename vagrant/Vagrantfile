@@ -28,14 +28,9 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id,
                   "--cpus", "16",
                   "--hwvirtex", "on",
-                  "--paravirt-provider", "kvm",
-                  "--nested-paging", "on",
                   "--nested-hw-virt", "on",
-                  "--large-pages", "on",
-                  "--vtx-vpid", "on",
                   "--firmware", "efi64",
                   "--vm-process-priority", "high",
-                  "--graphicscontroller", "vmsvga",
                   "--vrde", "off", # disable vbox remote desktop extension
                   "--audio-enabled", "off",
     ]
@@ -44,24 +39,27 @@ Vagrant.configure("2") do |config|
   # Disable directory sharing. We want to have a separate copy in the VM.
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
-  # documentation for more information about their specific syntax and use.
+  # Enable provisioning with a shell script.
   # https://developer.hashicorp.com/vagrant/docs/provisioning
 
-  config.vm.provision "resize", type: "shell", privileged: true, inline: <<-SCRIPT
+  config.vm.provision "configs", type: "file", source: "configs", destination: "$HOME"
+  config.vm.provision "system", type: "shell", privileged: true, inline: <<-SCRIPT
     set -ex
+    # Resize root partition and filesystem
     pacman -Sy --needed --noconfirm parted
     echo -e 'Fix\\n3\\nYes\\n100%\\n' | parted ---pretend-input-tty /dev/sda resizepart 3 100%
     btrfs filesystem resize max /
+    # Set up locale
+    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+    echo "LANG=en_US.UTF-8" > /etc/locale.conf
+    locale-gen
   SCRIPT
-
-  config.vm.provision "setup", type: "shell", after: "resize", privileged: false, reboot: true, inline: <<-SCRIPT
+  config.vm.provision "setup", type: "shell", after: "system", privileged: false, reboot: true, inline: <<-SCRIPT
     set -ex
     sudo pacman -Sy --needed --noconfirm git
     git clone https://github.com/kyechou/mimesis.git "$HOME/mimesis"
     cd "$HOME/mimesis"
     ./depends/setup.sh
-    sudo pacman -Syu --noconfirm
+    sudo pacman -Syu --needed --noconfirm vim tmux less bash-completion
   SCRIPT
 end
