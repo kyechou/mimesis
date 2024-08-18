@@ -94,6 +94,7 @@ new_project() {
     new_project_cmd="$(
         cat <<-EOM
         set -euo pipefail
+        export TERM=xterm-256color
         source $SCRIPT_DIR/activate.sh
         s2e new_project -t linux -n $S2E_PROJ_NAME -i ubuntu-22.04-x86_64 \
             ${TARGET_PROGRAM[@]}
