@@ -227,7 +227,7 @@ main() {
         build_deps=(gcc clang cmake ninja python-jinja docker python boost
             graphviz)
         style_deps=(clang yapf)
-        vm_deps=(packer vagrant virtualbox virtualbox-host-modules-arch)
+        vm_deps=(vagrant virtualbox virtualbox-host-modules-arch)
         # experiment_deps=(time python-matplotlib python-numpy python-pandas python-networkx)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}" "${vm_deps[@]}")
 
@@ -243,7 +243,7 @@ main() {
         build_deps=(g++ clang cmake ninja-build python3-jinja2 pkgconf
             python3-venv libboost-all-dev graphviz)
         style_deps=(clang-format yapf3)
-        vm_deps=(packer vagrant virtualbox virtualbox-ext-pack)
+        vm_deps=(vagrant virtualbox virtualbox-ext-pack)
         # experiment_deps=(time python3-matplotlib python3-numpy python3-pandas python3-networkx)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}" "${vm_deps[@]}")
 

@@ -7,7 +7,7 @@ url="https://github.com/kyechou/mimesis"
 license=()
 depends=(
     gcc clang cmake ninja python-jinja docker python boost graphviz yapf
-    packer vagrant virtualbox virtualbox-host-modules-arch
+    vagrant virtualbox virtualbox-host-modules-arch
 )
 makedepends=()
 checkdepends=()
