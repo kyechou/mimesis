@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     vb.gui = false # headless
     vb.name = "mimesis"
-    vb.memory = "32768" # MiB
+    vb.memory = "16384" # MiB
     # https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm
     vb.customize ["modifyvm", :id,
                   "--cpus", "16",
