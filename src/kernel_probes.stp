@@ -13,6 +13,9 @@ struct DemoHeader {
 };
 %}
 
+
+global prog_name="demo-r1"
+
 #
 # S2E functions.
 # We use the embedded C support of SystemTap to access the S2E custom
@@ -55,6 +58,32 @@ private function s2e_kill_state(status:long, message:string) %{
             : : "a" ((uint32_t)STAP_ARG_status), "d" (STAP_ARG_message));
 %}
 
+/**
+ * Set `intf` and `buffer` to be symbolic.
+ *
+ * References:
+ *   src/s2e/guest/common/include/s2e/s2e.h
+ *   src/s2e/guest/common/include/s2e/opcodes.h
+ */
+
+private function s2e_mimesis_kernel_recv(intf:long, buffer:long, len:long) %{
+    __asm__ __volatile__(
+        ".byte 0x0F, 0x3F\n"
+        ".byte 0x00, 0x99, 0x02, 0x00\n"
+        ".byte 0x00, 0x00, 0x00, 0x00\n"
+        : : "a" (STAP_ARG_intf), "c" (STAP_ARG_buffer), "d" (STAP_ARG_len) : "memory"
+    );
+%}
+
+private function s2e_mimesis_kernel_send(intf:long, buffer:long, len:long) %{
+    __asm__ __volatile__(
+        ".byte 0x0F, 0x3F\n"
+        ".byte 0x00, 0x99, 0x03, 0x00\n"
+        ".byte 0x00, 0x00, 0x00, 0x00\n"
+        : : "a" (STAP_ARG_intf), "c" (STAP_ARG_buffer), "d" (STAP_ARG_len) : "memory"
+    );
+%}
+
 
 #
 # Helper functions.
@@ -64,8 +93,8 @@ private function s2e_kill_state(status:long, message:string) %{
  * Print the given message to both the standard output and S2E log.
  */
 private function info(message:string) {
-    printf("%s: [%s] %s\n", probefunc(), execname(), message);
-    msg = sprintf("%s: [%s] %s\n", probefunc(), execname(), message);
+    printf("%s: [%s:%s] %s\n", probefunc(), pstrace(pid2task(pid())), execname(), message);
+    msg = sprintf("%s: [%s:%s] %s\n", probefunc(), pstrace(pid2task(pid())), execname(), message);
     s2e_message(msg);
 }
 
@@ -101,69 +130,23 @@ private function check_eth_addr:long(eth_addr:long) %{ /* pure */
 #
 
 /**
- * static int __netif_receive_skb(struct sk_buff *skb);
- *
- * https://elixir.bootlin.com/linux/v4.9.3/source/net/core/dev.c#L4225
- *
- * NIC drivers call this function when they are ready to give the received
- * packet to the kernel. At this moment, `skb->data` points to the end of the
- * Ethernet header.
- *
- * (struct sk_buff):
- * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L633
- */
-probe kernel.function("__netif_receive_skb") {
-    /**
-     * TODO: Is this probe executed before the functionn is called, at the
-     * beginning of the function, at the end of the function, or after the
-     * function is called?
-     *
-     * TODO: Find a way to manipulate the sk_buff after the frame has been
-     * received.
-     */
-
-    if (!skb_mac_header_was_set($skb)) {
-        info("mac_header is not set. skipping the sk_buff...");
-        next; // returns immediately from the enclosing probe handler.
+ * static int __netif_receive_skb_core(struct sk_buff **pskb, bool pfmemalloc, struct packet_type **ppt_prev) (kernel 6.8.2)
+ * $skb is a local variable that is not initialized at the moment the probe is triggered
+ * The following probe is inside the function __netif_receive_skb_list_core, after the execution of __netif_receive_skb_core.
+ */ 
+probe kernel.statement("*@net/core/dev.c:5621") {
+    if(execname() == prog_name)
+    {
+        skb_ptr=$skb;
+        // eth_hdr = skb_mac_header(skb_ptr);
+        // eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
+        // ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
+        
+        ifindex_ptr = &@cast(skb_ptr, "sk_buff")->dev->ifindex;  
+        msg = sprintf("__netif_receive_skb_core:5621");
+        info(msg);
+        s2e_mimesis_kernel_recv(ifindex_ptr, @cast(skb_ptr, "sk_buff")->data, @cast(skb_ptr, "sk_buff")->len);
     }
-
-    // L2
-    eth_hdr = skb_mac_header($skb)
-    eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
-    ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
-    if (!check_eth_addr(eth_dst_addr)) {
-        info("dst_mac_address is not magical. skipping the sk_buff...");
-        next;
-    }
-
-    msg = sprintf("len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x",
-        $skb->len, $skb->data_len, $skb->dev->ifindex, $skb->head, eth_dst_addr, ethertype, $skb->data);
-    info(msg);
-
-    // L3
-    if (ethertype == 0xdead) {
-        // Demo
-        # eth_len = $skb->data - eth_hdr;
-        # demo_len = %{ sizeof(struct DemoHeader) %};
-        info("Received a demo packet. Creating the symbolic input...");
-        # s2e_make_symbolic(eth_hdr, eth_len + demo_len, "ingress_packet");
-    } else if (ethertype == 0x0800) {
-        // IPv4
-        info("IPv4 protocol");
-    } else {
-        // Unsupported
-        info("Unsupported ethertype");
-        next;
-    }
-
-    # msg = sprintf("[symbolic_ingress] %s: len=%d datalen=%d\n", probefunc(), $skb->len, $skb->data_len)
-    # s2e_message(msg)
-    # s2e_inject_symbolic_ip_optionlength($skb->data)
-}
-
-probe kernel.function("__netif_receive_skb_core") {
-    msg = sprintf("__netif_receive_skb_core");
-    info(msg);
 }
 
 
@@ -171,58 +154,30 @@ probe kernel.function("__netif_receive_skb_core") {
 # Egress probes.
 #
 
-probe kernel.function("dev_hard_start_xmit") {
-    msg = sprintf("dev_hard_start_xmit");
-    info(msg);
-}
+/**
+ * Accessing $skb at __netdev_start_xmit or netdev_start_xmit gives an error, although $skb is a parameter for both in kernel 6.8.2.
+ * Links that might be relevant to this: 
+ * https://man7.org/linux/man-pages/man7/error::pass2.7stap.html
+ * https://bugzilla.redhat.com/show_bug.cgi?id=1734097
+ *
+ * Therefore I am probing xmit_one:
+ * static int xmit_one(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, bool more) 
+ */
 
 probe kernel.function("xmit_one") {
-    msg = sprintf("xmit_one");
-    info(msg);
-}
-
-probe kernel.function("netdev_start_xmit") {
-    msg = sprintf("netdev_start_xmit");
-    info(msg);
-}
-
-/**
- * netdev_tx_t __netdev_start_xmit(
- *      const struct net_device_ops *ops,
- *      struct sk_buff *skb,
- *      struct net_device *dev,
- *      bool more
- * );
- *
- * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/netdevice.h#L4042
- *
- * Kernel calls this function to invoke the corresponding NIC drivers to start
- * transmitting packets.
- *
- * (struct sk_buff):
- * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/skbuff.h#L633
- * (struct net_device):
- * https://elixir.bootlin.com/linux/v4.9.3/source/include/linux/netdevice.h#L1641
- */
-probe kernel.function("__netdev_start_xmit") {
-    msg = sprintf("__netdev_start_xmit");
-    info(msg);
-
-    # if (!skb_mac_header_was_set($skb)) {
-    #     info("mac_header is not set. skipping the sk_buff...");
-    #     next; // returns immediately from the enclosing probe handler.
-    # }
-    #
-    # # s2e_kill_state(0, "Terminate at dev_hard_start_xmit...");
-    #
-    # eth_hdr = skb_mac_header($skb)
-    # eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
-    # ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
-    #
-    # msg = sprintf("len=%d data_len=%d dev_if=%d head=%x eth_dst_addr=%x ethertype=%x data=%x eth_hdr=%x",
-    #     $skb->len, $skb->data_len, $skb->dev->ifindex, $skb->head,
-    #     eth_dst_addr, ethertype, $skb->data, eth_hdr);
-    # info(msg);
+    if(execname() == prog_name)
+    {
+        // eth_hdr = skb_mac_header($skb);
+        // eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
+        // ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
+        
+        ifindex_ptr = &$skb->dev->ifindex;
+        msg = sprintf("xmit_one");
+        info(msg);
+        msg = sprintf("len=%d head=%x header_len=%d data=%x data_len=%d mac=%x mac_len=%d",$skb->len, $skb->head, $skb->hdr_len, $skb->data, $skb->data_len, $skb->mac_header, $skb->mac_len);
+        info(msg);
+        s2e_mimesis_kernel_send(ifindex_ptr, $skb->data, $skb->len);
+    }
 }
 
 # vim: ts=4 sw=4 et cms=#%s :

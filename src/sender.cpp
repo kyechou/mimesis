@@ -51,7 +51,7 @@ pcpp::Packet create_demo_packet(pcpp::PcapLiveDevice *egress_intf) {
     packet.computeCalculateFields();
     DemoHeader demo = {
         .seed = pcpp::hostToNet16(1),
-        .len = pcpp::hostToNet16(42),
+        .len = pcpp::hostToNet16(43),
     };
     packet.getRawPacket()->reallocateData(
         packet.getRawPacket()->getRawDataLen() + sizeof(demo));
@@ -76,10 +76,15 @@ void packet_sender(const chrono::milliseconds period) {
     if (!pcap.open()) {
         error("Failed to open " + pcap.getFileName());
     }
-
+    
+    // There was a race condition causing the sender to send two packets consecutively without delay in the beginning.
+    // The following cv.wait seems to resolve the issue.
+    vars.cv.wait(lck);
+    
     while (1) {
         vars.cv.wait_for(lck, period);
         if (vars.dst_if_name.empty()) {
+        	
             continue;
         }
 
