@@ -133,7 +133,7 @@ private function check_eth_addr:long(eth_addr:long) %{ /* pure */
  * static int __netif_receive_skb_core(struct sk_buff **pskb, bool pfmemalloc, struct packet_type **ppt_prev) (kernel 6.8.2)
  * $skb is a local variable that is not initialized at the moment the probe is triggered
  * The following probe is inside the function __netif_receive_skb_list_core, after the execution of __netif_receive_skb_core.
- */ 
+ */
 probe kernel.statement("*@net/core/dev.c:5621") {
     if(execname() == prog_name)
     {
@@ -141,8 +141,8 @@ probe kernel.statement("*@net/core/dev.c:5621") {
         // eth_hdr = skb_mac_header(skb_ptr);
         // eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
         // ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
-        
-        ifindex_ptr = &@cast(skb_ptr, "sk_buff")->dev->ifindex;  
+
+        ifindex_ptr = &@cast(skb_ptr, "sk_buff")->dev->ifindex;
         msg = sprintf("__netif_receive_skb_core:5621");
         info(msg);
         s2e_mimesis_kernel_recv(ifindex_ptr, @cast(skb_ptr, "sk_buff")->data, @cast(skb_ptr, "sk_buff")->len);
@@ -156,12 +156,12 @@ probe kernel.statement("*@net/core/dev.c:5621") {
 
 /**
  * Accessing $skb at __netdev_start_xmit or netdev_start_xmit gives an error, although $skb is a parameter for both in kernel 6.8.2.
- * Links that might be relevant to this: 
+ * Links that might be relevant to this:
  * https://man7.org/linux/man-pages/man7/error::pass2.7stap.html
  * https://bugzilla.redhat.com/show_bug.cgi?id=1734097
  *
  * Therefore I am probing xmit_one:
- * static int xmit_one(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, bool more) 
+ * static int xmit_one(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, bool more)
  */
 
 probe kernel.function("xmit_one") {
@@ -170,7 +170,7 @@ probe kernel.function("xmit_one") {
         // eth_hdr = skb_mac_header($skb);
         // eth_dst_addr = @cast(eth_hdr, "ethhdr")->h_dest;
         // ethertype = ntohs(@cast(eth_hdr, "ethhdr")->h_proto);
-        
+
         ifindex_ptr = &$skb->dev->ifindex;
         msg = sprintf("xmit_one");
         info(msg);
