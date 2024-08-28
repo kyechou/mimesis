@@ -180,6 +180,17 @@ get_docker() {
     rm -f ./get-docker.sh
 }
 
+# https://developer.hashicorp.com/vagrant/downloads#linux
+get_vagrant() {
+    if command -v vagrant >/dev/null 2>&1; then
+        return
+    fi
+    wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+    sudo apt-get update -y -qq
+    sudo apt-get install -y -qq vagrant
+}
+
 set_up_docker() {
     # Enable and start the docker service.
     if ! sudo systemctl enable --now docker; then
@@ -243,13 +254,14 @@ main() {
         build_deps=(g++ clang cmake ninja-build python3-jinja2 pkgconf
             python3-venv libboost-all-dev graphviz)
         style_deps=(clang-format yapf3)
-        vm_deps=(vagrant virtualbox virtualbox-ext-pack)
+        vm_deps=(virtualbox virtualbox-ext-pack)
         # experiment_deps=(time python3-matplotlib python3-numpy python3-pandas python3-networkx)
         depends=("${script_deps[@]}" "${build_deps[@]}" "${style_deps[@]}" "${vm_deps[@]}")
 
         sudo apt-get update -y -qq
         sudo apt-get install -y -qq "${depends[@]}"
         get_docker
+        get_vagrant
 
     else
         die "Unsupported distribution: $DISTRO"
