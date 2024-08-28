@@ -80,7 +80,7 @@ void packet_sender(const chrono::milliseconds period) {
     // There was a race condition causing the sender to send two packets
     // consecutively without delay in the beginning. The following cv.wait seems
     // to resolve the issue.
-    vars.cv.wait(lck);
+    // vars.cv.wait(lck);
 
     while (1) {
         vars.cv.wait_for(lck, period);

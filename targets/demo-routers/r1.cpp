@@ -49,14 +49,12 @@ static inline bool validate_packet(const pcpp::Packet &packet) {
     auto eth_layer = static_cast<pcpp::EthLayer *>(packet.getFirstLayer());
     auto ethertype = pcpp::netToHost16(eth_layer->getEthHeader()->etherType);
     if (ethertype != 0xdead) {
-        warn("Ethertype does not match 0xdead (57005): " +
-             to_string(ethertype));
+        warn("Ethertype does not match 0xdead (57005)");
         return false;
     }
     auto eth_payload_len = eth_layer->getLayerPayloadSize();
     if (eth_payload_len < sizeof(DemoHeader)) {
-        warn("Ethernet payload len: " + to_string(eth_payload_len) +
-             " < DemoHeader size: " + to_string(sizeof(DemoHeader)));
+        warn("Ethernet payload len < DemoHeader size");
         return false;
     }
     return true;
@@ -72,8 +70,7 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     // Parse the received packet.
     pcpp::Packet packet(raw_packet);
     info("----------------------------------------");
-    info("Read " + to_string(raw_packet->getRawDataLen()) + " bytes from " +
-         dev->getName());
+    info("Received a demo packet from " + dev->getName());
 
     if (!validate_packet(packet)) {
         warn("Drop ill-formed packet");
@@ -85,8 +82,6 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     memcpy(&demo, packet.getFirstLayer()->getLayerPayload(), sizeof(demo));
     demo.seed = pcpp::netToHost16(demo.seed);
     demo.len = pcpp::netToHost16(demo.len);
-    info("Demo:: seed: " + to_string(demo.seed) +
-         ", len: " + to_string(demo.len));
 
     // Derive the output port.
     uint16_t out_port = demo.seed;
@@ -96,10 +91,8 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     }
 
     // Response
-    info("Forward packet to egress port " + to_string(out_port) + ": " +
-         intfs.at(out_port)->getName());
-    if (!intfs.at(out_port)->sendPacket(*raw_packet,
-                                        /*checkMtu=*/false)) {
+    info("Forward packet to the specified egress port");
+    if (!intfs.at(out_port)->sendPacket(*raw_packet, /*checkMtu=*/false)) {
         error("Failed to send packet");
     }
 

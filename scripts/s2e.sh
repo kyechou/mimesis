@@ -280,19 +280,18 @@ run_s2e() {
             sudo ip link set dev tap\$i up
         done
 
-        # Temporarily disable sender for userspace NFs.
-        # sudo setcap '$capabilities' \$(realpath sender)
-        # ./sender &>$S2E_PROJ_DIR/sender.log &
-        # sleep 0.5 # Wait for the sender to create the command file
+        sudo setcap '$capabilities' \$(realpath sender)
+        ./sender &>$S2E_PROJ_DIR/sender.log &
+        sleep 0.5 # Wait for the sender to create the command file
 
         date '+Timestamp: %s.%N'
         /usr/bin/time ./launch-s2e.sh ${qemu_flags[@]}
         date '+Timestamp: %s.%N'
 
-        # # Dump all pcap files into text form
-        # for pcap in *.pcap; do
-        #     tcpdump -e -xx -r \$pcap &>$S2E_PROJ_DIR/\$pcap.log
-        # done
+        # Dump all pcap files into text form
+        for pcap in *.pcap; do
+            tcpdump -e -xx -r \$pcap &>$S2E_PROJ_DIR/\$pcap.log
+        done
 
         for i in {1..$interfaces}; do
             sudo ip link set dev tap\$i down
