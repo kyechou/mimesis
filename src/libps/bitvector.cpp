@@ -576,9 +576,23 @@ BitVector BitVector::sub(const BitVector &other) const {
     return res;
 }
 
-BitVector BitVector::mul(const BitVector &other [[maybe_unused]]) const {
-    error("Unimplemented mul");
-    return {};
+BitVector BitVector::mul(const BitVector &other) const {
+    // NOTE: Here we assume a fixed bit-width for multiplication. I.e., an m-bit
+    // multiplicand (this) multiplied by an n-bit multiplier (other) will result
+    // in an m-bit product.
+    // To allow dynamic bit-width, where the product contains (m + n) bits,
+    // simply modify `max_width`.
+    size_t max_width = this->width(); // + other.width();
+    BitVector multiplicand = this->zext(max_width);
+    BitVector product(max_width, false);
+
+    for (size_t i = 0; i < other.width(); ++i) {
+        BitVector bit_pos(llvm::APInt(sizeof(other.width()) * 8, i));
+        product =
+            select(other.bv[i], product + (multiplicand << bit_pos), product);
+    }
+
+    return product;
 }
 
 BitVector BitVector::udiv(const BitVector &divisor,
@@ -677,7 +691,10 @@ BitVector &BitVector::operator%=(const BitVector &other) {
 }
 
 BitVector BitVector::zext(const size_t width) const {
-    assert(this->width() < width);
+    assert(this->width() <= width);
+    if (this->width() == width) {
+        return *this; // same width, no need to extend
+    }
     BitVector res(*this);
     res.bv.reserve(width);
     res.bv.insert(res.bv.end(), width - this->width(), sylvan::Bdd::bddZero());
@@ -685,7 +702,10 @@ BitVector BitVector::zext(const size_t width) const {
 }
 
 BitVector BitVector::sext(const size_t width) const {
-    assert(this->width() < width);
+    assert(this->width() <= width);
+    if (this->width() == width) {
+        return *this; // same width, no need to extend
+    }
     BitVector res(*this);
     res.bv.reserve(width);
     res.bv.insert(res.bv.end(), width - this->width(),

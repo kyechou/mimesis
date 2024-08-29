@@ -506,7 +506,27 @@ TEST_F(BitVectorTests, arithmetic_ops) {
     EXPECT_TRUE((bv_e - bv_4).identical_to(bv_2 - bv_8));
     EXPECT_TRUE((bv_e - bv_f).identical_to(bv_f));
 
-    // NOTE: mul (*), div (/), and rem (%) are not implemented yet.
+    // mul (*)
+    EXPECT_TRUE((bv * bv_0).identical_to(bv_0));
+    EXPECT_TRUE((bv * bv_1).identical_to(bv));
+    EXPECT_TRUE((bv_0 * bv_1).identical_to(bv_0));
+    EXPECT_TRUE((bv_2 * bv_4).identical_to(bv_8));
+    EXPECT_TRUE((bv_4 * bv_3).identical_to(bv_c));
+    EXPECT_TRUE((bv_4 * bv_4).identical_to(bv_0));
+    EXPECT_TRUE((bv_3 * bv_8).identical_to(bv_8));
+    EXPECT_TRUE((bv * bv_2).identical_to(bv + bv));
+    EXPECT_TRUE((bv * bv_2).identical_to(bv << bv_1));
+    EXPECT_TRUE((bv * bv_3).identical_to(bv + bv + bv));
+    EXPECT_TRUE((bv * bv_4).identical_to(bv + bv + bv + bv));
+    EXPECT_TRUE((bv * bv_8).identical_to((bv + bv) * bv_4));
+    EXPECT_TRUE((bv * bv_8).identical_to((bv * bv_4) + (bv * bv_4)));
+
+    // udiv (/)
+
+    // urem (%)
+
+    // NOTE: sdiv (signed division) and srem (signed remainder) are not
+    // implemented yet.
 }
 
 TEST_F(BitVectorTests, casting) {
