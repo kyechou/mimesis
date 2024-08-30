@@ -53,6 +53,15 @@ $ ./scripts/build.sh --mimesis --stap --s2e
 > If any Mimesis code, SystemTap scripts, or the S2E code in `src/s2e/` are
 > modified, you can rebuild all of them by running the command again.
 
+## Run unit tests (optional)
+
+After building Mimesis, you can run the unit tests to make sure the essential
+functions like `libps` are working properly.
+
+```sh
+$ ./scripts/test.sh
+```
+
 ## Usage
 
 Here we demonstrate step by step how to use Mimesis to extract a formal model
