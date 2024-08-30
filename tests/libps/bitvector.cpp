@@ -1,3 +1,4 @@
+#include "gtest/gtest.h"
 #include <cstddef>
 #include <cstdint>
 #include <gtest/gtest.h>
@@ -522,8 +523,37 @@ TEST_F(BitVectorTests, arithmetic_ops) {
     EXPECT_TRUE((bv * bv_8).identical_to((bv * bv_4) + (bv * bv_4)));
 
     // udiv (/)
+    GTEST_FLAG_SET(death_test_style, "threadsafe");
+    EXPECT_TRUE((bv / bv_1).identical_to(bv));
+    EXPECT_TRUE((bv / bv).identical_to(bv_1));
+    EXPECT_DEATH(bv / bv_0, "");
+    EXPECT_TRUE((bv / bv_2 * bv_2).identical_to(bv - (bv % bv_2)));
+    EXPECT_TRUE((bv / bv_3 * bv_3).identical_to(bv - (bv % bv_3)));
+    EXPECT_DEATH(bv_4 / bv_0, "");
+    EXPECT_TRUE((bv_4 / bv_1).identical_to(bv_4));
+    EXPECT_TRUE((bv_4 / bv_2).identical_to(bv_2));
+    EXPECT_TRUE((bv_4 / bv_3).identical_to(bv_1));
+    EXPECT_TRUE((bv_4 / bv_4).identical_to(bv_1));
+    EXPECT_TRUE((bv_4 / bv_8).identical_to(bv_0));
 
     // urem (%)
+    GTEST_FLAG_SET(death_test_style, "threadsafe");
+    EXPECT_TRUE((bv % bv_1).identical_to(bv_0));
+    EXPECT_TRUE((bv % bv).identical_to(bv_0));
+    EXPECT_DEATH(bv % bv_0, "");
+    EXPECT_TRUE(((bv % bv_2) == (bv_0) | (bv % bv_2) == (bv_1))
+                    .identical_to(ps::BitVector(true)));
+    EXPECT_FALSE(((bv % bv_3) == (bv_0) | (bv % bv_3) == (bv_1))
+                     .identical_to(ps::BitVector(true)));
+    EXPECT_TRUE(
+        ((bv % bv_3) == (bv_0) | (bv % bv_3) == (bv_1) | (bv % bv_3) == (bv_2))
+            .identical_to(ps::BitVector(true)));
+    EXPECT_DEATH(bv_4 % bv_0, "");
+    EXPECT_TRUE((bv_4 % bv_1).identical_to(bv_0));
+    EXPECT_TRUE((bv_4 % bv_2).identical_to(bv_0));
+    EXPECT_TRUE((bv_4 % bv_3).identical_to(bv_1));
+    EXPECT_TRUE((bv_4 % bv_4).identical_to(bv_0));
+    EXPECT_TRUE((bv_4 % bv_8).identical_to(bv_4));
 
     // NOTE: sdiv (signed division) and srem (signed remainder) are not
     // implemented yet.

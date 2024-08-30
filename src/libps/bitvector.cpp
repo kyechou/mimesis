@@ -598,9 +598,21 @@ BitVector BitVector::mul(const BitVector &other) const {
 BitVector BitVector::udiv(const BitVector &divisor,
                           BitVector &remainder) const {
     assert(this->width() == divisor.width());
+    assert(!divisor.is_constant() || divisor.zext_value() != 0);
+
     size_t width = this->width();
     BitVector quotient(width, false);
     remainder = *this; // `remainder` will be the running dividend.
+
+    if (width == 0) {
+        return quotient;
+    }
+
+    if (this->identical_to(divisor)) {
+        quotient.set(0, sylvan::Bdd::bddOne());
+        remainder = BitVector(width, false);
+        return quotient;
+    }
 
     for (int64_t i = width - 1; i >= 0; --i) {
         BitVector bit_pos(llvm::APInt(sizeof(width) * 8, i));
