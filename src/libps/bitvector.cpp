@@ -577,11 +577,9 @@ BitVector BitVector::sub(const BitVector &other) const {
 }
 
 BitVector BitVector::mul(const BitVector &other) const {
-    // NOTE: Here we assume a fixed bit-width for multiplication. I.e., an m-bit
+    // Here we use a fixed bit-width for multiplication. Namely, an m-bit
     // multiplicand (this) multiplied by an n-bit multiplier (other) will result
     // in an m-bit product.
-    // To allow dynamic bit-width, where the product contains (m + n) bits,
-    // simply modify `max_width`.
     size_t max_width = this->width(); // + other.width();
     BitVector multiplicand = this->zext(max_width);
     BitVector product(max_width, false);
