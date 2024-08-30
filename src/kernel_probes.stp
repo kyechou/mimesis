@@ -122,6 +122,9 @@ private function check_eth_addr:long(eth_addr:long) %{ /* pure */
  * NIC drivers call this function when they are ready to give the received
  * packet to the kernel. At this moment, `skb->data` points to the end of the
  * Ethernet header.
+ * See: http://vger.kernel.org/~davem/skb_data.html
+ *      https://www.makelinux.net/ldd3/chp-17-sect-10.shtml
+ *      http://www.skbuff.net/skbbasic.html
  *
  * (struct sk_buff):
  * https://elixir.bootlin.com/linux/v6.8.2/source/include/linux/skbuff.h#L852
