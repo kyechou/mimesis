@@ -26,14 +26,15 @@ struct DemoHeader {
 
 struct UserData {
     std::vector<pcpp::PcapLiveDevice *> *intfs;
-    bool seen_pkt;
+    std::vector<bool> *port_to_type0_map;
 };
 
 /**
  * Validate the given packet. Returns true if the packet is okay, false
  * otherwise.
  */
-static inline bool validate_packet(const pcpp::Packet &packet) {
+static inline bool validate_and_populate_headers(DemoHeader &demo,
+                                                 const pcpp::Packet &packet) {
     if (packet.getFirstLayer()->getProtocol() != pcpp::Ethernet) {
         warn("The first protocol is not Ethernet");
         return false;
@@ -45,10 +46,11 @@ static inline bool validate_packet(const pcpp::Packet &packet) {
         return false;
     }
     auto eth_payload_len = eth_layer->getLayerPayloadSize();
-    if (eth_payload_len < sizeof(DemoHeader)) {
-        warn("Ethernet payload len < DemoHeader size");
+    if (eth_payload_len < sizeof(demo)) {
+        warn("The Ethernet payload is too short.");
         return false;
     }
+    memcpy(&demo, eth_layer->getLayerPayload(), sizeof(demo));
     return true;
 }
 
@@ -58,51 +60,59 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     // Populate the user data.
     auto data = static_cast<UserData *>(user_data);
     const std::vector<pcpp::PcapLiveDevice *> &intfs = *data->intfs;
+    std::vector<bool> *port_to_type0_map = data->port_to_type0_map;
 
     // Parse the received packet.
     pcpp::Packet packet(raw_packet);
     info("----------------------------------------");
     info("Received a demo packet from " + dev->getName());
 
-    if (!(data->seen_pkt)) {
-        data->seen_pkt = true;
-    }
-
-    if (!validate_packet(packet)) {
+    DemoHeader demo;
+    if (!validate_and_populate_headers(demo, packet)) {
         warn("Drop ill-formed packet");
         return false; // continue capturing.
     }
 
-    // Read the demo header
-    DemoHeader demo;
-    memcpy(&demo, packet.getFirstLayer()->getLayerPayload(), sizeof(demo));
-    demo.port = pcpp::netToHost16(demo.port);
-
-    // Derive the output port.
-    uint16_t out_port = demo.port;
-    if (out_port >= intfs.size()) {
+    // Use the demo header to determine the egress port.
+    // Since it's only 1 byte, no need to convert endianness.
+    if (demo.port >= intfs.size()) {
         warn("Drop packet destined to non-existent port");
         return false; // continue capturing.
     }
 
     // Response
-    info("Forward packet to the specified egress port");
-    if (!intfs.at(out_port)->sendPacket(*raw_packet, /*checkMtu=*/false)) {
+    
+    if (demo.type == 0){
+        port_to_type0_map->at(demo.port) = true;
+    } else if( demo.type == 1) {
+    	if(!port_to_type0_map->at(demo.port)){
+    		return false;
+    	}
+    } else {
+    	error("Unknown packet type");
+        return false;
+    }
+    
+    
+    info("Sending out the packet");
+    if (!intfs.at(demo.port)->sendPacket(*raw_packet, /*checkMtu=*/false)) {
         error("Failed to send packet");
     }
 
     return false; // Don't stop capturing.
 }
 
+
 int main() {
     std::vector<pcpp::PcapLiveDevice *> intfs = open_interfaces();
+    std::vector<bool> port_to_type0_map(intfs.size(), false);
     if (intfs.empty()) {
         error("No interfaces available");
     }
 
     UserData user_data{
         .intfs = &intfs,
-        .seen_pkt = false,
+        .port_to_type0_map = &port_to_type0_map,
     };
 
     // Read from the first interface
