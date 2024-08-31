@@ -1,40 +1,31 @@
 /**
- * demo-stateless-pcpp
+ * Demo Router: Stateful forwarding (with PcapPlusPlus)
  *
- * The egress port of an incoming packet is directly determined by the `seed`
+ * The egress port of an incoming packet is directly determined by the `port`
  * header field of the packet.
+ * Packets of type 0 are always allowed. Packets of type 1 are only allowed if
+ * another type-0 packet has egressed through the same port.
  */
 
-#include <arpa/inet.h>
 #include <cstdint>
-#include <fcntl.h>
-#include <linux/if_packet.h>
-#include <linux/if_tun.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <string>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <vector>
-
+#include <linux/if_ether.h>
 #include <pcapplusplus/EthLayer.h>
 #include <pcapplusplus/PcapLiveDevice.h>
 #include <pcapplusplus/ProtocolType.h>
 #include <pcapplusplus/RawPacket.h>
 #include <pcapplusplus/SystemUtils.h>
+#include <vector>
 
 #include "lib/logger.hpp"
 #include "lib/net.hpp"
 
-using namespace std;
-
 struct DemoHeader {
-    uint16_t seed; // egress port
-    uint16_t len;
+    uint8_t port; // egress port
+    uint8_t type; // packet type. 0: init, 1: follow-up
 };
 
 struct UserData {
-    vector<pcpp::PcapLiveDevice *> *intfs;
+    std::vector<pcpp::PcapLiveDevice *> *intfs;
     bool seen_pkt;
 };
 
@@ -66,13 +57,13 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
                              void *user_data) {
     // Populate the user data.
     auto data = static_cast<UserData *>(user_data);
-    const vector<pcpp::PcapLiveDevice *> &intfs = *data->intfs;
+    const std::vector<pcpp::PcapLiveDevice *> &intfs = *data->intfs;
 
     // Parse the received packet.
     pcpp::Packet packet(raw_packet);
     info("----------------------------------------");
     info("Received a demo packet from " + dev->getName());
-    
+
     if (!(data->seen_pkt)) {
         data->seen_pkt = true;
     }
@@ -85,10 +76,10 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     // Read the demo header
     DemoHeader demo;
     memcpy(&demo, packet.getFirstLayer()->getLayerPayload(), sizeof(demo));
-    demo.seed = pcpp::netToHost16(demo.seed);
+    demo.port = pcpp::netToHost16(demo.port);
 
     // Derive the output port.
-    uint16_t out_port = demo.seed;
+    uint16_t out_port = demo.port;
     if (out_port >= intfs.size()) {
         warn("Drop packet destined to non-existent port");
         return false; // continue capturing.
@@ -104,14 +95,14 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
 }
 
 int main() {
-    vector<pcpp::PcapLiveDevice *> intfs = open_interfaces();
+    std::vector<pcpp::PcapLiveDevice *> intfs = open_interfaces();
     if (intfs.empty()) {
         error("No interfaces available");
     }
 
     UserData user_data{
         .intfs = &intfs,
-        .seen_pkt=false,
+        .seen_pkt = false,
     };
 
     // Read from the first interface
