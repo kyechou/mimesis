@@ -60,7 +60,8 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     // Populate the user data.
     auto data = static_cast<UserData *>(user_data);
     const std::vector<pcpp::PcapLiveDevice *> &intfs = *data->intfs;
-    std::vector<bool> *port_to_type0_map = data->port_to_type0_map;
+    // Whether a type-0 packet has been seen at a given egress port.
+    std::vector<bool> &port_to_type0_map = *data->port_to_type0_map;
 
     // Parse the received packet.
     pcpp::Packet packet(raw_packet);
@@ -81,19 +82,21 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     }
 
     // Response
-    
-    if (demo.type == 0){
-        port_to_type0_map->at(demo.port) = true;
-    } else if( demo.type == 1) {
-    	if(!port_to_type0_map->at(demo.port)){
-    		return false;
-    	}
+    if (demo.type == 0) {
+        // Type-0 packets are always allowed.
+        // Mark the egress port as initialized.
+        port_to_type0_map.at(demo.port) = true;
+    } else if (demo.type == 1) {
+        // Type-1 packets are only allowed if the egress port has been
+        // initialized.
+        if (!port_to_type0_map.at(demo.port)) {
+            // Port not initialized with a type-0 packet yet.
+            return false; // continue capturing.
+        }
     } else {
-    	error("Unknown packet type");
-        return false;
+        warn("Unknown packet type. Ignore the packet.");
+        return false; // continue capturing.
     }
-    
-    
     info("Sending out the packet");
     if (!intfs.at(demo.port)->sendPacket(*raw_packet, /*checkMtu=*/false)) {
         error("Failed to send packet");
@@ -101,7 +104,6 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
 
     return false; // Don't stop capturing.
 }
-
 
 int main() {
     std::vector<pcpp::PcapLiveDevice *> intfs = open_interfaces();

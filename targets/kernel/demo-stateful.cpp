@@ -83,19 +83,23 @@ int main() {
         }
 
         // Response
-        
-        if (hdrs.demo.type == 0){
-        	port_to_type0_map.at(hdrs.demo.port) = true;
-        } else if( hdrs.demo.type == 1) {
-        	if(!port_to_type0_map.at(hdrs.demo.port)){
-        		continue;
-        	}
+        if (hdrs.demo.type == 0) {
+            // Type-0 packets are always allowed.
+            // Mark the egress port as initialized.
+            port_to_type0_map.at(hdrs.demo.port) = true;
+        } else if (hdrs.demo.type == 1) {
+            // Type-1 packets are only allowed if the egress port has been
+            // initialized.
+            if (!port_to_type0_map.at(hdrs.demo.port)) {
+                // Port not initialized with a type-0 packet yet.
+                continue;
+            }
         } else {
-        	std::cerr << "Unknown packet type " << hdrs.demo.type << std::endl;
+            warn("Unknown packet type. Ignore the packet.");
             continue;
         }
+
         info("Sending out the packet");
-        
         write(intf_fds[hdrs.demo.port], buffer, len);
     }
 
