@@ -21,8 +21,8 @@ struct DemoHeader {
 };
 
 struct Headers {
-    struct ethhdr eth;
-    struct DemoHeader demo;
+    struct ethhdr *eth;
+    struct DemoHeader *demo;
 };
 
 /**
@@ -35,8 +35,9 @@ static inline bool validate_and_populate_headers(Headers &hdrs,
         warn("The received packet buffer is too short.");
         return false;
     }
-    memcpy(&hdrs, buffer, sizeof(hdrs));
-    auto ethertype = ntohs(hdrs.eth.h_proto);
+    hdrs.eth = (struct ethhdr *)buffer;
+    hdrs.demo = (struct DemoHeader *)(buffer + sizeof(struct ethhdr));
+    auto ethertype = ntohs(hdrs.eth->h_proto);
     if (ethertype != 0xdead) {
         warn("Ethertype does not match 0xdead (57005)");
         return false;
@@ -73,14 +74,14 @@ int main() {
 
         // Use the demo header to determine the egress port.
         // Since it's only 1 byte, no need to convert endianness.
-        if (hdrs.demo.port >= intf_fds.size()) {
+        if (hdrs.demo->port >= intf_fds.size()) {
             warn("Drop packet destined to non-existent port");
             continue;
         }
 
         // Response
         info("Sending out the packet");
-        write(intf_fds[hdrs.demo.port], buffer, len);
+        write(intf_fds[hdrs.demo->port], buffer, len);
     }
 
     close_intf_fds(intf_fds);

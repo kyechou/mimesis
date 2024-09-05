@@ -1,15 +1,17 @@
 /**
- * Demo Router: Stateless forwarding
+ * Stateless IP forwarding
  *
- * The egress port of an incoming packet is determined by the `ip.daddr`
- * header field of the packet.
+ * Forward packets based on destination IP addresses.
+ *  - dstIP 10.1.2.0/24 -> intf 0 (src_mac 00:00:00:00:00:00)
+ *  - dstIP 10.1.0.0/16 -> intf 1 (src_mac 00:00:00:00:00:01)
+ *  - dstIP 10.2.0.0/16 -> intf 2 (src_mac 00:00:00:00:00:02)
+ *  - dstIP 10.0.0.0/8  -> intf 3 (src_mac 00:00:00:00:00:03)
+ *  - (otherwise) -> drop
  */
 
 #include <cstdint>
 #include <cstring>
 #include <linux/if_ether.h>
-#include <netinet/in.h>
-#include <string>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <string>
@@ -19,10 +21,9 @@
 #include "lib/logger.hpp"
 #include "lib/net.hpp"
 
-
 struct Headers {
-    struct ethhdr eth;
-    struct iphdr ip;
+    struct ethhdr *eth;
+    struct iphdr *ip;
 };
 
 int dst_ip_matching(uint32_t dst_addr) {
@@ -69,8 +70,9 @@ static inline bool validate_and_populate_headers(Headers &hdrs,
         warn("The received packet buffer is too short.");
         return false;
     }
-    memcpy(&hdrs, buffer, sizeof(hdrs));
-    auto ethertype = ntohs(hdrs.eth.h_proto);
+    hdrs.eth = (struct ethhdr *)buffer;
+    hdrs.ip = (struct iphdr *)(buffer + sizeof(struct ethhdr));
+    auto ethertype = ntohs(hdrs.eth->h_proto);
     if (ethertype != 0x0800) {
         warn("Ethertype does not match 0x0800 (IPv4)");
         return false;
@@ -82,14 +84,12 @@ int main() {
     std::vector<int> intf_fds = open_intf_fds();
     if (intf_fds.empty()) {
         error("No interfaces available");
+    } else if (intf_fds.size() < 4) {
+        error("Total number of interfaces < 4");
     }
 
     Headers hdrs;
     uint8_t buffer[ETH_FRAME_LEN];
-    
-    if (intf_fds.size() < 4) {
-    	error("Total number of interfaces < 4");
-    }
 
     while (1) {
         // Read from the first interface
@@ -100,23 +100,25 @@ int main() {
         } else if (len == 0) {
             break; // EOF. Connection terminated. (socket closed)
         }
-        
 
         info("----------------------------------------");
-        info("Received a demo packet from fd " + std::to_string(intf_fds[0]));
+        info("Received a packet from fd " + std::to_string(intf_fds[0]));
 
         if (!validate_and_populate_headers(hdrs, buffer, len)) {
             warn("Drop ill-formed packet");
             continue;
         }
 
-        // Response
-        
-        int eg_intf = dst_ip_matching(hdrs.ip.daddr);
+        // Static forwarding based on IP destination addresses.
+        int eg_intf = dst_ip_matching(hdrs.ip->daddr);
         if (eg_intf == -1) {
-        	continue;
+            continue;
         }
-        
+
+        memset(hdrs.eth->h_source, 0, ETH_ALEN);
+        hdrs.eth->h_source[ETH_ALEN - 1] = eg_intf;
+
+        // Response
         info("Sending out the packet");
         write(intf_fds[eg_intf], buffer, len);
     }

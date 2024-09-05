@@ -16,16 +16,9 @@ include_directories(
 # Add target programs to compile
 #
 
-set(DEMO_RTR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/demo-routers)
-FILE(GLOB_RECURSE DEMO_RTR_SRCS CONFIGURE_DEPENDS ${DEMO_RTR_DIR}/*.cpp)
-foreach(RTR_SRC ${DEMO_RTR_SRCS})
-    get_filename_component(STEM ${RTR_SRC} NAME_WE)
-    add_executable(demo-${STEM} ${RTR_SRC} $<TARGET_OBJECTS:_logger> $<TARGET_OBJECTS:_net>)
-    target_link_libraries(demo-${STEM} PRIVATE _logger _net)
-endforeach()
+add_executable(hello-world ${CMAKE_CURRENT_SOURCE_DIR}/hello-world.cpp)
 
 set(KERNEL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
-# FILE(GLOB_RECURSE KERNEL_SRCS CONFIGURE_DEPENDS ${KERNEL_DIR}/*.cpp)
 FILE(GLOB_RECURSE KERNEL_SRCS CONFIGURE_DEPENDS ${KERNEL_DIR}/*.cpp)
 foreach(KERNEL_SRC ${KERNEL_SRCS})
     get_filename_component(STEM ${KERNEL_SRC} NAME_WE)
@@ -49,6 +42,3 @@ endforeach()
 #     add_executable(dpdk-${STEM} ${DPDK_APP} $<TARGET_OBJECTS:_logger> $<TARGET_OBJECTS:_net>)
 #     target_link_libraries(dpdk-${STEM} PRIVATE dpdk _logger _net)
 # endforeach()
-
-set(HELLO_WORLD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hello-world)
-add_executable(hello-world-1 ${HELLO_WORLD_DIR}/hw1.cpp)
