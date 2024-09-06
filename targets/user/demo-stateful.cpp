@@ -39,7 +39,7 @@ int main() {
             }
         }
 
-        uint16_t egress = ingress_pkt.port; // all output in network order
+        uint8_t egress = ingress_pkt.port; // all output in network order
         user_send(egress, &ingress_pkt, sizeof(ingress_pkt));
     }
 
