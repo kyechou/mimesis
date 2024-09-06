@@ -16,8 +16,6 @@ include_directories(
 # Add target programs to compile
 #
 
-add_executable(hello-world ${CMAKE_CURRENT_SOURCE_DIR}/hello-world.cpp)
-
 set(KERNEL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
 FILE(GLOB_RECURSE KERNEL_SRCS CONFIGURE_DEPENDS ${KERNEL_DIR}/*.cpp)
 foreach(KERNEL_SRC ${KERNEL_SRCS})

@@ -65,8 +65,9 @@ $ ./scripts/test.sh
 ## Usage
 
 Here we demonstrate step by step how to use Mimesis to extract a formal model
-from the example network function program `user-demo-stateless`, which is
-located at `build/targets/user-demo-stateless`.
+from an example network function program, `user-hello-world`, which is a simple
+echo server that sends any received packet to its ingress interface without
+modification.
 
 ### Create a new analysis project
 
@@ -74,7 +75,7 @@ The first step is to create a new analysis project via S2E with the following
 command. The created project will be located at `s2e/projects/mimesis/`.
 
 ```sh
-$ ./scripts/s2e.sh -n ./build/targets/user-demo-stateless
+$ ./scripts/s2e.sh -n ./build/targets/user-hello-world
 ```
 
 > [!IMPORTANT]
@@ -83,8 +84,10 @@ $ ./scripts/s2e.sh -n ./build/targets/user-demo-stateless
 > project directories if so desired.
 
 > [!NOTE]
-> It is possible to specify the number of interfaces (default: 8) for the
-> extracted model. See `./scripts/s2e.sh -h` for more details.
+> By default the model is created with 8 interfaces. It is possible to
+> explicitly specify the number of interfaces for the extracted model with
+> command-line options, such as `./scripts/s2e.sh -i 16 -n <target program>`.
+> See `./scripts/s2e.sh -h` for more details.
 
 ### Run the symbolic execution
 
