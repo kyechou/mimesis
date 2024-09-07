@@ -76,7 +76,7 @@ public:
     /**
      * Write sylvan stats report to `out`.
      */
-    void report_stats(FILE *out) const;
+    std::string report_stats() const;
 };
 
 } // namespace ps

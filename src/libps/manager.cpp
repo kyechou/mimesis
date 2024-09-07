@@ -119,16 +119,23 @@ void Manager::resume_threads() const {
     lace_resume();
 }
 
-void Manager::report_stats(FILE *out) const {
+std::string Manager::report_stats() const {
     if (!_initialized) {
         warn("libps is not initialized");
-        return;
+        return {};
     }
 
-    sylvan::sylvan_stats_report(out);
-    if (fflush(out) != 0) {
-        error("fflush() failed", errno);
+    char *buf;
+    size_t len;
+    FILE *out = open_memstream(&buf, &len);
+    if (!out) {
+        error("open_memstream failed", errno);
     }
+    sylvan::sylvan_stats_report(out);
+    fclose(out);
+    std::string res(buf);
+    free(buf);
+    return res;
 }
 
 } // namespace ps
