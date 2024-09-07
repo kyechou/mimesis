@@ -131,15 +131,30 @@ build_systemtap_programs() {
         cat <<-EOM
         set -euo pipefail
 
+        # It is crucial for the userspace programs to be at the same place
+        # (/home/s2e/) as they would be in the S2E QEMU VM, so that the
+        # systemtap probes will be able to find them. Otherwise, the systemtap
+        # userspace probes will not be triggered because of different program
+        # paths between compile time and run time.
+
         mkdir -p $s2e_home
         export PATH=$s2e_home:\$PATH
         cp $PROJECT_DIR/build/targets/user-* $s2e_home/
 
         mkdir -p $PROJECT_DIR/build/src
         cd $PROJECT_DIR/build/src
-        for stp_file in $PROJECT_DIR/src/*.stp; do
-            stap -r 6.8.2-s2e -g -p4 -m \$(basename -s .stp \$stp_file) \$stp_file &
+
+        # Compile systemtap script for kernel probes.
+        stap -r 6.8.2-s2e -g -p4 -m kernel_probes $PROJECT_DIR/src/kernel_probes.stp &
+
+        # Compile systemtap script for user probes.
+        for user_prog in $s2e_home/user-*; do
+            prog_name=\$(basename \$user_prog)
+            safe_name=\$(echo \$prog_name | sed s/-/_/g)
+            sed s,PROG_NAME,\$prog_name, $PROJECT_DIR/src/user_probes.stp >\$safe_name.stp
+            stap -r 6.8.2-s2e -g -p4 -m \$safe_name \$safe_name.stp &
         done
+
         wait
         chown -R $(id -u):$(id -g) $PROJECT_DIR/build/src
 EOM

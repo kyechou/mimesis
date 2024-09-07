@@ -81,24 +81,9 @@ private function info(message:string) {
 /**
  * void user_recv(uint32_t *intf, void *buffer, uint32_t len);
  */
-probe process("user-demo-stateless").function("user_recv").return {
+probe process("PROG_NAME").function("user_recv").return {
     s2e_mimesis_user_recv(@entry($intf), @entry($buffer), @entry($len));
 }
-# probe process("user-demo-stateful").function("user_recv").return {
-#     s2e_mimesis_user_recv(@entry($intf), @entry($buffer), @entry($len));
-# }
-# probe process("user-l2-echo").function("user_recv").return {
-#     s2e_mimesis_user_recv(@entry($intf), @entry($buffer), @entry($len));
-# }
-# probe process("user-l2-forward").function("user_recv").return {
-#     s2e_mimesis_user_recv(@entry($intf), @entry($buffer), @entry($len));
-# }
-# probe process("user-ip-stateless").function("user_recv").return {
-#     s2e_mimesis_user_recv(@entry($intf), @entry($buffer), @entry($len));
-# }
-# probe process("user-ip-stateful").function("user_recv").return {
-#     s2e_mimesis_user_recv(@entry($intf), @entry($buffer), @entry($len));
-# }
 
 #
 # Egress probes.
@@ -107,23 +92,8 @@ probe process("user-demo-stateless").function("user_recv").return {
 /**
  * void user_send(uint32_t intf, void *buffer, uint32_t len);
  */
-probe process("user-demo-stateless").function("user_send") {
+probe process("PROG_NAME").function("user_send") {
     s2e_mimesis_user_send($intf, $buffer, $len);
 }
-# probe process("user-demo-stateful").function("user_send") {
-#     s2e_mimesis_user_send($intf, $buffer, $len);
-# }
-# probe process("user-l2-echo").function("user_send") {
-#     s2e_mimesis_user_send($intf, $buffer, $len);
-# }
-# probe process("user-l2-forward").function("user_send") {
-#     s2e_mimesis_user_send($intf, $buffer, $len);
-# }
-# probe process("user-ip-stateless").function("user_send") {
-#     s2e_mimesis_user_send($intf, $buffer, $len);
-# }
-# probe process("user-ip-stateful").function("user_send") {
-#     s2e_mimesis_user_send($intf, $buffer, $len);
-# }
 
 # vim: ts=4 sw=4 et cms=#%s :

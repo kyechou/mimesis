@@ -29,7 +29,6 @@ FILE(GLOB USERSPACE_APPS CONFIGURE_DEPENDS ${USER_DIR}/*.cpp)
 foreach(USERSPACE_APP ${USERSPACE_APPS})
     get_filename_component(STEM ${USERSPACE_APP} NAME_WE)
     add_executable(user-${STEM} ${USERSPACE_APP} $<TARGET_OBJECTS:_logger> $<TARGET_OBJECTS:_usernet>)
-    # target_link_libraries(user-${STEM} PRIVATE -static _logger _usernet)
     target_link_libraries(user-${STEM} PRIVATE _logger _usernet)
 endforeach()
 

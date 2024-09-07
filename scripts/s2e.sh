@@ -105,27 +105,24 @@ EOM
         -c "$new_project_cmd"
 
     # Prepare systemtap kernel modules
+    local mod
+    if [[ $USERSPACE -eq 1 ]]; then
+        mod="$BUILD_DIR/src/$(basename "${TARGET_PROGRAM[0]//-/_}").ko"
+    else
+        mod="$BUILD_DIR/src/kernel_probes.ko"
+    fi
+    # Soft-link the compiled kernel module
+    local target_path
+    local mod_name
+    local link_path
+    target_path="$(realpath "$mod")"
+    mod_name="$(basename "$mod")"
+    link_path="$S2E_PROJ_DIR/$mod_name"
+    ln -s "$target_path" "$link_path"
+    # Patch bootstrap.sh to load systemtap kernel modules
     local systemtap_cmds=
-    for mod in "$BUILD_DIR"/src/*.ko; do
-        if [[ $USERSPACE -eq 1 ]] && [[ "$(basename "$mod")" != user_* ]]; then
-            continue
-        elif [[ $USERSPACE -eq 0 ]] && [[ "$(basename "$mod")" == user_* ]]; then
-            continue
-        fi
-
-        # Soft-link all compiled kernel modules
-        local target_path
-        local mod_name
-        local link_path
-        target_path="$(realpath "$mod")"
-        mod_name="$(basename "$mod")"
-        link_path="$S2E_PROJ_DIR/$mod_name"
-        ln -s "$target_path" "$link_path"
-
-        # Patch bootstrap.sh to load systemtap kernel modules
-        systemtap_cmds+="\${S2ECMD} get $mod_name\n"
-        systemtap_cmds+="sudo staprun -o /dev/ttyS0 -D $mod_name\n"
-    done
+    systemtap_cmds+="\${S2ECMD} get $mod_name\n"
+    systemtap_cmds+="sudo staprun -o /dev/ttyS0 -D $mod_name\n"
 
     # Soft-link the packet sender daemon.
     ln -s "$(realpath "$BUILD_DIR/src/sender")" "$S2E_PROJ_DIR/"
@@ -251,7 +248,7 @@ create_qemu_snapshot() {
         done
 EOM
     )"
-    docker run --rm --privileged -u builder \
+    docker run -it --rm --privileged -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         "$image" \
         -c "$snapshot_cmd"
@@ -301,7 +298,7 @@ run_s2e() {
 EOM
     )"
 
-    docker run --rm --privileged -u builder \
+    docker run -it --rm --privileged -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         "$image" \
         -c "$run_cmd"
