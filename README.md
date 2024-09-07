@@ -87,7 +87,7 @@ $ ./scripts/s2e.sh -n ./build/targets/user-hello-world
 > By default the model is created with 8 interfaces. It is possible to
 > explicitly specify the number of interfaces for the extracted model with
 > command-line options, such as `./scripts/s2e.sh -i 16 -n <target program>`.
-> See `./scripts/s2e.sh -h` for more details.
+> See `./scripts/s2e.sh -h` for more options.
 
 ### Run the symbolic execution
 
