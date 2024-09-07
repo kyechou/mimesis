@@ -18,6 +18,7 @@
 
 struct DemoHeader {
     uint8_t port; // egress port
+    uint8_t type; // packet type. 0: init, 1: follow-up
 };
 
 struct Headers {

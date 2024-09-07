@@ -1,7 +1,6 @@
-#include "sender.hpp"
-
 #include <chrono>
 #include <condition_variable>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <mutex>
@@ -29,6 +28,11 @@
 using namespace std;
 namespace fs = std::filesystem;
 
+struct DemoHeader {
+    uint8_t port; // egress port
+    uint8_t type; // packet type. 0: init, 1: follow-up
+};
+
 // Variables for synchronization between threads.
 class SyncVars {
 public:
@@ -50,8 +54,8 @@ pcpp::Packet create_demo_packet(pcpp::PcapLiveDevice *egress_intf) {
     }
     packet.computeCalculateFields();
     DemoHeader demo = {
-        .seed = pcpp::hostToNet16(1),
-        .len = pcpp::hostToNet16(42),
+        .port = 0x01,
+        .type = 0x42,
     };
     packet.getRawPacket()->reallocateData(
         packet.getRawPacket()->getRawDataLen() + sizeof(demo));

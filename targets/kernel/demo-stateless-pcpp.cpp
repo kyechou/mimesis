@@ -19,6 +19,7 @@
 
 struct DemoHeader {
     uint8_t port; // egress port
+    uint8_t type; // packet type. This has no effect on stateless forwarding.
 };
 
 struct UserData {
