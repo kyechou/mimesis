@@ -22,6 +22,7 @@ usage() {
     Options:
     -h, --help          Print this message and exit
     -i, --intfs <N>     Number of interfaces (default: 8) (only effective with --new)
+    -d, --maxdepth <N>  Maximum model depth (default: 1) (only effective with --new)
     -n, --new           (Re)Create a new S2E project (followed by target program and arguments)
     -c, --clean         Clean up all analysis output
     -r, --run           Run the S2E analysis
@@ -31,6 +32,7 @@ EOF
 
 parse_args() {
     INTERFACES=8
+    MAX_DEPTH=1
     NEW=0
     CLEAN=0
     RUN=0
@@ -45,6 +47,10 @@ parse_args() {
             ;;
         -i | --intfs)
             INTERFACES="${2-}"
+            shift
+            ;;
+        -d | --maxdepth)
+            MAX_DEPTH="${2-}"
             shift
             ;;
         -n | --new)
@@ -150,7 +156,10 @@ EOM
     # 3. Add KLEE arguments.
     local plugin_cfg=
     plugin_cfg+='add_plugin("Mimesis")\n'
-    plugin_cfg+='pluginsConfig.Mimesis = {}\n'
+    plugin_cfg+='pluginsConfig.Mimesis = {\n'
+    plugin_cfg+='    -- Maximum stateful depth of the extracted model\n'
+    plugin_cfg+="    maxdepth = $MAX_DEPTH\n"
+    plugin_cfg+='}\n'
     local klee_args=
     klee_args+='        "--const-array-opt",\n' # const array optimizations
     klee_args+='        "--debug-constraints",\n'
