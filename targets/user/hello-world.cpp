@@ -7,19 +7,25 @@
 #include <cstdint>
 #include <cstring>
 #include <linux/if_ether.h>
+#include <netinet/ip.h>
 
 #include "lib/logger.hpp"
 #include "lib/usernet.hpp"
 
+struct Headers {
+    struct ethhdr eth;
+    struct iphdr ip;
+};
+
 int main() {
     uint8_t intf = 0;
-    uint8_t buffer[ETH_FRAME_LEN];
-    memset(buffer, 0, sizeof(buffer));
+    Headers buffer;
+    memset(&buffer, 0, sizeof(buffer));
 
     while (1) {
-        user_recv(&intf, buffer, sizeof(buffer));
+        user_recv(&intf, &buffer, sizeof(buffer));
         info("Hello, world. Echoing back a received packet");
-        user_send(intf, buffer, sizeof(buffer));
+        user_send(intf, &buffer, sizeof(buffer));
     }
 
     return 0;
