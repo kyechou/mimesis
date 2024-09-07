@@ -142,7 +142,10 @@ private function print_cb(cb:long) {
  *      https://www.makelinux.net/ldd3/chp-17-sect-10.shtml
  *      http://www.skbuff.net/skbbasic.html
  */
-probe kernel.function("__netif_receive_skb_core") {
+
+# The following probe is placed in __netif_receive_skb_core, after skb is allocated,
+# before do_xdp_generic is called.
+probe kernel.statement("*@net/core/dev.c:5349") {
     skb = get_skb_from_pskb($pskb);
 
     // Skip invalid frames
