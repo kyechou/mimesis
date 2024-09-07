@@ -7,10 +7,10 @@
 %{
 #include <linux/skbuff.h>
 
-struct DemoHeader {
-    uint16_t seed; // egress port
-    uint16_t len;  // payload length
-};
+// struct DemoHeader {
+//     uint8_t port; // egress port
+//     uint8_t type; // packet type
+// };
 %}
 
 #
