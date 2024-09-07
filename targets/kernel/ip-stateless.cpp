@@ -87,6 +87,7 @@ int main() {
     } else if (intf_fds.size() < 4) {
         error("Total number of interfaces < 4");
     }
+    info("Total interfaces: " + std::to_string(intf_fds.size()));
 
     Headers hdrs;
     uint8_t buffer[ETH_FRAME_LEN];

@@ -1,3 +1,4 @@
+// TODO: !!!!!!!!!!!!!!!!!!!
 /**
  * Demo Router: Stateless forwarding (with PcapPlusPlus)
  *
@@ -85,16 +86,17 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     pcpp::Packet packet(raw_packet);
     info("----------------------------------------");
     info("Received a demo packet from " + dev->getName());
-	
-	pcpp::IPv4Address dstIP = packet.getLayerOfType<pcpp::IPv4Layer>()->getDstIPv4Address();
+
+    pcpp::IPv4Address dstIP =
+        packet.getLayerOfType<pcpp::IPv4Layer>()->getDstIPv4Address();
     if (!validate_and_populate_headers(packet)) {
         warn("Drop ill-formed packet");
         return false; // continue capturing.
     }
-    
+
     int eg_intf = dst_ip_matching(dstIP.toInt());
     if (eg_intf == -1) {
-    	return false;
+        return false;
     }
 
     // Response
@@ -111,10 +113,11 @@ int main() {
     if (intfs.empty()) {
         error("No interfaces available");
     }
-    
+
     if (intfs.size() < 4) {
-    	error("Total number of interfaces < 4");
+        error("Total number of interfaces < 4");
     }
+    info("Total interfaces: " + std::to_string(intfs.size()));
 
     UserData user_data{
         .intfs = &intfs,

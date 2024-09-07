@@ -1,3 +1,4 @@
+// TODO: !!!!!!!!!!!!!!!!!!!
 /**
  * Demo Router: Stateless forwarding (with PcapPlusPlus)
  *
@@ -77,10 +78,10 @@ static inline bool validate_and_populate_headers(DemoHeader &demo,
         warn("Ethertype does not match 0x0800 (IPv4)");
         return false;
     }
-    
+
     auto ipv4_layer = packet.getLayerOfType<pcpp::IPv4Layer>();
     memcpy(&demo, ipv4_layer->getLayerPayload(), sizeof(demo));
-    
+
     return true;
 }
 
@@ -92,37 +93,37 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
     const std::vector<pcpp::PcapLiveDevice *> &intfs = *data->intfs;
     std::vector<bool> *port_to_type0_map = data->port_to_type0_map;
     DemoHeader demo;
-    
 
     // Parse the received packet.
     pcpp::Packet packet(raw_packet);
     info("----------------------------------------");
     info("Received a demo packet from " + dev->getName());
-	
-	pcpp::IPv4Address dstIP = packet.getLayerOfType<pcpp::IPv4Layer>()->getDstIPv4Address();
+
+    pcpp::IPv4Address dstIP =
+        packet.getLayerOfType<pcpp::IPv4Layer>()->getDstIPv4Address();
     if (!validate_and_populate_headers(demo, packet)) {
         warn("Drop ill-formed packet");
         return false; // continue capturing.
     }
-    
+
     int eg_intf = dst_ip_matching(dstIP.toInt());
     if (eg_intf == -1) {
-    	return false;
+        return false;
     }
 
     // Response
-    
-    if (demo.type == 0){
+
+    if (demo.type == 0) {
         port_to_type0_map->at(eg_intf) = true;
-    } else if( demo.type == 1) {
-    	if(!port_to_type0_map->at(eg_intf)){
-    		return false;
-    	}
+    } else if (demo.type == 1) {
+        if (!port_to_type0_map->at(eg_intf)) {
+            return false;
+        }
     } else {
-    	error("Unknown packet type");
+        error("Unknown packet type");
         return false;
     }
-    
+
     info("Sending out the packet");
     if (!intfs.at(eg_intf)->sendPacket(*raw_packet, /*checkMtu=*/false)) {
         error("Failed to send packet");
@@ -134,14 +135,15 @@ bool onPacketArrivesBlocking(pcpp::RawPacket *raw_packet,
 int main() {
     std::vector<pcpp::PcapLiveDevice *> intfs = open_interfaces();
     std::vector<bool> port_to_type0_map(intfs.size(), false);
-    
+
     if (intfs.empty()) {
         error("No interfaces available");
     }
-    
+
     if (intfs.size() < 4) {
-    	error("Total number of interfaces < 4");
+        error("Total number of interfaces < 4");
     }
+    info("Total interfaces: " + std::to_string(intfs.size()));
 
     UserData user_data{
         .intfs = &intfs,
