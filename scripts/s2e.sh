@@ -141,9 +141,11 @@ EOM
     # 2. Enable privileges for the target program. (Alternative: setuid)
     # 3. Disable IPv6.
     # 4. Turn on the interfaces before the target program.
-    # 5. Load systemtap kernel modules before the target program.
+    # 5. Set the interfaces in promiscuous mode to receive packets from the sender. (pcap library automatically does this, including tcpdump and pcap++.)
+    # 6. Load systemtap kernel modules before the target program.
     local capabilities='cap_sys_admin+pe cap_net_admin+pe cap_net_raw+pe cap_sys_ptrace+pe'
     local if_cmds="ip link | grep '^[0-9]\\\\+' | cut -d: -f2 | sed 's/ //g' | grep -v '^lo' | grep -v '^sit' | xargs -I{} sudo ip link set {} up\n"
+    if_cmds+="ip link | grep '^[0-9]\\\\+' | cut -d: -f2 | sed 's/ //g' | grep -v '^lo' | grep -v '^sit' | xargs -I{} sudo ip link set {} promisc on\n"
     local ipv6_disable_cmd='sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1 net.ipv6.conf.default.disable_ipv6=1'
     sed -i "$S2E_PROJ_DIR/bootstrap.sh" \
         -e 's,\(> */dev/null \+2> */dev/null\),# \1,' \
