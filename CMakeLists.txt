@@ -63,6 +63,9 @@ find_package(KLEE REQUIRED) # built in s2e tree
 find_package(LLVM REQUIRED) # built in s2e tree
 find_package(Z3 REQUIRED)   # built in s2e tree
 
+#find_package(BpfObject REQUIRED)
+#find_package(ZLIB REQUIRED) # required by `FindBpfObject.cmake`
+
 #
 # build libraries and programs
 #

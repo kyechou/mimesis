@@ -32,6 +32,16 @@ foreach(USERSPACE_APP ${USERSPACE_APPS})
     target_link_libraries(user-${STEM} PRIVATE _logger _usernet)
 endforeach()
 
+
+# add_compile_options(-Wall -Wextra -Werror -O2 -fno-builtin)
+# set(EBPF_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ebpf)
+# FILE(GLOB_RECURSE BPF_SRC_FILES CONFIGURE_DEPENDS ${EBPF_DIR}/*.c)
+# foreach(BPF_SRC_FILE ${BPF_SRC_FILES})
+#     get_filename_component(BPF_STEM ${BPF_SRC_FILE} NAME_WE)
+#     bpf_object(${BPF_STEM} ${BPF_STEM}.c)
+#     target_link_libraries(ebpf-${BPF_STEM} PUBLIC ${BPF_STEM}_skel)
+# endforeach()
+
 # set(DPDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dpdk)
 # FILE(GLOB DPDK_APPS CONFIGURE_DEPENDS ${DPDK_DIR}/*.c ${DPDK_DIR}/*.cpp)
 # foreach(DPDK_APP ${DPDK_APPS})
