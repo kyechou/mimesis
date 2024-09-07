@@ -90,6 +90,7 @@ int main() {
     if (intfs.empty()) {
         error("No interfaces available");
     }
+    info("Total interfaces: " + std::to_string(intfs.size()));
 
     UserData user_data{
         .intfs = &intfs,

@@ -54,6 +54,7 @@ int main() {
     if (intf_fds.empty()) {
         error("No interfaces available");
     }
+    info("Total interfaces: " + std::to_string(intf_fds.size()));
 
     Headers hdrs;
     uint8_t buffer[ETH_FRAME_LEN];
