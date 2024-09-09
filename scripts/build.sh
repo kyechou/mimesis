@@ -260,6 +260,10 @@ EOM
         -i "$PATCH_DIR/06-s2e-linux-kernel-disable-apparmor.patch")" ||
         echo "$out" | grep -q 'Skipping patch' ||
         die "$out"
+    out="$(patch -d "$S2E_DIR/source/s2e-linux-kernel" -Np1 \
+        -i "$PATCH_DIR/07-s2e-linux-kernel-netdev_start_xmit.patch")" ||
+        echo "$out" | grep -q 'Skipping patch' ||
+        die "$out"
 
     # Change the maximum number of interfaces allowed in QEMU.
     sed -i "$S2E_DIR/source/qemu/include/net/net.h" \

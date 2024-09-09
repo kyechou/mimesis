@@ -1,0 +1,81 @@
+diff --git a/linux-6.8.2/include/linux/netdevice.h b/linux-6.8.2/include/linux/netdevice.h
+index dba428b3a..7328738ad 100644
+--- a/linux-6.8.2/include/linux/netdevice.h
++++ b/linux-6.8.2/include/linux/netdevice.h
+@@ -4978,31 +4978,17 @@ static inline ktime_t netdev_get_tstamp(struct net_device *dev,
+ 	return hwtstamps->hwtstamp;
+ }
+ 
+-static inline netdev_tx_t __netdev_start_xmit(const struct net_device_ops *ops,
+-					      struct sk_buff *skb, struct net_device *dev,
+-					      bool more)
+-{
+-	__this_cpu_write(softnet_data.xmit.more, more);
+-	return ops->ndo_start_xmit(skb, dev);
+-}
++netdev_tx_t __netdev_start_xmit(const struct net_device_ops *ops,
++				struct sk_buff *skb, struct net_device *dev,
++				bool more);
+ 
+ static inline bool netdev_xmit_more(void)
+ {
+ 	return __this_cpu_read(softnet_data.xmit.more);
+ }
+ 
+-static inline netdev_tx_t netdev_start_xmit(struct sk_buff *skb, struct net_device *dev,
+-					    struct netdev_queue *txq, bool more)
+-{
+-	const struct net_device_ops *ops = dev->netdev_ops;
+-	netdev_tx_t rc;
+-
+-	rc = __netdev_start_xmit(ops, skb, dev, more);
+-	if (rc == NETDEV_TX_OK)
+-		txq_trans_update(txq);
+-
+-	return rc;
+-}
++netdev_tx_t netdev_start_xmit(struct sk_buff *skb, struct net_device *dev,
++			      struct netdev_queue *txq, bool more);
+ 
+ int netdev_class_create_file_ns(const struct class_attribute *class_attr,
+ 				const void *ns);
+diff --git a/linux-6.8.2/net/core/dev.c b/linux-6.8.2/net/core/dev.c
+index c9b8412f1..55fc3bc94 100644
+--- a/linux-6.8.2/net/core/dev.c
++++ b/linux-6.8.2/net/core/dev.c
+@@ -3533,6 +3533,35 @@ netdev_features_t netif_skb_features(struct sk_buff *skb)
+ }
+ EXPORT_SYMBOL(netif_skb_features);
+ 
++noinline netdev_tx_t __netdev_start_xmit(const struct net_device_ops *ops,
++					 struct sk_buff *skb,
++					 struct net_device *dev, bool more)
++{
++	__this_cpu_write(softnet_data.xmit.more, more);
++	uint32_t cb = *(uint32_t *)skb->cb;
++	if (cb == 0xdeadbeef) {
++		return NETDEV_TX_OK;
++	} else {
++		return ops->ndo_start_xmit(skb, dev);
++	}
++}
++EXPORT_SYMBOL(__netdev_start_xmit);
++
++noinline netdev_tx_t netdev_start_xmit(struct sk_buff *skb,
++				       struct net_device *dev,
++				       struct netdev_queue *txq, bool more)
++{
++	const struct net_device_ops *ops = dev->netdev_ops;
++	netdev_tx_t rc;
++
++	rc = __netdev_start_xmit(ops, skb, dev, more);
++	if (rc == NETDEV_TX_OK)
++		txq_trans_update(txq);
++
++	return rc;
++}
++EXPORT_SYMBOL(netdev_start_xmit);
++
+ static int xmit_one(struct sk_buff *skb, struct net_device *dev,
+ 		    struct netdev_queue *txq, bool more)
+ {
