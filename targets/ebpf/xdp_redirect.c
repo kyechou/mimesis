@@ -11,26 +11,19 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va
 	return vfprintf(stderr, format, args);
 }
 
+
+
 int main(int argc, char **argv)
 {
 	struct xdp_redirect_bpf *skel;
 	int err;
-
+	
 	/* Set up libbpf errors and debug info callback */
 	libbpf_set_print(libbpf_print_fn);
 	__u32 key=0;
 	__u32 if_count=0;
 	
 	struct if_nameindex *if_nidxs, *intf;
-	if_nidxs = if_nameindex();
-    if ( if_nidxs != NULL )
-    {
-        for (intf = if_nidxs; intf->if_index != 0 || intf->if_name != NULL; intf++)
-        {
-            if_count++;
-        }
-        if_freenameindex(if_nidxs);
-    }
 	
 	/* Open BPF application */
 	skel = xdp_redirect_bpf__open();
@@ -38,7 +31,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to open BPF skeleton\n");
 		return 1;
 	}
-	bpf_map__update_elem(skel->maps.intf_count, &key, 4, &if_count, 4, 0);
+	fprintf(stderr, "Opened BPF skeleton\n");
 	
 	/* Load & verify BPF programs */
 	err = xdp_redirect_bpf__load(skel);
@@ -46,14 +39,33 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
 		goto cleanup;
 	}
-
-	/* Attach tracepoint handler */
+	fprintf(stderr, "Loaded and verified BPF skeleton\n");
+	
+	err = bpf_map__update_elem(skel->maps.intf_count, &key, 4, &if_count, 4, 0);
+	if (err) {
+		fprintf(stderr, "Failed to update BPF map\n");
+		goto cleanup;
+	}
+	fprintf(stderr, "Updated BPF map\n");
+	
+	/* Attach to every interface */
+	if_nidxs = if_nameindex();
+    if ( if_nidxs != NULL )
+    {
+        for (intf = if_nidxs; intf->if_index != 0 || intf->if_name != NULL; intf++)
+        {
+        	bpf_program__attach_xdp(skel->progs.xdp_redirect, intf->if_index);
+        }
+        if_freenameindex(if_nidxs);
+    }
+	
+	/*
 	err = xdp_redirect_bpf__attach(skel);
 	if (err) {
 		fprintf(stderr, "Failed to attach BPF skeleton\n");
 		goto cleanup;
 	}
-
+	*/
 	printf("Successfully started! Please run `sudo cat /sys/kernel/debug/tracing/trace_pipe` "
 	       "to see output of the BPF programs.\n");
 
