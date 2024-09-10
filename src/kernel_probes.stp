@@ -142,8 +142,8 @@ private function print_cb(cb:long) {
  *      https://www.makelinux.net/ldd3/chp-17-sect-10.shtml
  *      http://www.skbuff.net/skbbasic.html
  */
-probe kernel.function("__netif_receive_skb_core").return {
-    skb = get_skb_from_pskb(@entry($pskb));
+probe kernel.function("__netif_receive_skb_core") {
+    skb = get_skb_from_pskb($pskb);
 
     // Skip invalid frames
     if (!skb_mac_header_was_set(skb)) {
