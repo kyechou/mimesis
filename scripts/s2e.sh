@@ -23,6 +23,7 @@ usage() {
     -h, --help          Print this message and exit
     -i, --intfs <N>     Number of interfaces (default: 8) (only effective with --new)
     -d, --maxdepth <N>  Maximum model depth (default: 1) (only effective with --new)
+    -k, --kernel-fork   Allow kernel forking (default: disabled)
     -n, --new           (Re)Create a new S2E project (followed by target program and arguments)
     -c, --clean         Clean up all analysis output
     -r, --run           Run the S2E analysis
@@ -33,6 +34,7 @@ EOF
 parse_args() {
     INTERFACES=8
     MAX_DEPTH=1
+    ALLOW_KERNEL_FORKING=false
     NEW=0
     CLEAN=0
     RUN=0
@@ -52,6 +54,9 @@ parse_args() {
         -d | --maxdepth)
             MAX_DEPTH="${2-}"
             shift
+            ;;
+        -k | --kernel-fork)
+            ALLOW_KERNEL_FORKING=true
             ;;
         -n | --new)
             NEW=1
@@ -160,7 +165,9 @@ EOM
     plugin_cfg+='add_plugin("Mimesis")\n'
     plugin_cfg+='pluginsConfig.Mimesis = {\n'
     plugin_cfg+='    -- Maximum stateful depth of the extracted model\n'
-    plugin_cfg+="    maxdepth = $MAX_DEPTH\n"
+    plugin_cfg+="    maxdepth = $MAX_DEPTH,\n"
+    plugin_cfg+='    -- Whether kernel forking is allowed\n'
+    plugin_cfg+="    allowKernelForking = $ALLOW_KERNEL_FORKING,\n"
     plugin_cfg+='}\n'
     local klee_args=
     klee_args+='        "--const-array-opt",\n' # const array optimizations
@@ -200,8 +207,8 @@ EOM
     # klee_args+='        "--z3-use-hash-consing",\n'
     # klee_args+='        "--help",\n' # "--help" to show the available options
     sed -i "$S2E_PROJ_DIR/s2e-config.lua" \
-        -e "s,^\(-- .* User-specific scripts begin here .*\)$,\1\n$plugin_cfg," \
-        -e 's,^\(.*add_plugin("Lua\(Bindings\|CoreEvents\)").*\)$,-- \1,' \
+        -e "s|^\(-- .* User-specific scripts begin here .*\)$|\1\n$plugin_cfg|" \
+        -e 's|^\(.*add_plugin("Lua\(Bindings\|CoreEvents\)").*\)$|-- \1|' \
         -e "s|^\(.*kleeArgs = {.*\)$|\1\n${klee_args}|"
 
     # Set the number of interfaces
