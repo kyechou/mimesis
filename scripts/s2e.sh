@@ -21,7 +21,7 @@ usage() {
 
     Options:
     -h, --help          Print this message and exit
-    -i, --intfs <N>     Number of interfaces (default: 8) (only effective with --new)
+    -i, --intfs <N>     Number of interfaces (default: 4) (only effective with --new)
     -d, --maxdepth <N>  Maximum model depth (default: 1) (only effective with --new)
     -k, --kernel-fork   Allow kernel forking (default: disabled)
     -n, --new           (Re)Create a new S2E project (followed by target program and arguments)
@@ -32,7 +32,7 @@ EOF
 }
 
 parse_args() {
-    INTERFACES=8
+    INTERFACES=4
     MAX_DEPTH=1
     ALLOW_KERNEL_FORKING=false
     NEW=0
