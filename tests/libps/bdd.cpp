@@ -350,4 +350,20 @@ TEST_F(BddTests, serialization) {
     EXPECT_EQ(wildcard,
               ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(wildcard)));
     EXPECT_EQ(tower, ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(tower)));
+
+    EXPECT_EQ(vars_cube, ps::Bdd::from_byte_vector(
+                             ps::Bdd::to_byte_vector(ps::Bdd::from_byte_vector(
+                                 ps::Bdd::to_byte_vector(vars_cube)))));
+    EXPECT_EQ(diamond, ps::Bdd::from_byte_vector(
+                           ps::Bdd::to_byte_vector(ps::Bdd::from_byte_vector(
+                               ps::Bdd::to_byte_vector(diamond)))));
+    EXPECT_EQ(train,
+              ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(
+                  ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(train)))));
+    EXPECT_EQ(wildcard, ps::Bdd::from_byte_vector(
+                            ps::Bdd::to_byte_vector(ps::Bdd::from_byte_vector(
+                                ps::Bdd::to_byte_vector(wildcard)))));
+    EXPECT_EQ(tower,
+              ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(
+                  ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(tower)))));
 }
