@@ -13,6 +13,9 @@
 [submodule "vcpkg"]
 	path = depends/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
-[submodule "third_party/libbpf/libbpf"]
+[submodule "bpftool"]
+	path = third_party/bpftool/bpftool
+	url = https://github.com/libbpf/bpftool.git
+[submodule "libbpf"]
 	path = third_party/libbpf/libbpf
 	url = https://github.com/libbpf/libbpf.git
