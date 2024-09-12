@@ -45,6 +45,9 @@ RUN dpkg --add-architecture i386 && \
     $(apt-cache depends qemu-system-x86 | grep Depends | sed "s/.*ends:\ //" \
     | grep -v '<' | tr '\n' ' ') \
     libcap-dev libattr1-dev \
+    # eBPF dependencies
+    elfutils libelf-dev zlib1g-dev binutils-dev libcap-dev clang llvm-dev \
+    libc6-dev libc6-dev-i386 \
     && \
     apt-get clean && \
     apt-file update

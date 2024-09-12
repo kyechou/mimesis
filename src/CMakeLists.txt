@@ -49,13 +49,12 @@ target_include_directories(ps SYSTEM PUBLIC
     ${LLVM_INCLUDE_DIRS}
     ${sylvan_INCLUDE_DIRS}
 )
-target_link_libraries(ps PRIVATE _logger)
+target_link_libraries(ps PRIVATE _logger cereal::cereal)
 target_link_libraries(ps PUBLIC
     klee
     llvm
     z3
     ${sylvan_LIBRARIES}
-    cereal::cereal
 )
 
 # Install libps headers and libraries

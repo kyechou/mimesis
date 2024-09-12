@@ -53,6 +53,8 @@ endif()
 #
 include("ExternalProject")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+add_subdirectory(third_party/bpftool EXCLUDE_FROM_ALL)
+add_subdirectory(third_party/libbpf EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/inotify-cpp EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/sylvan EXCLUDE_FROM_ALL)
 find_package(Threads REQUIRED)
@@ -62,9 +64,6 @@ find_package(PcapPlusPlus REQUIRED)
 find_package(KLEE REQUIRED) # built in s2e tree
 find_package(LLVM REQUIRED) # built in s2e tree
 find_package(Z3 REQUIRED)   # built in s2e tree
-
-#find_package(BpfObject REQUIRED)
-#find_package(ZLIB REQUIRED) # required by `FindBpfObject.cmake`
 
 #
 # build libraries and programs
