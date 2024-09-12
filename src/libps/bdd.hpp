@@ -66,8 +66,8 @@ public:
      * Write the given BDD into a one-line string for debugging purposes only.
      * The string cannot be turned back into a BDD.
      *
-     * NOTE: Avoid using this function. There seems to be some inconsistencies
-     * in terms of the keys from the Sylvan library.
+     * WARNING: Do not use this function with S2E. The S2E VM does not support
+     * `open_memstream`.
      *
      * One-line (`sylvan_fprint`) format of a BDD:
      * [(<key>,<level>,<key_low>,<key_high>,<complement_high>),...]
@@ -76,12 +76,19 @@ public:
     /**
      * Write the given BDD into a dot-format string for debugging purposes only.
      * The string cannot be turned back into a BDD.
+     *
+     * WARNING: Do not use this function with S2E. The S2E VM does not support
+     * `open_memstream`.
      */
     static std::string to_dot_string(const sylvan::Bdd &);
     /**
      * Write the given BDD into a vector of bytes in the binary format.
      */
-    static std::vector<std::byte> to_byte_vector(const sylvan::Bdd &);
+    static std::vector<char> to_byte_vector(const sylvan::Bdd &);
+    /**
+     * Restore the BDD from a vector of bytes in the binary format.
+     */
+    static sylvan::Bdd from_byte_vector(const std::vector<char> &);
     /**
      * Output the given BDD as a dot file for debugging purposes only.
      * The file cannot be turned back into a BDD.

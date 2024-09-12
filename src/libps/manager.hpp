@@ -3,11 +3,14 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <sylvan_obj.hpp>
 #include <unordered_map>
 #include <utility>
+
+#include "libps/model.hpp"
 
 namespace ps {
 
@@ -19,6 +22,9 @@ private:
     std::unordered_map<std::string, std::string> _klee_var_name_to_orig_name;
 
     Manager() = default;
+
+    template <class Archive>
+    friend void serialize(Archive &ar, Manager &manager);
 
 public:
     // Disable the copy/move constructors and the assignment operators
@@ -49,6 +55,10 @@ public:
      */
     void reset();
     /**
+     * Returns true if libps is initialized.
+     */
+    bool is_initialized() const { return _initialized; }
+    /**
      * All symbolic variables must be registered before being used to create
      * BDDs.
      */
@@ -78,6 +88,15 @@ public:
      * Write sylvan stats report to `out`.
      */
     std::string report_stats() const;
+    /**
+     * Serialize the given `model` to a file specified by `fn`.
+     */
+    void export_model(const Model &model,
+                      const std::filesystem::path &fn) const;
+    /**
+     * Import from a file specified by `fn` and return the deserialized model.
+     */
+    Model import_model(const std::filesystem::path &fn);
 };
 
 } // namespace ps

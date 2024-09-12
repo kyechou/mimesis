@@ -22,6 +22,9 @@ class BitVector {
 private:
     std::vector<sylvan::Bdd> bv;
 
+    template <class Archive>
+    friend void serialize(Archive &ar, BitVector &bv);
+
 public:
     /**
      * Create a bit-vector representing the symbolic variable `var_name`.

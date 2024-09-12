@@ -55,6 +55,7 @@ target_link_libraries(ps PUBLIC
     llvm
     z3
     ${sylvan_LIBRARIES}
+    cereal::cereal
 )
 
 # Install libps headers and libraries

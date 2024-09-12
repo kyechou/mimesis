@@ -50,8 +50,7 @@ std::string get_testdata_str(const std::filesystem::path &fn) {
     return buffer.str();
 }
 
-std::vector<std::byte>
-get_testdata_byte_vector(const std::filesystem::path &fn) {
+std::vector<char> get_testdata_as_bytes(const std::filesystem::path &fn) {
     std::filesystem::path fp = get_testdata_path(fn);
     std::ifstream fin(fp, std::ios::binary | std::ios::ate);
     if (!fin) {
@@ -59,7 +58,7 @@ get_testdata_byte_vector(const std::filesystem::path &fn) {
     }
 
     auto size = fin.tellg();
-    std::vector<std::byte> res(size);
+    std::vector<char> res(size);
     fin.seekg(0);
     if (!fin.read(reinterpret_cast<char *>(res.data()), size)) {
         error("Failed to read " + std::to_string(size) + " bytes from " +

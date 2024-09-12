@@ -3,11 +3,13 @@
 #include <cerrno>
 #include <cstdint>
 #include <cstdio>
+#include <filesystem>
 #include <sylvan.h>
 #include <sylvan_common.h>
 #include <sylvan_obj.hpp>
 
 #include "lib/logger.hpp"
+#include "libps/serializer.hpp"
 
 namespace ps {
 
@@ -136,6 +138,21 @@ std::string Manager::report_stats() const {
     std::string res(buf);
     free(buf);
     return res;
+}
+
+void Manager::export_model(const Model &model,
+                           const std::filesystem::path &fn) const {
+    if (!_initialized) {
+        warn("libps is not initialized");
+        return;
+    }
+
+    Serializer::export_model(*this, model, fn);
+}
+
+Model Manager::import_model(const std::filesystem::path &fn) {
+    this->init();
+    return Serializer::import_model(*this, fn);
 }
 
 } // namespace ps

@@ -304,7 +304,7 @@ TEST_F(BddTests, file_io) {
     EXPECT_EQ(ps::Bdd::to_dot_string(tower),
               util::get_testdata_str("ps_bdd_tower.dot"));
 
-    // Test `to_ascii_file` via `to_string`.
+    // Test `to_string`.
     EXPECT_EQ(ps::Bdd::to_string(vars_cube) + "\n",
               util::get_testdata_str("ps_bdd_vars_cube.txt"));
     EXPECT_EQ(ps::Bdd::to_string(diamond) + "\n",
@@ -316,17 +316,17 @@ TEST_F(BddTests, file_io) {
     EXPECT_EQ(ps::Bdd::to_string(tower) + "\n",
               util::get_testdata_str("ps_bdd_tower.txt"));
 
-    // Test `to_binary_file` via `to_byte_vector`.
+    // Test `to_byte_vector`.
     EXPECT_EQ(ps::Bdd::to_byte_vector(vars_cube),
-              util::get_testdata_byte_vector("ps_bdd_vars_cube.bin"));
+              util::get_testdata_as_bytes("ps_bdd_vars_cube.bin"));
     EXPECT_EQ(ps::Bdd::to_byte_vector(diamond),
-              util::get_testdata_byte_vector("ps_bdd_diamond.bin"));
+              util::get_testdata_as_bytes("ps_bdd_diamond.bin"));
     EXPECT_EQ(ps::Bdd::to_byte_vector(train),
-              util::get_testdata_byte_vector("ps_bdd_train.bin"));
+              util::get_testdata_as_bytes("ps_bdd_train.bin"));
     EXPECT_EQ(ps::Bdd::to_byte_vector(wildcard),
-              util::get_testdata_byte_vector("ps_bdd_wildcard.bin"));
+              util::get_testdata_as_bytes("ps_bdd_wildcard.bin"));
     EXPECT_EQ(ps::Bdd::to_byte_vector(tower),
-              util::get_testdata_byte_vector("ps_bdd_tower.bin"));
+              util::get_testdata_as_bytes("ps_bdd_tower.bin"));
 
     // Test `from_binary_file`.
     EXPECT_EQ(vars_cube, ps::Bdd::from_binary_file(
@@ -339,4 +339,15 @@ TEST_F(BddTests, file_io) {
                             util::get_testdata_path("ps_bdd_wildcard.bin")));
     EXPECT_EQ(tower, ps::Bdd::from_binary_file(
                          util::get_testdata_path("ps_bdd_tower.bin")));
+}
+
+TEST_F(BddTests, serialization) {
+    EXPECT_EQ(vars_cube,
+              ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(vars_cube)));
+    EXPECT_EQ(diamond,
+              ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(diamond)));
+    EXPECT_EQ(train, ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(train)));
+    EXPECT_EQ(wildcard,
+              ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(wildcard)));
+    EXPECT_EQ(tower, ps::Bdd::from_byte_vector(ps::Bdd::to_byte_vector(tower)));
 }

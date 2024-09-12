@@ -6,7 +6,10 @@
 #include <cstdio>
 #include <cstring>
 #include <functional>
+#include <istream>
+#include <ostream>
 #include <set>
+#include <sstream>
 #include <string>
 #include <sylvan.h>
 #include <sylvan_bdd.h>
@@ -135,6 +138,7 @@ struct __sylvan_skiplist {
 /**
  * Return the assigned number of the given dd,
  * or 0 if not found.
+ * third_party/sylvan/sylvan/src/sylvan_sl.c:68
  */
 uint64_t __sylvan_skiplist_get(sylvan::sylvan_skiplist_t l, sylvan::MTBDD dd) {
     if (dd == sylvan::mtbdd_false || dd == sylvan::mtbdd_true)
@@ -167,6 +171,7 @@ uint64_t __sylvan_skiplist_get(sylvan::sylvan_skiplist_t l, sylvan::MTBDD dd) {
 
 /**
  * Give the number of assigned nodes. (numbers 1,2,...,N)
+ * third_party/sylvan/sylvan/src/sylvan_sl.c:156
  */
 size_t __sylvan_skiplist_count(sylvan::sylvan_skiplist_t l) {
     return ((struct __sylvan_skiplist *)l)->next - 1;
@@ -174,6 +179,7 @@ size_t __sylvan_skiplist_count(sylvan::sylvan_skiplist_t l) {
 
 /**
  * Get the MTBDD assigned to the number <index>, with the index 1,...,count.
+ * third_party/sylvan/sylvan/src/sylvan_sl.c:162
  */
 sylvan::MTBDD __sylvan_skiplist_getr(sylvan::sylvan_skiplist_t l,
                                      uint64_t index) {
@@ -184,7 +190,6 @@ sylvan::MTBDD __sylvan_skiplist_getr(sylvan::sylvan_skiplist_t l,
  * Convert a leaf (possibly complemented) to a string representation.
  * If it does not fit in <buf> of size <buflen>, returns a freshly allocated
  * char* array.
- *
  * third_party/sylvan/sylvan/src/sylvan_mt.c:196
  */
 char *__sylvan_mt_to_str(int complement [[maybe_unused]],
@@ -232,10 +237,37 @@ char *__sylvan_mt_to_str(int complement [[maybe_unused]],
 }
 
 /**
+ * Write a leaf in binary form (calls write_binary callback of type).
+ * third_party/sylvan/sylvan/src/sylvan_mt.c:246
+ */
+int __sylvan_mt_write_binary(uint32_t type,
+                             uint64_t value [[maybe_unused]],
+                             std::ostream &out [[maybe_unused]]) {
+    assert(type < /*cl_registry_count*/ 3);
+    // NOTE: Here we assume the leaf type does not have special write_binary_cb,
+    // so nothing needs to be done. If that's not the case, see the original
+    // function `sylvan_mt_write_binary` to implement it properly.
+    return 0;
+}
+
+/**
+ * Read a leaf in binary form (calls read_binary callback of type).
+ * third_party/sylvan/sylvan/src/sylvan_mt.c:255
+ */
+int __sylvan_mt_read_binary(uint32_t type,
+                            uint64_t *value [[maybe_unused]],
+                            std::istream &in [[maybe_unused]]) {
+    assert(type < /*cl_registry_count*/ 3);
+    // NOTE: Here we assume the leaf type does not have special read_binary_cb,
+    // so nothing needs to be done. If that's not the case, see the original
+    // function `sylvan_mt_read_binary` to implement it properly.
+    return 0;
+}
+
+/**
  * Obtain the textual representation of a leaf.
  * The returned result is either equal to the given <buf> (if the results fits)
  * or to a newly allocated array (with malloc).
- *
  * third_party/sylvan/sylvan/src/sylvan_mtbdd.c:3003
  */
 char *__mtbdd_leaf_to_str(sylvan::MTBDD leaf, char *buf, size_t buflen) {
@@ -248,14 +280,13 @@ char *__mtbdd_leaf_to_str(sylvan::MTBDD leaf, char *buf, size_t buflen) {
 
 /**
  * Write a text representation of a leaf to the given file.
- *
  * third_party/sylvan/sylvan/src/sylvan_mtbdd.c:2978
  */
-void __mtbdd_print_leaf_to_str(std::string &out, sylvan::MTBDD leaf) {
+void __mtbdd_print_leaf(std::ostream &out, sylvan::MTBDD leaf) {
     char buf[64];
     char *ptr = __mtbdd_leaf_to_str(leaf, buf, 64);
     if (ptr != NULL) {
-        out += ptr;
+        out << ptr;
         if (ptr != buf) {
             free(ptr);
         }
@@ -267,12 +298,11 @@ void __mtbdd_print_leaf_to_str(std::string &out, sylvan::MTBDD leaf) {
 #endif // __cplusplus
 
 /**
- * Reimplementation of `mtbdd_writer_totext`, but print to std::string.
- *
+ * Reimplementation of `mtbdd_writer_totext` from sylvan_mtbdd.c, but print to
+ * `std::ostream` instead of `FILE *`.
  * third_party/sylvan/sylvan/src/sylvan_mtbdd.c:3302
  */
-std::string mtbdd_writer_to_str(sylvan::MTBDD *dds, int count) {
-    std::string out;
+void my_mtbdd_writer_totext(std::ostream &out, sylvan::MTBDD *dds, int count) {
     sylvan::sylvan_skiplist_t sl = sylvan::mtbdd_writer_start();
 
     for (int i = 0; i < count; ++i) {
@@ -280,18 +310,19 @@ std::string mtbdd_writer_to_str(sylvan::MTBDD *dds, int count) {
     }
 
     // mtbdd_writer_writetext
+    // third_party/sylvan/sylvan/src/sylvan_mtbdd.c:3278
     {
-        out += "[\n";
+        out << "[\n";
         size_t nodecount = __sylvan_skiplist_count(sl);
         for (size_t i = 1; i <= nodecount; i++) {
             sylvan::MTBDD dd = __sylvan_skiplist_getr(sl, i);
             sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(dd);
-            if (mtbddnode_isleaf(n)) {
+            if (sylvan::mtbddnode_isleaf(n)) {
                 /* serialize leaf, does not support customs yet */
-                out += "  leaf(" + std::to_string(i) + "," +
-                       std::to_string(sylvan::mtbddnode_gettype(n)) + ",\"";
-                __mtbdd_print_leaf_to_str(out, sylvan::MTBDD_STRIPMARK(dd));
-                out += "\"),\n";
+                out << "  leaf(" << i << "," << sylvan::mtbddnode_gettype(n)
+                    << ",\"";
+                __mtbdd_print_leaf(out, sylvan::MTBDD_STRIPMARK(dd));
+                out << "\"),\n";
             } else {
                 sylvan::MTBDD low =
                     __sylvan_skiplist_get(sl, sylvan::mtbddnode_getlow(n));
@@ -299,34 +330,149 @@ std::string mtbdd_writer_to_str(sylvan::MTBDD *dds, int count) {
                 high = sylvan::MTBDD_TRANSFERMARK(
                     high,
                     __sylvan_skiplist_get(sl, sylvan::MTBDD_STRIPMARK(high)));
-                out += "  node(" + std::to_string(i) + "," +
-                       std::to_string(sylvan::mtbddnode_getvariable(n)) + "," +
-                       std::to_string(low) +
-                       (sylvan::MTBDD_HASMARK(high) ? ",~" : ",") +
-                       std::to_string(sylvan::MTBDD_STRIPMARK(high)) + "),\n";
+                out << "  node(" << i << "," << sylvan::mtbddnode_getvariable(n)
+                    << "," << low << (sylvan::MTBDD_HASMARK(high) ? ",~" : ",")
+                    << sylvan::MTBDD_STRIPMARK(high) << "),\n";
             }
         }
-        out += "]";
+        out << "]";
     }
 
-    out += ",[";
+    out << ",[";
 
     for (int i = 0; i < count; i++) {
         uint64_t v = sylvan::mtbdd_writer_get(sl, dds[i]);
-        out += (sylvan::MTBDD_HASMARK(v) ? "~" : "") +
-               std::to_string(sylvan::MTBDD_STRIPMARK(v)) + ",";
+        out << (sylvan::MTBDD_HASMARK(v) ? "~" : "")
+            << sylvan::MTBDD_STRIPMARK(v) << ",";
     }
 
-    out += "]";
+    out << "]";
+    sylvan::mtbdd_writer_end(sl);
+}
+
+/**
+ * Reimplementation of `mtbdd_writer_tobinary` from sylvan_mtbdd.c, but print to
+ * `std::ostream` instead of `FILE *`.
+ * third_party/sylvan/sylvan/src/sylvan_mtbdd.c:3257
+ */
+std::ostream &
+my_mtbdd_writer_tobinary(std::ostream &out, sylvan::MTBDD *dds, int count) {
+    sylvan::sylvan_skiplist_t sl = sylvan::mtbdd_writer_start();
+
+    for (int i = 0; i < count; ++i) {
+        sylvan::mtbdd_writer_add_RUN(sl, dds[i]);
+    }
+
+    // mtbdd_writer_writebinary
+    // third_party/sylvan/sylvan/src/sylvan_mtbdd.c:3220
+    {
+        size_t nodecount = __sylvan_skiplist_count(sl);
+        out.write((const char *)&nodecount, sizeof(nodecount));
+        for (size_t i = 1; i <= nodecount; i++) {
+            sylvan::MTBDD dd = __sylvan_skiplist_getr(sl, i);
+            sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(dd);
+            if (sylvan::mtbddnode_isleaf(n)) {
+                /* write leaf */
+                out.write((const char *)n, sizeof(*n));
+                uint32_t type = sylvan::mtbddnode_gettype(n);
+                uint64_t value = sylvan::mtbddnode_getvalue(n);
+                __sylvan_mt_write_binary(type, value, out);
+            } else {
+                struct sylvan::mtbddnode node;
+                sylvan::MTBDD low =
+                    __sylvan_skiplist_get(sl, sylvan::mtbddnode_getlow(n));
+                sylvan::MTBDD high = sylvan::mtbddnode_gethigh(n);
+                high = sylvan::MTBDD_TRANSFERMARK(
+                    high,
+                    __sylvan_skiplist_get(sl, sylvan::MTBDD_STRIPMARK(high)));
+                sylvan::mtbddnode_makenode(
+                    &node, sylvan::mtbddnode_getvariable(n), low, high);
+                out.write((const char *)&node, sizeof(node));
+            }
+        }
+    }
+
+    out.write((const char *)&count, sizeof(count));
+
+    for (int i = 0; i < count; i++) {
+        uint64_t v = sylvan::mtbdd_writer_get(sl, dds[i]);
+        out.write((const char *)&v, sizeof(v));
+    }
+
     sylvan::mtbdd_writer_end(sl);
     return out;
+}
+
+/**
+ * Reimplementation of `mtbdd_reader_frombinary` from sylvan_mtbdd.c, but read
+ * from `std::istream` instead of `FILE *`.
+ * third_party/sylvan/sylvan/src/sylvan_mtbdd.c:3384
+ */
+std::istream &
+my_mtbdd_reader_frombinary(std::istream &in, sylvan::MTBDD *dds, int count) {
+    uint64_t *arr = nullptr;
+
+    // mtbdd_reader_readbinary
+    // third_party/sylvan/sylvan/src/sylvan_mtbdd.c:3330
+    {
+        size_t nodecount;
+        if (!in.read((char *)&nodecount, sizeof(nodecount))) {
+            return in;
+        }
+
+        arr = new uint64_t[nodecount + 1];
+        arr[0] = 0;
+        for (size_t i = 1; i <= nodecount; i++) {
+            struct sylvan::mtbddnode node;
+            if (!in.read((char *)&node, sizeof(node))) {
+                delete[] arr;
+                return in;
+            }
+
+            if (sylvan::mtbddnode_isleaf(&node)) {
+                /* serialize leaf */
+                uint32_t type = sylvan::mtbddnode_gettype(&node);
+                uint64_t value = sylvan::mtbddnode_getvalue(&node);
+                __sylvan_mt_read_binary(type, &value, in);
+                arr[i] = sylvan::mtbdd_makeleaf(type, value);
+            } else {
+                sylvan::MTBDD low = arr[sylvan::mtbddnode_getlow(&node)];
+                sylvan::MTBDD high = sylvan::mtbddnode_gethigh(&node);
+                high = sylvan::MTBDD_TRANSFERMARK(
+                    high, arr[sylvan::MTBDD_STRIPMARK(high)]);
+                arr[i] = sylvan::mtbdd_makenode(
+                    sylvan::mtbddnode_getvariable(&node), low, high);
+            }
+        }
+    }
+
+    int actual_count;
+    if (!in.read((char *)&actual_count, sizeof(actual_count)) ||
+        actual_count != count) {
+        delete[] arr;
+        return in;
+    }
+
+    for (int i = 0; i < count; i++) {
+        uint64_t v;
+        if (!in.read((char *)&v, sizeof(v))) {
+            delete[] arr;
+            return in;
+        }
+        dds[i] = sylvan::mtbdd_reader_get(arr, v);
+    }
+
+    delete[] arr;
+    return in;
 }
 
 } // namespace
 
 std::string Bdd::to_string(const sylvan::Bdd &bdd) {
     sylvan::BDD c_bdd = bdd.GetBDD();
-    return mtbdd_writer_to_str(&c_bdd, /*count=*/1);
+    std::stringstream ss;
+    my_mtbdd_writer_totext(ss, &c_bdd, /*count=*/1);
+    return ss.str();
 }
 
 std::string Bdd::to_string_oneline(const sylvan::Bdd &bdd) {
@@ -357,19 +503,25 @@ std::string Bdd::to_dot_string(const sylvan::Bdd &bdd) {
     return res;
 }
 
-std::vector<std::byte> Bdd::to_byte_vector(const sylvan::Bdd &bdd) {
-    char *buf;
-    size_t len;
-    FILE *out = open_memstream(&buf, &len);
-    if (!out) {
-        error("open_memstream failed", errno);
+std::vector<char> Bdd::to_byte_vector(const sylvan::Bdd &bdd) {
+    sylvan::BDD c_bdd = bdd.GetBDD();
+    std::stringstream ss;
+    if (!my_mtbdd_writer_tobinary(ss, &c_bdd, /*count=*/1)) {
+        error("Failed to serialize bdd");
     }
-    to_binary_file(bdd, out);
-    fclose(out);
-    std::vector<std::byte> res(reinterpret_cast<std::byte *>(buf),
-                               reinterpret_cast<std::byte *>(buf) + len);
-    free(buf);
+    std::string str = ss.str();
+    std::vector<char> res(reinterpret_cast<char *>(str.data()),
+                          reinterpret_cast<char *>(str.data()) + str.size());
     return res;
+}
+
+sylvan::Bdd Bdd::from_byte_vector(const std::vector<char> &bytes) {
+    std::stringstream ss(std::string(bytes.data(), bytes.size()));
+    sylvan::BDD c_bdd{sylvan::sylvan_false};
+    if (!my_mtbdd_reader_frombinary(ss, &c_bdd, /*count=*/1)) {
+        error("Failed to deserialize bdd");
+    }
+    return sylvan::Bdd(c_bdd);
 }
 
 void Bdd::to_dot_file(const sylvan::Bdd &bdd, FILE *out) {
