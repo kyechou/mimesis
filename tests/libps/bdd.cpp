@@ -18,10 +18,7 @@ protected:
 
     void SetUp() override {
         // Initialize libps
-        ps::Manager::get().init(/*n_workers=*/1,
-                                /*memory_cap=*/1UL * 1024 * 1024 * 1024,
-                                /*table_ratio=*/1,
-                                /*initial_ratio=*/5);
+        ps::Manager::get().init();
 
         // BDD variables
         bdd_0 = sylvan::Bdd::bddVar(0);

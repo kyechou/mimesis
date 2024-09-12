@@ -34,10 +34,7 @@ protected:
         klee::klee_warning_stream = out;
 
         // Initialize libps
-        ps::Manager::get().init(/*n_workers=*/1,
-                                /*memory_cap=*/1UL * 1024 * 1024 * 1024,
-                                /*table_ratio=*/1,
-                                /*initial_ratio=*/5);
+        ps::Manager::get().init();
 
         // Create symbolic variable
         auto hdr_len = sizeof(struct ethhdr) + sizeof(struct DemoHeader);

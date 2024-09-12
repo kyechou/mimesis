@@ -38,10 +38,11 @@ public:
      * - lace_start
      * - sylvan::sylvan_set_limits
      */
-    void init(size_t n_workers,
-              size_t memory_cap,
-              int table_ratio,
-              int initial_ratio);
+    void init(size_t n_workers = 1,
+              size_t memory_cap = 1UL << 30, // 1 GiB
+              int table_ratio = 1,
+              int initial_ratio = 5);
+
     /**
      * Reset the manager to the uninitialized state as if the object was just
      * constructed.
