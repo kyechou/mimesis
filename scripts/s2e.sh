@@ -160,7 +160,8 @@ EOM
 
     # 1. Enable the custom plugin for Mimesis.
     # 2. Disable unused Lua plugins.
-    # 3. Add KLEE arguments.
+    # 3. Set console logging level to "info".
+    # 4. Add KLEE arguments.
     local plugin_cfg=
     plugin_cfg+='add_plugin("Mimesis")\n'
     plugin_cfg+='pluginsConfig.Mimesis = {\n'
@@ -209,6 +210,7 @@ EOM
     sed -i "$S2E_PROJ_DIR/s2e-config.lua" \
         -e "s|^\(-- .* User-specific scripts begin here .*\)$|\1\n$plugin_cfg|" \
         -e 's|^\(.*add_plugin("Lua\(Bindings\|CoreEvents\)").*\)$|-- \1|' \
+        -e 's|console = "debug"|console = "info"|' \
         -e "s|^\(.*kleeArgs = {.*\)$|\1\n${klee_args}|"
 
     # Set the number of interfaces
@@ -319,7 +321,16 @@ EOM
     docker run -it --rm --privileged -u builder \
         -v "$PROJECT_DIR:$PROJECT_DIR" \
         "$image" \
-        -c "$run_cmd"
+        -c "$run_cmd" | tee "$S2E_PROJ_DIR/console.log"
+
+    # Save the output.
+    if ls "$S2E_PROJ_DIR/"*.model >/dev/null 2>&1; then
+        local name
+        name="$(find "$S2E_PROJ_DIR" -name '*.model' -exec basename -s '.model' {} \; | head -n1)"
+        mkdir -p "$OUTPUT_DIR"
+        cp "$S2E_PROJ_DIR/"*.model* "$OUTPUT_DIR/"
+        mv "$S2E_PROJ_DIR/console.log" "$OUTPUT_DIR/$name.log"
+    fi
 }
 
 main() {
@@ -329,6 +340,7 @@ main() {
     SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     PROJECT_DIR="$(dirname "${SCRIPT_DIR}")"
     BUILD_DIR="$PROJECT_DIR/build"
+    OUTPUT_DIR="$PROJECT_DIR/output"
     S2E_PROJ_NAME=mimesis
     S2E_DIR="$PROJECT_DIR/s2e"
     S2E_PROJ_DIR="$S2E_DIR/projects/$S2E_PROJ_NAME"

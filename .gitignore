@@ -10,6 +10,9 @@
 build*/
 s2e/
 
+# Output files
+output/
+
 # Coverage files
 *.gcov
 *.gcda
