@@ -7,6 +7,7 @@
         "dpdk"
     ],
     "dependencies": [
+        "boost-program-options",
         "cereal",
         "pcapplusplus",
         "zlib"

@@ -20,26 +20,28 @@ usage() {
 [!] Usage: $(basename "${BASH_SOURCE[0]}") [options] [<target program> [<arguments>]]
 
     Options:
-    -h, --help          Print this message and exit
-    -i, --intfs <N>     Number of interfaces (default: 4) (only effective with --new)
-    -d, --maxdepth <N>  Maximum model depth (default: 1) (only effective with --new)
-    -k, --kernel-fork   Allow kernel forking (default: disabled)
-    -n, --new           (Re)Create a new S2E project (followed by target program and arguments)
-    -c, --clean         Clean up all analysis output
-    -r, --run           Run the S2E analysis
-    --rm                Remove all S2E projects
+    -h, --help              Print this message and exit
+    -i, --intfs <N>         Number of interfaces (default: 4) (only effective with --new)
+    -d, --maxdepth <N>      Maximum model depth (default: 1) (only effective with --new)
+    -k, --kernel-fork       Allow kernel forking (default: disabled) (only effective with --new)
+    -n, --new               (Re)Create a new S2E project (followed by target program and arguments)
+    -c, --clean             Clean up all analysis output
+    -r, --run               Run the S2E analysis
+    -p, --protocol <proto>  Specify the protocol ["ethernet", "ip", "demo"]
+    --rm                    Remove all S2E projects
 EOF
 }
 
 parse_args() {
-    INTERFACES=4
-    MAX_DEPTH=1
-    ALLOW_KERNEL_FORKING=false
-    NEW=0
-    CLEAN=0
-    RUN=0
-    RM=0
-    USERSPACE=0
+    export INTERFACES=4
+    export MAX_DEPTH=1
+    export ALLOW_KERNEL_FORKING=false
+    export NEW=0
+    export CLEAN=0
+    export RUN=0
+    export PROTOCOL=
+    export RM=0
+    export TARGET_PROGRAM=()
 
     while :; do
         case "${1-}" in
@@ -67,6 +69,10 @@ parse_args() {
         -r | --run)
             RUN=1
             ;;
+        -p | --protocol)
+            PROTOCOL="${2-}"
+            shift
+            ;;
         --rm)
             RM=1
             ;;
@@ -76,20 +82,64 @@ parse_args() {
         shift
     done
 
-    if [[ $# -eq 0 ]]; then
-        TARGET_PROGRAM=("--no-target")
-    else
-        if [[ "$(basename "$1")" == user-* ]]; then
-            USERSPACE=1
+    if [[ $NEW -eq 1 ]]; then
+        if [[ $# -eq 0 ]]; then
+            TARGET_PROGRAM+=("--no-target")
+        else
+            TARGET_PROGRAM+=("$(realpath "$1")")
+            shift
+            TARGET_PROGRAM+=("$@")
         fi
-
-        TARGET_PROGRAM=("$(realpath "$1")")
-        shift
-        TARGET_PROGRAM+=("$@")
     fi
 
     if [[ $INTERFACES -gt $MAX_INTFS ]]; then
         die "The number of interfaces exceeds the current maximum $MAX_INTFS"
+    fi
+
+    infer_target_program_properties
+}
+
+# This function infers or obtains the following variables for target program
+# properties, which may be used by all other functions in this script.
+#
+#   - TARGET_PROGRAM
+#   - USERSPACE
+#   - PROTOCOL
+#
+infer_target_program_properties() {
+    # Read the target program from file if it's not specified from the command
+    # line. Here we assume all arguments are separated by whitespaces and
+    # there's no whitespace within each argument.
+    if [[ ${#TARGET_PROGRAM[@]} -eq 0 ]]; then
+        mapfile -t TARGET_PROGRAM <"$TARGET_PROGRAM_FILE"
+    fi
+    local prog_name
+    prog_name="$(basename "${TARGET_PROGRAM[0]}")"
+
+    # Whether the target program runs purely in userspace.
+    export USERSPACE=0
+    if [[ "$prog_name" == user-* ]]; then
+        USERSPACE=1
+    fi
+
+    # Infer protocol from the program name if it's not specified already.
+    if [[ -z "$PROTOCOL" ]]; then
+        if [[ "$prog_name" == *-eth-* ]] || [[ "$prog_name" == *-l2-* ]]; then
+            PROTOCOL="ethernet"
+        elif [[ "$prog_name" == *-ip-* ]]; then
+            PROTOCOL="ip"
+        elif [[ "$prog_name" == *-demo-* ]]; then
+            PROTOCOL="demo"
+        else
+            die "Failed to infer protocol from the target program. Try specifying it with -p"
+        fi
+    fi
+
+    # Check for protocol validity here.
+    if [[ "$PROTOCOL" != "ethernet" ]] &&
+        [[ "$PROTOCOL" != "ip" ]] &&
+        [[ "$PROTOCOL" != "demo" ]]; then
+        die "Invalid protocol: $PROTOCOL"
     fi
 }
 
@@ -122,7 +172,7 @@ EOM
     else
         mod="$BUILD_DIR/src/kernel_probes.ko"
     fi
-    # Soft-link the compiled kernel module
+    # Soft-link the systemtap module
     local target_path
     local mod_name
     local link_path
@@ -216,6 +266,10 @@ EOM
     # Set the number of interfaces
     echo "$INTERFACES" >"$NUM_INTFS_FILE"
     chmod 600 "$NUM_INTFS_FILE"
+    # Save the target program command arguments for reference.
+    echo "${TARGET_PROGRAM[@]}" >"$TARGET_PROGRAM_FILE"
+    chmod 600 "$TARGET_PROGRAM_FILE"
+
     # Create a QEMU snapshot to reduce VM startup time.
     create_qemu_snapshot
 }
@@ -297,9 +351,11 @@ run_s2e() {
             sudo ip link set dev tap\$i up
         done
 
-        sudo setcap '$capabilities' \$(realpath sender)
-        ./sender &>$S2E_PROJ_DIR/sender.log &
-        sleep 0.5 # Wait for the sender to create the command file
+        if [[ $USERSPACE -eq 0 ]]; then
+            sudo setcap '$capabilities' \$(realpath sender)
+            ./sender -p $PROTOCOL &>$S2E_PROJ_DIR/sender.log &
+            sleep 1 # Wait for the sender to create the command file
+        fi
 
         date '+Timestamp: %s.%N'
         /usr/bin/time ./launch-s2e.sh ${qemu_flags[@]}
@@ -334,9 +390,6 @@ EOM
 }
 
 main() {
-    # Parse script arguments
-    parse_args "$@"
-
     SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     PROJECT_DIR="$(dirname "${SCRIPT_DIR}")"
     BUILD_DIR="$PROJECT_DIR/build"
@@ -346,6 +399,10 @@ main() {
     S2E_PROJ_DIR="$S2E_DIR/projects/$S2E_PROJ_NAME"
     S2E_INSTALL_DIR="$S2E_DIR/install"
     NUM_INTFS_FILE="$S2E_PROJ_DIR/num_interfaces.txt"
+    TARGET_PROGRAM_FILE="$S2E_PROJ_DIR/target_program.txt"
+
+    # Parse script arguments
+    parse_args "$@"
 
     if [[ $RM -eq 1 ]]; then
         rm -rf "$PROJECT_DIR/s2e/projects"/*

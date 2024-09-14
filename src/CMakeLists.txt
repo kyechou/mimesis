@@ -32,6 +32,7 @@ target_link_libraries(sender PRIVATE
     _logger
     _net
     Threads::Threads
+    Boost::program_options
     ${inotify_cpp_LIBRARIES}
 )
 

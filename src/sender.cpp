@@ -1,6 +1,9 @@
+#include <IPv4Layer.h>
 #include <chrono>
 #include <condition_variable>
 #include <cstdint>
+#include <cstdlib>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <mutex>
@@ -11,6 +14,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/program_options.hpp>
 #include <pcapplusplus/EthLayer.h>
 #include <pcapplusplus/MacAddress.h>
 #include <pcapplusplus/Packet.h>
@@ -27,6 +31,7 @@
 
 using namespace std;
 namespace fs = std::filesystem;
+namespace po = boost::program_options;
 
 struct DemoHeader {
     uint8_t port; // egress port
@@ -43,29 +48,51 @@ public:
 } vars;
 
 // Create a demo packet.
-pcpp::Packet create_demo_packet(pcpp::PcapLiveDevice *egress_intf) {
-    auto eth_layer = new pcpp::EthLayer(
-        /*sourceMac=*/egress_intf->getMacAddress(),
-        /*destMac=*/pcpp::MacAddress("aa:bb:cc:dd:ee:ff"),
-        /*etherType=*/0xdead);
+pcpp::Packet create_demo_packet(pcpp::PcapLiveDevice *egress_intf,
+                                const std::string &protocol) {
     pcpp::Packet packet;
+
+    // Add L2 header.
+    uint16_t ethertype = 0;
+    if (protocol == "ip") {
+        ethertype = 0x0800;
+    } else if (protocol == "demo") {
+        ethertype = 0xdead;
+    }
+    pcpp::EthLayer *eth_layer = new pcpp::EthLayer(
+        /*sourceMac=*/egress_intf->getMacAddress(),
+        /*destMac=*/pcpp::MacAddress("aa:bb:cc:dd:ee:ff"), ethertype);
     if (!packet.addLayer(eth_layer, /*ownInPacket=*/true)) {
         error("Failed to add the Ethernet layer");
     }
+
+    // Add L3 header.
+    if (protocol == "ethernet") {
+        // Do nothing.
+    } else if (protocol == "ip") {
+        pcpp::IPv4Layer *ipv4_layer = new pcpp::IPv4Layer(
+            /*srcIP=*/pcpp::IPv4Address(),
+            /*dstIP=*/pcpp::IPv4Address());
+        if (!packet.addLayer(ipv4_layer, /*ownInPacket=*/true)) {
+            error("Failed to add the IPv4 layer");
+        }
+    } else if (protocol == "demo") {
+        DemoHeader demo = {.port = 0, .type = 0};
+        packet.getRawPacket()->reallocateData(
+            packet.getRawPacket()->getRawDataLen() + sizeof(demo));
+        packet.getRawPacket()->appendData((const unsigned char *)&demo,
+                                          sizeof(demo));
+    } else {
+        error("Invalid protocol: '" + protocol + "'");
+    }
+
     packet.computeCalculateFields();
-    DemoHeader demo = {
-        .port = 0x01,
-        .type = 0x42,
-    };
-    packet.getRawPacket()->reallocateData(
-        packet.getRawPacket()->getRawDataLen() + sizeof(demo));
-    packet.getRawPacket()->appendData((const unsigned char *)&demo,
-                                      sizeof(demo));
     return packet;
 }
 
 // Packet sender.
-void packet_sender(const chrono::milliseconds period) {
+void packet_sender(const chrono::milliseconds period,
+                   const std::string &protocol) {
     unique_lock<mutex> lck(vars.mtx);
 
     // Open interfaces.
@@ -101,7 +128,7 @@ void packet_sender(const chrono::milliseconds period) {
         auto dev = dev_it->second;
 
         // Craft the packet to send.
-        auto packet = create_demo_packet(dev);
+        auto packet = create_demo_packet(dev, protocol);
 
         if (vars.first_time) {
             // Wait after the program is loaded (when the Mimesis plugin
@@ -140,8 +167,34 @@ void notification_handler(inotify::Notification notification) {
     vars.cv.notify_all();
 };
 
-int main() {
-    thread sending_thread(packet_sender, chrono::milliseconds(1000));
+void parse_args(int argc, char **argv, std::string &protocol) {
+    po::options_description desc("Packet sender options");
+    desc.add_options()("help,h", "Show help message");
+    desc.add_options()("protocol,p", po::value<string>()->default_value("ip"),
+                       "Packet protocol: ['ethernet', 'ip', 'demo']");
+    po::variables_map vm;
+
+    try {
+        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::notify(vm);
+    } catch (const exception &e) {
+        error(e.what());
+    }
+
+    if (vm.count("help")) {
+        cout << desc << endl;
+        exit(0);
+    }
+
+    protocol = vm.at("protocol").as<string>();
+}
+
+int main(int argc, char **argv) {
+    // Parse arguments.
+    std::string protocol;
+    parse_args(argc, argv, protocol);
+
+    thread sending_thread(packet_sender, chrono::milliseconds(1000), protocol);
 
     // Create the send_packet file.
     const fs::path send_packet_fn("/dev/shm/send_packet");
