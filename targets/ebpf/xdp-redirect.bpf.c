@@ -90,5 +90,5 @@ int xdp_redirect(struct xdp_md *ctx) {
     
     debug_val=5;
     bpf_map_update_elem(&debug_map, &key, &debug_val, 0);
-    return bpf_redirect(hdrs->demo.port, 0);
+    return bpf_redirect((hdrs->demo.port+2), 0);
 }
