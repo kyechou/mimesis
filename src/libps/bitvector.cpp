@@ -485,44 +485,113 @@ BitVector BitVector::operator^(const BitVector &other) const {
     return this->bv_xor(other);
 }
 
-BitVector BitVector::shl(const BitVector &distance) const {
-    if (!distance.is_constant()) {
-        error("Symbolic shl distance is not currently supported.");
-    }
-    const uint64_t dist = distance.zext_value();
+BitVector BitVector::shl(const uint64_t distance) const {
     BitVector res(this->width(), false);
-    size_t from_idx = (dist > this->width()) ? this->width() : dist;
+    size_t from_idx = (distance > this->width()) ? this->width() : distance;
     for (size_t i = from_idx; i < this->width(); ++i) {
-        res.bv[i] = this->bv[i - dist];
+        res.bv[i] = this->bv[i - distance];
     }
     return res;
+}
+
+BitVector BitVector::lshr(const uint64_t distance) const {
+    BitVector res(this->width(), false);
+    size_t to_idx = (distance > this->width()) ? 0 : this->width() - distance;
+    for (size_t i = 0; i < to_idx; ++i) {
+        res.bv[i] = this->bv[i + distance];
+    }
+    return res;
+}
+
+BitVector BitVector::ashr(const uint64_t distance) const {
+    BitVector res(this->width(),
+                  this->empty() ? sylvan::Bdd::bddZero() : this->bv.back());
+    size_t to_idx = (distance > this->width()) ? 0 : this->width() - distance;
+    for (size_t i = 0; i < to_idx; ++i) {
+        res.bv[i] = this->bv[i + distance];
+    }
+    return res;
+}
+
+BitVector BitVector::shl(const BitVector &distance) const {
+    if (distance.is_constant()) {
+        return this->shl(distance.zext_value());
+    }
+
+    // Symbolic shift distance.
+    // Here we explicitly enumerate all possible concrete values of the symbolic
+    // shift distance, evaluate the contrained content for each value, and then
+    // aggregate the results together with a chain of `select` (`ite`)
+    // operations.
+
+    auto dist_values = distance.valid_values();
+    BitVector result;
+
+    for (const auto &[ap_dist, constraint] : dist_values) {
+        BitVector conditional_res =
+            this->shl(ap_dist.getZExtValue()).constrain(constraint);
+        if (result.empty()) {
+            result = conditional_res;
+        } else {
+            result = ps::BitVector::select(constraint, conditional_res, result);
+        }
+    }
+
+    return result;
 }
 
 BitVector BitVector::lshr(const BitVector &distance) const {
-    if (!distance.is_constant()) {
-        error("Symbolic lshr distance is not currently supported.");
+    if (distance.is_constant()) {
+        return this->lshr(distance.zext_value());
     }
-    const uint64_t dist = distance.zext_value();
-    BitVector res(this->width(), false);
-    size_t to_idx = (dist > this->width()) ? 0 : this->width() - dist;
-    for (size_t i = 0; i < to_idx; ++i) {
-        res.bv[i] = this->bv[i + dist];
+
+    // Symbolic shift distance.
+    // Here we explicitly enumerate all possible concrete values of the symbolic
+    // shift distance, evaluate the contrained content for each value, and then
+    // aggregate the results together with a chain of `select` (`ite`)
+    // operations.
+
+    auto dist_values = distance.valid_values();
+    BitVector result;
+
+    for (const auto &[ap_dist, constraint] : dist_values) {
+        BitVector conditional_res =
+            this->lshr(ap_dist.getZExtValue()).constrain(constraint);
+        if (result.empty()) {
+            result = conditional_res;
+        } else {
+            result = ps::BitVector::select(constraint, conditional_res, result);
+        }
     }
-    return res;
+
+    return result;
 }
 
 BitVector BitVector::ashr(const BitVector &distance) const {
-    if (!distance.is_constant()) {
-        error("Symbolic ashr distance is not currently supported.");
+    if (distance.is_constant()) {
+        return this->ashr(distance.zext_value());
     }
-    const uint64_t dist = distance.zext_value();
-    BitVector res(this->width(),
-                  this->empty() ? sylvan::Bdd::bddZero() : this->bv.back());
-    size_t to_idx = (dist > this->width()) ? 0 : this->width() - dist;
-    for (size_t i = 0; i < to_idx; ++i) {
-        res.bv[i] = this->bv[i + dist];
+
+    // Symbolic shift distance.
+    // Here we explicitly enumerate all possible concrete values of the symbolic
+    // shift distance, evaluate the contrained content for each value, and then
+    // aggregate the results together with a chain of `select` (`ite`)
+    // operations.
+
+    auto dist_values = distance.valid_values();
+    BitVector result;
+
+    for (const auto &[ap_dist, constraint] : dist_values) {
+        BitVector conditional_res =
+            this->ashr(ap_dist.getZExtValue()).constrain(constraint);
+        if (result.empty()) {
+            result = conditional_res;
+        } else {
+            result = ps::BitVector::select(constraint, conditional_res, result);
+        }
     }
-    return res;
+
+    return result;
 }
 
 BitVector BitVector::operator<<(const BitVector &distance) const {

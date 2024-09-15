@@ -209,6 +209,9 @@ public:
     BitVector operator^(const BitVector &other) const;
 
     // Bitwise shift (The bit-width remains the same.)
+    BitVector shl(const uint64_t distance) const;
+    BitVector lshr(const uint64_t distance) const;
+    BitVector ashr(const uint64_t distance) const;
     BitVector shl(const BitVector &distance) const;
     BitVector lshr(const BitVector &distance) const;
     BitVector ashr(const BitVector &distance) const;
