@@ -1,4 +1,3 @@
-#include <IPv4Layer.h>
 #include <chrono>
 #include <condition_variable>
 #include <cstdint>
@@ -16,6 +15,7 @@
 
 #include <boost/program_options.hpp>
 #include <pcapplusplus/EthLayer.h>
+#include <pcapplusplus/IPv4Layer.h>
 #include <pcapplusplus/MacAddress.h>
 #include <pcapplusplus/Packet.h>
 #include <pcapplusplus/PcapFileDevice.h>
