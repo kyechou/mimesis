@@ -394,13 +394,29 @@ EOM
         "$image" \
         -c "$run_cmd" | tee "$S2E_PROJ_DIR/console.log"
 
+    if pgrep qemu-system-x86_64 &>/dev/null; then
+        sleep 0.5
+        pkill qemu-system-x86_64
+        sleep 0.5
+    fi
+
     # Save the output.
     if ls "$S2E_PROJ_DIR/"*.model >/dev/null 2>&1; then
+        # Graceful shutdown
         local name
         name="$(find "$S2E_PROJ_DIR" -name '*.model' -exec basename -s '.model' {} \; | head -n1)"
         mkdir -p "$OUTPUT_DIR"
         cp "$S2E_PROJ_DIR/"*.model* "$OUTPUT_DIR/"
         mv "$S2E_PROJ_DIR/console.log" "$OUTPUT_DIR/$name.log"
+    else
+        # Error shutdown
+        local name
+        name="$(basename "${TARGET_PROGRAM[0]}")--$(date -Iseconds)"
+        mkdir -p "$OUTPUT_DIR"
+        mv "$S2E_PROJ_DIR/console.log" "$OUTPUT_DIR/$name.log"
+        if grep "Command exited with non-zero status" "$OUTPUT_DIR/$name.log" &>/dev/null; then
+            exit 130
+        fi
     fi
 }
 
