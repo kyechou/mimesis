@@ -1,16 +1,30 @@
 diff --git a/Linux/s2e_home/launch.sh b/Linux/s2e_home/launch.sh
-index 1087901..d67eed9 100755
+index 1087901..9e4ae86 100755
 --- a/Linux/s2e_home/launch.sh
 +++ b/Linux/s2e_home/launch.sh
-@@ -49,7 +49,7 @@ install_packages() {
-
+@@ -49,7 +49,8 @@ install_packages() {
+ 
  remove_packages() {
      # Preserve environment (-E)
 -    DEBIAN_FRONTEND=noninteractive sudo -E apt-get purge -y cloud-init
-+    DEBIAN_FRONTEND=noninteractive sudo -E apt-get purge -y cloud-init apparmor snapd
++    DEBIAN_FRONTEND=noninteractive sudo -E apt-get purge -y cloud-init apparmor snapd systemd-timesyncd rsyslog udisks2 modemmanager unattended-upgrades cron ubuntu-release-upgrader-core multipath-tools
++    DEBIAN_FRONTEND=noninteractive sudo -E apt-get autoremove -y --purge
  }
-
+ 
  remove_ubuntu_packages() {
+@@ -121,5 +122,12 @@ install_systemtap
+ 
+ install_kernel
+ 
++sudo systemctl mask systemd-journald-audit.socket
++sudo systemctl mask systemd-journald-dev-log.socket
++sudo systemctl mask systemd-journald.service
++sudo systemctl mask systemd-journald.socket
++sudo systemctl mask systemd-journal-flush.service
++sudo systemctl mask polkit.service
++
+ # QEMU will stop (-no-reboot)
+ sudo reboot
 diff --git a/Linux/ubuntu-preseed/user-data b/Linux/ubuntu-preseed/user-data
 index d001b0a..3a82d15 100644
 --- a/Linux/ubuntu-preseed/user-data
@@ -20,6 +34,6 @@ index d001b0a..3a82d15 100644
      - libelf1
      - tmux
 +    - tcpdump
-
-
+ 
+ 
    late-commands:
