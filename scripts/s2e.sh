@@ -416,6 +416,8 @@ EOM
         mv "$S2E_PROJ_DIR/console.log" "$OUTPUT_DIR/$name.log"
         if grep "Command exited with non-zero status" "$OUTPUT_DIR/$name.log" &>/dev/null; then
             exit 130
+        elif grep "Execution timed out" "$OUTPUT_DIR/$name.log" &>/dev/null; then
+            exit 1
         fi
     fi
 }
