@@ -23,6 +23,7 @@ usage() {
     -h, --help              Print this message and exit
     -i, --intfs <N>         Number of interfaces (default: 4) (only effective with --new)
     -d, --maxdepth <N>      Maximum model depth (default: 1) (only effective with --new)
+    -t, --timeout <N>       Execution timeout in seconds (default: 0, no timeout) (only effective with --new)
     -k, --kernel-fork       Allow kernel forking (default: disabled) (only effective with --new)
     -n, --new               (Re)Create a new S2E project (followed by target program and arguments)
     -c, --clean             Clean up all analysis output
@@ -35,6 +36,7 @@ EOF
 parse_args() {
     export INTERFACES=4
     export MAX_DEPTH=1
+    export TIMEOUT=0
     export ALLOW_KERNEL_FORKING=false
     export NEW=0
     export CLEAN=0
@@ -55,6 +57,10 @@ parse_args() {
             ;;
         -d | --maxdepth)
             MAX_DEPTH="${2-}"
+            shift
+            ;;
+        -t | --timeout)
+            TIMEOUT="${2-}"
             shift
             ;;
         -k | --kernel-fork)
@@ -217,6 +223,8 @@ EOM
     plugin_cfg+='pluginsConfig.Mimesis = {\n'
     plugin_cfg+='    -- Maximum stateful depth of the extracted model\n'
     plugin_cfg+="    maxdepth = $MAX_DEPTH,\n"
+    plugin_cfg+='    -- Execution timeout in seconds (0: no timeout)\n'
+    plugin_cfg+="    timeout = $TIMEOUT,\n"
     plugin_cfg+='    -- Whether kernel forking is allowed\n'
     plugin_cfg+="    allowKernelForking = $ALLOW_KERNEL_FORKING,\n"
     plugin_cfg+='}\n'
