@@ -24,7 +24,8 @@ usage() {
     -i, --intfs <N>         Number of interfaces (default: 4) (only effective with --new)
     -d, --maxdepth <N>      Maximum model depth (default: 1) (only effective with --new)
     -t, --timeout <N>       Execution timeout in seconds (default: 0, no timeout) (only effective with --new)
-    -k, --kernel-fork       Allow kernel forking (default: disabled) (only effective with --new)
+    -kf, --kernel-fork      Allow kernel forking (default: disallowed) (only effective with --new)
+    -ks, --kernel-symaddr   Allow kernel symbolic addressing (default: disallowed) (only effective with --new)
     -n, --new               (Re)Create a new S2E project (followed by target program and arguments)
     -c, --clean             Clean up all analysis output
     -r, --run               Run the S2E analysis
@@ -38,6 +39,7 @@ parse_args() {
     export MAX_DEPTH=1
     export TIMEOUT=0
     export ALLOW_KERNEL_FORKING=false
+    export ALLOW_KERNEL_SYMADDR=false
     export NEW=0
     export CLEAN=0
     export RUN=0
@@ -63,8 +65,11 @@ parse_args() {
             TIMEOUT="${2-}"
             shift
             ;;
-        -k | --kernel-fork)
+        -kf | --kernel-fork)
             ALLOW_KERNEL_FORKING=true
+            ;;
+        -ks | --kernel-symaddr)
+            ALLOW_KERNEL_SYMADDR=true
             ;;
         -n | --new)
             NEW=1
@@ -227,6 +232,8 @@ EOM
     plugin_cfg+="    timeout = $TIMEOUT,\n"
     plugin_cfg+='    -- Whether kernel forking is allowed\n'
     plugin_cfg+="    allowKernelForking = $ALLOW_KERNEL_FORKING,\n"
+    plugin_cfg+='    -- Whether kernel symbolic addressing is allowed\n'
+    plugin_cfg+="    allowKernelSymAddr = $ALLOW_KERNEL_SYMADDR,\n"
     plugin_cfg+='}\n'
     local klee_args=
     klee_args+='        "--const-array-opt",\n' # const array optimizations
