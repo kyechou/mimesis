@@ -47,27 +47,26 @@ main() {
 
     for program in "${target_programs[@]}"; do
         for depth in 1 2; do
-            for kfork in 0 1; do
-                for ksymaddr in 0 1; do
-                    local new_project_args=(
-                        -n
-                        -d "$depth"
-                        -t 1800 # timeout: 30 min
-                    )
-                    if [[ "$kfork" -eq 1 ]]; then
-                        new_project_args+=(-kf)
-                    fi
-                    if [[ "$ksymaddr" -eq 1 ]]; then
-                        new_project_args+=(-ks)
-                    fi
-                    new_project_args+=("$TARGETS_DIR/$program")
+            kfork=1 # always enable kernel forking
+            for ksymaddr in 0 1; do
+                local new_project_args=(
+                    -n
+                    -d "$depth"
+                    -t 1800 # timeout: 30 min
+                )
+                if [[ "$kfork" -eq 1 ]]; then
+                    new_project_args+=(-kf)
+                fi
+                if [[ "$ksymaddr" -eq 1 ]]; then
+                    new_project_args+=(-ks)
+                fi
+                new_project_args+=("$TARGETS_DIR/$program")
 
-                    msg "Creating new project.    ------- $(date) -------"
-                    "$SCRIPT_DIR/s2e.sh" "${new_project_args[@]}"
-                    msg "Start model extraction.  ------- $(date) -------"
-                    "$SCRIPT_DIR/s2e.sh" -c -r
-                    msg "Finish model extraction. ------- $(date) -------"
-                done
+                msg "Creating new project.    ------- $(date) -------"
+                "$SCRIPT_DIR/s2e.sh" "${new_project_args[@]}"
+                msg "Start model extraction.  ------- $(date) -------"
+                "$SCRIPT_DIR/s2e.sh" -c -r
+                msg "Finish model extraction. ------- $(date) -------"
             done
         done
     done
