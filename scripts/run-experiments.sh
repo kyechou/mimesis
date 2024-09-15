@@ -20,7 +20,35 @@ die() {
 
 [ $UID -eq 0 ] && die 'Please run this script without root privilege'
 
+run() {
+    program="$1"
+    depth="$2"
+    kfork="$3"
+    ksymaddr="$4"
+    local new_project_args=(
+        -n
+        -d "$depth"
+        -t 1800 # timeout: 30 min
+    )
+    if [[ "$kfork" -eq 1 ]]; then
+        new_project_args+=(-kf)
+    fi
+    if [[ "$ksymaddr" -eq 1 ]]; then
+        new_project_args+=(-ks)
+    fi
+    new_project_args+=("$TARGETS_DIR/$program")
+    msg "Creating new project.    ------- $(date) -------"
+    "$SCRIPT_DIR/s2e.sh" "${new_project_args[@]}"
+    msg "Start model extraction.  ------- $(date) -------"
+    "$SCRIPT_DIR/s2e.sh" -c -r
+    msg "Finish model extraction. ------- $(date) -------"
+}
+
 main() {
+    export SCRIPT_DIR
+    export PROJECT_DIR
+    export BUILD_DIR
+    export TARGETS_DIR
     SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
     PROJECT_DIR="$(dirname "${SCRIPT_DIR}")"
     BUILD_DIR="$PROJECT_DIR/build"
@@ -49,24 +77,7 @@ main() {
         for depth in 1 2; do
             kfork=1 # always enable kernel forking
             for ksymaddr in 0 1; do
-                local new_project_args=(
-                    -n
-                    -d "$depth"
-                    -t 1800 # timeout: 30 min
-                )
-                if [[ "$kfork" -eq 1 ]]; then
-                    new_project_args+=(-kf)
-                fi
-                if [[ "$ksymaddr" -eq 1 ]]; then
-                    new_project_args+=(-ks)
-                fi
-                new_project_args+=("$TARGETS_DIR/$program")
-
-                msg "Creating new project.    ------- $(date) -------"
-                "$SCRIPT_DIR/s2e.sh" "${new_project_args[@]}"
-                msg "Start model extraction.  ------- $(date) -------"
-                "$SCRIPT_DIR/s2e.sh" -c -r
-                msg "Finish model extraction. ------- $(date) -------"
+                run "$program" "$depth" "$kfork" "$ksymaddr"
             done
         done
     done
