@@ -9,6 +9,10 @@ msg() {
     echo -e "[+] ${1-}" >&2
 }
 
+hurt() {
+    echo -e "[-] ${1-}" >&2
+}
+
 die() {
     echo -e "[!] ${1-}" >&2
     exit 1
@@ -71,6 +75,12 @@ main() {
     msg "Done!"
 }
 
+int_handler() {
+    hurt "Interrupted by user"
+    exit 1
+}
+
+trap int_handler SIGINT
 main "$@"
 
 # vim: set ts=4 sw=4 et:
