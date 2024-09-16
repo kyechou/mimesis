@@ -48,6 +48,8 @@ RUN dpkg --add-architecture i386 && \
     # eBPF dependencies
     elfutils libelf-dev zlib1g-dev binutils-dev libcap-dev clang llvm-dev \
     libc6-dev libc6-dev-i386 \
+    # Additional libxdp dependencies
+    libpcap-dev \
     && \
     apt-get clean && \
     apt-file update

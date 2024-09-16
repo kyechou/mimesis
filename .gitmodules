@@ -19,3 +19,6 @@
 [submodule "libbpf"]
 	path = third_party/libbpf/libbpf
 	url = https://github.com/libbpf/libbpf.git
+[submodule "libxdp"]
+	path = third_party/xdp-tools/xdp-tools
+	url = https://github.com/xdp-project/xdp-tools
