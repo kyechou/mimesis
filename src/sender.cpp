@@ -162,9 +162,19 @@ void notification_handler(inotify::Notification notification) {
     send_packet_file >> if_name;
     send_packet_file.close();
     info("Notification handler read '" + if_name + "' interface name");
-
     vars.dst_if_name = if_name;
-    vars.cv.notify_all();
+
+    static chrono::time_point<chrono::high_resolution_clock> last_update;
+    constexpr chrono::milliseconds delay(500);
+    auto now = chrono::high_resolution_clock::now();
+    if (last_update.time_since_epoch().count() == 0 ||
+        now - last_update > delay) {
+        // First trigger or time has elapesd more than 500 ms.
+        last_update = now;
+        vars.cv.notify_all();
+    } else {
+        info("Sending packets too quickly. Ignoring this one.");
+    }
 };
 
 void parse_args(int argc, char **argv, std::string &protocol) {
