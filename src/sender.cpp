@@ -111,7 +111,7 @@ void packet_sender(const chrono::milliseconds period,
     // There was a race condition causing the sender to send two packets
     // consecutively without delay in the beginning. The following cv.wait seems
     // to resolve the issue.
-    // vars.cv.wait(lck);
+    vars.cv.wait(lck);
 
     while (1) {
         vars.cv.wait_for(lck, period);
@@ -165,11 +165,11 @@ void notification_handler(inotify::Notification notification) {
     vars.dst_if_name = if_name;
 
     static chrono::time_point<chrono::high_resolution_clock> last_update;
-    constexpr chrono::milliseconds delay(500);
+    constexpr chrono::milliseconds delay(1000);
     auto now = chrono::high_resolution_clock::now();
     if (last_update.time_since_epoch().count() == 0 ||
         now - last_update > delay) {
-        // First trigger or time has elapesd more than 500 ms.
+        // First trigger or time has elapesd more than 1 sec.
         last_update = now;
         vars.cv.notify_all();
     } else {
