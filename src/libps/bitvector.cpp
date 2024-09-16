@@ -237,11 +237,12 @@ bool BitVector::identical_to(const BitVector &other) const {
     return this->bv == other.bv;
 }
 
-std::string BitVector::to_string() const {
+std::string BitVector::to_string(int indent) const {
+    std::string ind(indent, ' ');
     std::string res = std::to_string(this->width()) + "-bits bit-vector";
     for (size_t i = 0; i < this->width(); ++i) {
-        res += "\n-- bit " + std::to_string(i) + ": " +
-               Bdd::to_string(this->bv[i]);
+        res += "\n" + ind + "-- bit " + std::to_string(i) + ": " +
+               Bdd::to_string(this->bv[i], indent + 3);
     }
     return res;
 }

@@ -61,7 +61,7 @@ public:
      *   leaf(id, type, "value"), -- for a leaf (with value between "")
      * ],[dd1, dd2, dd3, ...,] -- and each the stored decision diagram.
      */
-    static std::string to_string(const sylvan::Bdd &);
+    static std::string to_string(const sylvan::Bdd &, int indent = 0);
     /**
      * Write the given BDD into a one-line string for debugging purposes only.
      * The string cannot be turned back into a BDD.

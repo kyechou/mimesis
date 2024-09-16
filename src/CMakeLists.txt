@@ -58,6 +58,17 @@ target_link_libraries(ps PUBLIC
     ${sylvan_LIBRARIES}
 )
 
+#
+# mimesis (model client)
+#
+add_executable(mimesis
+    ${CMAKE_CURRENT_SOURCE_DIR}/mimesis.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/stats.cpp
+    $<TARGET_OBJECTS:_logger>
+)
+target_include_directories(mimesis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(mimesis PRIVATE _logger ps Boost::program_options)
+
 # Install libps headers and libraries
 install(TARGETS ps DESTINATION lib)
 install(FILES ${LIBPS_HDRS} DESTINATION include/libps)

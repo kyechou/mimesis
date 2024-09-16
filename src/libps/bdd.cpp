@@ -302,7 +302,11 @@ void __mtbdd_print_leaf(std::ostream &out, sylvan::MTBDD leaf) {
  * `std::ostream` instead of `FILE *`.
  * third_party/sylvan/sylvan/src/sylvan_mtbdd.c:3302
  */
-void my_mtbdd_writer_totext(std::ostream &out, sylvan::MTBDD *dds, int count) {
+void my_mtbdd_writer_totext(std::ostream &out,
+                            sylvan::MTBDD *dds,
+                            int count,
+                            int indent = 0) {
+    std::string ind(indent, ' ');
     sylvan::sylvan_skiplist_t sl = sylvan::mtbdd_writer_start();
 
     for (int i = 0; i < count; ++i) {
@@ -319,8 +323,8 @@ void my_mtbdd_writer_totext(std::ostream &out, sylvan::MTBDD *dds, int count) {
             sylvan::mtbddnode_t n = sylvan::MTBDD_GETNODE(dd);
             if (sylvan::mtbddnode_isleaf(n)) {
                 /* serialize leaf, does not support customs yet */
-                out << "  leaf(" << i << "," << sylvan::mtbddnode_gettype(n)
-                    << ",\"";
+                out << ind << "  leaf(" << i << ","
+                    << sylvan::mtbddnode_gettype(n) << ",\"";
                 __mtbdd_print_leaf(out, sylvan::MTBDD_STRIPMARK(dd));
                 out << "\"),\n";
             } else {
@@ -330,12 +334,13 @@ void my_mtbdd_writer_totext(std::ostream &out, sylvan::MTBDD *dds, int count) {
                 high = sylvan::MTBDD_TRANSFERMARK(
                     high,
                     __sylvan_skiplist_get(sl, sylvan::MTBDD_STRIPMARK(high)));
-                out << "  node(" << i << "," << sylvan::mtbddnode_getvariable(n)
-                    << "," << low << (sylvan::MTBDD_HASMARK(high) ? ",~" : ",")
+                out << ind << "  node(" << i << ","
+                    << sylvan::mtbddnode_getvariable(n) << "," << low
+                    << (sylvan::MTBDD_HASMARK(high) ? ",~" : ",")
                     << sylvan::MTBDD_STRIPMARK(high) << "),\n";
             }
         }
-        out << "]";
+        out << ind << "]";
     }
 
     out << ",[";
@@ -468,10 +473,10 @@ my_mtbdd_reader_frombinary(std::istream &in, sylvan::MTBDD *dds, int count) {
 
 } // namespace
 
-std::string Bdd::to_string(const sylvan::Bdd &bdd) {
+std::string Bdd::to_string(const sylvan::Bdd &bdd, int indent) {
     sylvan::BDD c_bdd = bdd.GetBDD();
     std::stringstream ss;
-    my_mtbdd_writer_totext(ss, &c_bdd, /*count=*/1);
+    my_mtbdd_writer_totext(ss, &c_bdd, /*count=*/1, indent);
     return ss.str();
 }
 

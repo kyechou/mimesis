@@ -161,7 +161,7 @@ public:
     /**
      * Returns the bit-vector in the ASCII string format.
      */
-    std::string to_string() const;
+    std::string to_string(int indent = 0) const;
     /**
      * Outputs the bit-vector.
      */

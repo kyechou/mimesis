@@ -1,5 +1,6 @@
 #include "libps/model.hpp"
 
+#include <cassert>
 #include <memory>
 #include <queue>
 #include <string>
@@ -23,15 +24,31 @@ sylvan::Bdd TableEntry::cumulative_constraint() const {
     }
 }
 
-std::string TableEntry::to_string() const {
-    std::string res = "=== Table Entry ===\n";
-    res += "-> depth:    " + std::to_string(_depth) + "\n";
-    res += "-> in intf:  " + _in_intf.to_string() + "\n";
-    res += "-> in pkt:   " + _in_pkt.to_string() + "\n";
-    res += "-> out intf: " + _eg_intf.to_string() + "\n";
-    res += "-> out pkt:  " + _eg_pkt.to_string() + "\n";
-    res += "-> path con: " + ps::Bdd::to_string(_constraint_at_current_depth);
-    res += "\n";
+std::string TableEntry::to_string(int indent) const {
+    std::string ind(indent, ' ');
+    std::string res = ind + "====[ Table Entry ]====\n";
+    res += ind + "--> depth:    " + std::to_string(_depth) + "\n";
+    res += ind + "--> in intf:  " + _in_intf.to_string(indent + 4) + "\n";
+    res += ind + "--> in pkt:   " + _in_pkt.to_string(indent + 4) + "\n";
+    res += ind + "--> out intf: " + _eg_intf.to_string(indent + 4) + "\n";
+    res += ind + "--> out pkt:  " + _eg_pkt.to_string(indent + 4) + "\n";
+    res += ind + "--> path con: " +
+           ps::Bdd::to_string(_constraint_at_current_depth, indent + 4);
+    return res;
+}
+
+std::string SingleStateTable::to_string() const {
+    std::string res = "##### SS Table #####\n";
+    res += "==> depth: " + std::to_string(_depth) + "\n";
+    if (_parent_entry) {
+        res += "==> parent entry:\n" + _parent_entry->to_string(4) + "\n";
+    } else {
+        res += "==> parent entry: (null)\n";
+    }
+    res += "==> table entries:";
+    for (const auto &entry : _table) {
+        res += "\n" + entry->to_string(4);
+    }
     return res;
 }
 
@@ -43,11 +60,80 @@ sylvan::Bdd SingleStateTable::cumulative_parent_constraint() const {
     }
 }
 
+sylvan::Bdd SingleStateTable::universe() const {
+    sylvan::Bdd universe = sylvan::Bdd::bddZero(); // Empty set
+    for (const auto &entry : _table) {
+        universe |= entry->constraint();
+    }
+    return universe;
+}
+
+bool SingleStateTable::all_entries_are_disjoint() const {
+    sylvan::Bdd universe = sylvan::Bdd::bddZero(); // Empty set
+    for (const auto &entry : _table) {
+        if (!universe.Disjoint(entry->constraint())) {
+            warn("At least two table entries are not disjoint.");
+            return false;
+        }
+        universe |= entry->constraint();
+    }
+    return true;
+}
+
+bool SingleStateTable::all_entries_are_viable() const {
+    sylvan::Bdd parent_universe = _parent_entry
+                                      ? _parent_entry->cumulative_constraint()
+                                      : sylvan::Bdd::bddOne();
+    for (const auto &entry : _table) {
+        if (parent_universe.Disjoint(entry->constraint())) {
+            warn("A table entry is not viable (can never be reached).");
+            return false;
+        }
+    }
+    return true;
+}
+
+bool SingleStateTable::entries_cover_entire_parent() const {
+    sylvan::Bdd parent_universe = _parent_entry
+                                      ? _parent_entry->cumulative_constraint()
+                                      : sylvan::Bdd::bddOne();
+    if (!parent_universe.Leq(this->universe())) {
+        // parent's constraint is not a subset of this table's universe.
+        warn("An SS table does not completely cover the parent entry.");
+        return false;
+    }
+    return true;
+}
+
 bool SingleStateTable::insert(const std::shared_ptr<TableEntry> &entry) {
     for (const auto &e : _table) {
         assert((e->constraint() & entry->constraint()).isZero());
     }
     return _table.insert(entry).second;
+}
+
+std::string Model::to_string() const {
+    std::string res = "Model:";
+    for (const auto &[depth, tables] : _model) {
+        for (const auto &table : tables) {
+            assert(table);
+            res += "\n\n" + table->to_string();
+        }
+    }
+    return res;
+}
+
+bool Model::validate() const {
+    for (const auto &[depth, tables] : _model) {
+        for (const auto &table : tables) {
+            if (!table->all_entries_are_disjoint() ||
+                !table->all_entries_are_viable() ||
+                !table->entries_cover_entire_parent()) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 bool Model::insert(int depth,
@@ -59,6 +145,12 @@ bool Model::insert(int depth,
     BitVector pc_bv = KleeInterpreter::translate(path_constraint);
     assert(pc_bv.width() == 1);
     sylvan::Bdd pc = pc_bv[0];
+
+    // Check if the path constraint is unsat. (should not happen)
+    if (pc.isZero()) {
+        warn("Skipping table entry: path constraint is unsat");
+        return false;
+    }
 
     // Create the root table if it doesn't already exist.
     if (!_root_table) {
@@ -103,6 +195,12 @@ bool Model::insert(int depth,
         pc.Constrain(current_table->cumulative_parent_constraint()),
         current_table->parent_entry());
     return current_table->insert(entry);
+}
+
+void Model::finalize() {
+    // TODO: merge duplicate tables.
+    // TODO: remove unreachable entries.
+    // TODO: Add default drop rules for uncovered space.
 }
 
 std::set<std::shared_ptr<TableEntry>>

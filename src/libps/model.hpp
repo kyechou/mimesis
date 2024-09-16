@@ -58,7 +58,7 @@ public:
     const decltype(_next_entries) &next_entries() const {
         return _next_entries;
     }
-    std::string to_string() const;
+    std::string to_string(int indent = 0) const;
 
     void set_child_table(const std::shared_ptr<SingleStateTable> &child_table) {
         _child_table = child_table;
@@ -85,7 +85,12 @@ public:
 
     int depth() const { return _depth; }
     std::shared_ptr<TableEntry> parent_entry() const { return _parent_entry; }
+    std::string to_string() const;
     sylvan::Bdd cumulative_parent_constraint() const;
+    sylvan::Bdd universe() const;
+    bool all_entries_are_disjoint() const;
+    bool all_entries_are_viable() const;
+    bool entries_cover_entire_parent() const;
     bool insert(const std::shared_ptr<TableEntry> &entry);
 
     typedef decltype(_table)::iterator iterator;
@@ -113,13 +118,15 @@ private:
 public:
     Model() = default; // Empty model
 
+    std::string to_string() const;
+    bool validate() const;
     bool insert(int depth,
                 const klee::ref<klee::Expr> &in_intf,
                 const klee::ref<klee::Expr> &in_pkt,
                 const klee::ref<klee::Expr> &eg_intf,
                 const klee::ref<klee::Expr> &eg_pkt,
                 const klee::ref<klee::Expr> &path_constraint);
-    // void finalize();
+    void finalize();
     std::set<std::shared_ptr<TableEntry>>
     query(const int max_depth, const klee::ref<klee::Expr> &constraint) const;
 };

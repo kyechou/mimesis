@@ -1,9 +1,11 @@
 #include "libps/serializer.hpp"
-#include "libps/model.hpp"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
 #include <fstream>
+
+#include "lib/logger.hpp"
+#include "libps/model.hpp"
 
 namespace ps {
 
@@ -27,6 +29,9 @@ Model Serializer::import_model(Manager &manager,
     Model model;
     { // RAII
         std::ifstream in(fn);
+        if (!in) {
+            error("Failed to open file: " + fn.string());
+        }
         if (fn.extension() == ".json") {
             cereal::JSONInputArchive archive(in);
             archive(CEREAL_NVP(manager), CEREAL_NVP(model));
