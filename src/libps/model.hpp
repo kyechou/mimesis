@@ -120,12 +120,16 @@ public:
 
     std::string to_string() const;
     bool validate() const;
-    bool insert(int depth,
-                const klee::ref<klee::Expr> &in_intf,
-                const klee::ref<klee::Expr> &in_pkt,
-                const klee::ref<klee::Expr> &eg_intf,
-                const klee::ref<klee::Expr> &eg_pkt,
-                const klee::ref<klee::Expr> &path_constraint);
+    // Returns the number of entries inserted.
+    // 1: success,
+    // 0: no need to insert (path constraint is unsat),
+    // -1: insertion failure.
+    int insert(int depth,
+               const klee::ref<klee::Expr> &in_intf,
+               const klee::ref<klee::Expr> &in_pkt,
+               const klee::ref<klee::Expr> &eg_intf,
+               const klee::ref<klee::Expr> &eg_pkt,
+               const klee::ref<klee::Expr> &path_constraint);
     void finalize();
     std::set<std::shared_ptr<TableEntry>>
     query(const int max_depth, const klee::ref<klee::Expr> &constraint) const;

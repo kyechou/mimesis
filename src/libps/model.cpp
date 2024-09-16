@@ -107,7 +107,7 @@ bool SingleStateTable::entries_cover_entire_parent() const {
 
 bool SingleStateTable::insert(const std::shared_ptr<TableEntry> &entry) {
     for (const auto &e : _table) {
-        assert((e->constraint() & entry->constraint()).isZero());
+        assert(e->constraint().Disjoint(entry->constraint()));
     }
     return _table.insert(entry).second;
 }
@@ -136,12 +136,12 @@ bool Model::validate() const {
     return true;
 }
 
-bool Model::insert(int depth,
-                   const klee::ref<klee::Expr> &in_intf,
-                   const klee::ref<klee::Expr> &in_pkt,
-                   const klee::ref<klee::Expr> &eg_intf,
-                   const klee::ref<klee::Expr> &eg_pkt,
-                   const klee::ref<klee::Expr> &path_constraint) {
+int Model::insert(int depth,
+                  const klee::ref<klee::Expr> &in_intf,
+                  const klee::ref<klee::Expr> &in_pkt,
+                  const klee::ref<klee::Expr> &eg_intf,
+                  const klee::ref<klee::Expr> &eg_pkt,
+                  const klee::ref<klee::Expr> &path_constraint) {
     BitVector pc_bv = KleeInterpreter::translate(path_constraint);
     assert(pc_bv.width() == 1);
     sylvan::Bdd pc = pc_bv[0];
@@ -149,7 +149,7 @@ bool Model::insert(int depth,
     // Check if the path constraint is unsat. (should not happen)
     if (pc.isZero()) {
         warn("Skipping table entry: path constraint is unsat");
-        return false;
+        return 0;
     }
 
     // Create the root table if it doesn't already exist.
@@ -194,7 +194,7 @@ bool Model::insert(int depth,
         KleeInterpreter::translate(eg_pkt, pc),
         pc.Constrain(current_table->cumulative_parent_constraint()),
         current_table->parent_entry());
-    return current_table->insert(entry);
+    return current_table->insert(entry) ? 1 : -1;
 }
 
 void Model::finalize() {
