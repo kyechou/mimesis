@@ -28,7 +28,7 @@ run() {
     local new_project_args=(
         -n
         -d "$depth"
-        -t 1800 # timeout: 30 min
+        # -t 7200 # timeout: 2 hrs
     )
     if [[ "$kfork" -eq 1 ]]; then
         new_project_args+=(-kf)
@@ -64,7 +64,6 @@ main() {
         user-l2-forward
         kernel-demo-stateless
         kernel-demo-stateful
-        # kernel-demo-stateful-d3
         kernel-ip-stateless
         kernel-ip-stateful
         # ebpf-demo-stateless
@@ -73,14 +72,27 @@ main() {
         # ebpf-ip-stateful
     )
 
-    for program in "${target_programs[@]}"; do
-        for depth in 1 2; do
-            kfork=1 # always enable kernel forking
-            for ksymaddr in 0 1; do
-                run "$program" "$depth" "$kfork" "$ksymaddr"
-            done
-        done
+    program=kernel-ip-stateless
+    depth=1
+    kfork=1
+    ksymaddr=1
+    run "$program" "$depth" "$kfork" "$ksymaddr"
+
+    program=kernel-ip-stateful
+    depth=1
+    kfork=1
+    for ksymaddr in 0 1; do
+        run "$program" "$depth" "$kfork" "$ksymaddr"
     done
+
+    # for program in "${target_programs[@]}"; do
+    #     for depth in 1 2; do
+    #         kfork=1 # always enable kernel forking
+    #         for ksymaddr in 0 1; do
+    #             run "$program" "$depth" "$kfork" "$ksymaddr"
+    #         done
+    #     done
+    # done
 
     msg "Done!"
 }
