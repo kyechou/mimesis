@@ -76,19 +76,19 @@ int main() {
 
     loader.start();
     loader.attach(interfaces);
-    // loader.write_if_params(interfaces.size(), interfaces[0].first);
-
-    char buffer[1024] = {0};
-    uint64_t data, data_end, iifidx;
+    loader.write_if_params(interfaces.size(), interfaces[0].first);
 
     while (1) {
         sleep(1);
-
-        loader.read_debug_map(data, data_end, iifidx);
-        snprintf(buffer, sizeof(buffer),
-                 "data=%016lx data_end=%016lx iifidx=%lu", data, data_end,
-                 iifidx);
-        info(buffer);
+        // {
+        //     char buffer[1024] = {0};
+        //     uint64_t data, data_end, iifidx;
+        //     loader.read_debug_map(data, data_end, iifidx);
+        //     snprintf(buffer, sizeof(buffer),
+        //              "data=%016lx data_end=%016lx iifidx=%lu", data,
+        //              data_end, iifidx);
+        //     info(buffer);
+        // }
     }
 
     loader.stop();
