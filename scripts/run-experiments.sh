@@ -23,16 +23,13 @@ die() {
 run() {
     program="$1"
     depth="$2"
-    kfork="$3"
-    ksymaddr="$4"
+    ksymaddr="$3"
     local new_project_args=(
         -n
         -d "$depth"
-        # -t 7200 # timeout: 2 hrs
+        -kf      # always enable kernel forking
+        -t 14400 # timeout: 2 hrs
     )
-    if [[ "$kfork" -eq 1 ]]; then
-        new_project_args+=(-kf)
-    fi
     if [[ "$ksymaddr" -eq 1 ]]; then
         new_project_args+=(-ks)
     fi
@@ -55,15 +52,15 @@ main() {
     TARGETS_DIR="$BUILD_DIR/targets"
 
     local target_programs=(
-        user-demo-stateless
-        user-demo-stateful
-        user-ip-stateless
-        user-ip-stateful
-        user-ip-echo
-        user-l2-echo
-        user-l2-forward
-        kernel-demo-stateless
-        kernel-demo-stateful
+        # user-demo-stateless
+        # user-demo-stateful
+        # user-ip-stateless
+        # user-ip-stateful
+        # user-ip-echo
+        # user-l2-echo
+        # user-l2-forward
+        # kernel-demo-stateless # -d 2 -kf -ks: oom killed
+        # kernel-demo-stateful
         kernel-ip-stateless
         kernel-ip-stateful
         # ebpf-demo-stateless
@@ -72,27 +69,22 @@ main() {
         # ebpf-ip-stateful
     )
 
-    program=kernel-ip-stateless
-    depth=1
-    kfork=1
-    ksymaddr=1
-    run "$program" "$depth" "$kfork" "$ksymaddr"
-
     program=kernel-ip-stateful
     depth=1
-    kfork=1
     for ksymaddr in 0 1; do
-        run "$program" "$depth" "$kfork" "$ksymaddr"
+        run "$program" "$depth" "$ksymaddr"
     done
 
-    # for program in "${target_programs[@]}"; do
-    #     for depth in 1 2; do
-    #         kfork=1 # always enable kernel forking
-    #         for ksymaddr in 0 1; do
-    #             run "$program" "$depth" "$kfork" "$ksymaddr"
-    #         done
-    #     done
-    # done
+    for program in "${target_programs[@]}"; do
+        depth=2
+        # for depth in 1 2; do
+        ksymaddr=0
+        run "$program" "$depth" "$ksymaddr"
+        # for ksymaddr in 0 1; do
+        #     run "$program" "$depth" "$ksymaddr"
+        # done
+        # done
+    done
 
     msg "Done!"
 }
