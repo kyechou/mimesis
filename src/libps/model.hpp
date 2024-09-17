@@ -119,6 +119,13 @@ public:
     Model() = default; // Empty model
 
     std::string to_string() const;
+    /**
+     * Validate the model, ensuring the following properties:
+     *   - All entries within each table are disjoint.
+     *   - All entries within each table are viable (satisfiable).
+     *   - All entries within each table cover the entire parent constraint
+     *     (i.e., no under-specification).
+     */
     bool validate() const;
     // Returns the number of entries inserted.
     // 1: success,
