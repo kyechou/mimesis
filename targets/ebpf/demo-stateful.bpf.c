@@ -6,11 +6,11 @@
 char LICENSE[] SEC("license") = "Dual MIT/GPL";
 
 struct {
-__uint(type, BPF_MAP_TYPE_ARRAY);
-    __uint(max_entries, 20);
+    __uint(type, BPF_MAP_TYPE_ARRAY);
+    __uint(max_entries, 1);
     __type(key, u32);
     __type(value, u32);
-} seen SEC(".maps");
+} seen_map SEC(".maps");
 
 /**
  * 0: num_intfs
@@ -49,8 +49,6 @@ SEC("xdp")
 int demo_stateless(struct xdp_md *ctx) {
     char *data = (char *)(long)ctx->data;
     char *data_end = (char *)(long)ctx->data_end;
-    u32 seen_key;
-    const u32 seen_val=1;
 
     // // Debug
     // u64 data_loc = (u64)data;
@@ -68,10 +66,10 @@ int demo_stateless(struct xdp_md *ctx) {
 
     // Unexpected ethertype
     struct Headers *hdrs = (struct Headers *)data;
-    uint16_t ethertype = bpf_ntohs(hdrs->eth.h_proto);
-    if (ethertype != 0xdead) {
-        return XDP_DROP;
-    }
+    // uint16_t ethertype = bpf_ntohs(hdrs->eth.h_proto);
+    // if (ethertype != 0xdead) {
+    //     return XDP_DROP;
+    // }
 
     // Interface parameters
     const u32 num_intfs_key = 0, idx_offset_key = 1;
@@ -85,18 +83,16 @@ int demo_stateless(struct xdp_md *ctx) {
     if (hdrs->demo.port >= *num_intfs) {
         return XDP_DROP;
     }
-    
-    seen_key=hdrs->demo.port;
-   
-    if(hdrs->demo.type == 0) {
-    	bpf_map_update_elem(&seen, &seen_key, &seen_val, BPF_ANY);
-    } else if (hdrs->demo.type == 1) {
-    	u32 *seen_ptr = (u32 *)bpf_map_lookup_elem(&seen, &seen_key);
-    	if (seen_ptr==NULL) {
-    		return XDP_DROP;
-    	}
-    } else {
-    	return XDP_DROP;
+
+    const u32 seen_key = 0;
+    const u32 seen_val = 1;
+    u32 *seen = (u32 *)bpf_map_lookup_elem(&seen_map, &seen_key);
+    if (!seen || !*seen) {
+        if (hdrs->demo.type == 0) {
+            bpf_map_update_elem(&seen_map, &seen_key, &seen_val, BPF_ANY);
+        } else {
+            return XDP_DROP;
+        }
     }
 
     return bpf_redirect(hdrs->demo.port + *idx_offset, 0);

@@ -40,6 +40,9 @@ int main() {
         }
 
         uint8_t egress = ingress_pkt.port; // all output in network order
+        if (egress >= max_intfs) {
+            continue;
+        }
         user_send(egress, &ingress_pkt, sizeof(ingress_pkt));
     }
 

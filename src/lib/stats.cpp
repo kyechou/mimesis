@@ -82,64 +82,26 @@ void Stats::stop(Op op) {
     auto duration = duration_cast<microseconds>(clock::now() - it->second);
     _start_ts.erase(it);
 
-    if (op < Op::__OP_TYPE_DIVIDER__) {
-        auto [maxrss, currrss] = this->get_rss();
-        _time.at(op) = std::move(duration);
-        _max_rss.at(op) = maxrss;
-        _curr_rss.at(op) = currrss;
-    } else if (op > Op::__OP_TYPE_DIVIDER__ && op < Op::TIMEOUT) {
-    } else {
-        error("Invalid op: " + to_string(static_cast<int>(op)));
-    }
+    auto [maxrss, currrss] = this->get_rss();
+    _time.at(op) = std::move(duration);
+    _max_rss.at(op) = maxrss;
+    _curr_rss.at(op) = currrss;
 }
 
 void Stats::reset() {
     _start_ts.clear();
 
     for (const Op &op : _all_ops) {
-        if (op < Op::__OP_TYPE_DIVIDER__) {
-            _time.at(op) = microseconds{};
-            _max_rss.at(op) = 0;
-            _curr_rss.at(op) = 0;
-        } else if (op > Op::__OP_TYPE_DIVIDER__) {
-        }
+        _time.at(op) = microseconds{};
+        _max_rss.at(op) = 0;
+        _curr_rss.at(op) = 0;
     }
 }
 
-void Stats::log_results(Op op) const {
-    const auto &time = _time.at(op).count();
-    const auto &max_rss = _max_rss.at(op);
-    const auto &cur_rss = _curr_rss.at(op);
-
-    if (op == Op::MAIN_PROC) {
-        info("====================");
-        info("Time: " + to_string(time) + " usec");
-        info("Peak memory: " + to_string(max_rss) + " KiB");
-        info("Current memory: " + to_string(cur_rss) + " KiB");
-    } else if (op == Op::CHECK_INVARIANT) {
-        const string filename = "invariant.stats.csv";
-        ofstream ofs(filename);
-        if (!ofs) {
-            error("Failed to open " + filename);
-        }
-
-        ofs << "Time (usec), Peak memory (KiB), Current memory (KiB)" << endl
-            << time << ", " << max_rss << ", " << cur_rss << endl;
-    } else if (op == Op::CHECK_EC) {
-        const string filename = to_string(getpid()) + ".stats.csv";
-        ofstream ofs(filename);
-        if (!ofs) {
-            error("Failed to open " + filename);
-        }
-
-        ofs << "Time (usec), Peak memory (KiB), Current memory (KiB)" << endl
-            << time << ", " << max_rss << ", " << cur_rss << endl;
-        ofs << "Overall concretization (usec), " << "Emulation startup (usec), "
-            << "Rewind (usec), " << "Emulation reset (usec), "
-            << "Replay packets (usec), " << "Rewind injection count, "
-            << "Packet latency (usec), " << "Drop latency (usec), "
-            << "Timeout value (usec)" << endl;
-    } else {
-        error("Invalid op: " + to_string(static_cast<int>(op)));
-    }
+void Stats::log_results(const std::string &model_name) const {
+    // model_name, total_time_usec, import_model_time, query_time, memory_kb
+    std::cout << model_name << "," << _time.at(Op::ALL).count() << ","
+              << _time.at(Op::MODEL_IMPORT).count() << ","
+              << _time.at(Op::QUERY).count() << "," << _max_rss.at(Op::ALL)
+              << std::endl;
 }

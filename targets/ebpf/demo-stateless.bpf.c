@@ -59,10 +59,10 @@ int demo_stateless(struct xdp_md *ctx) {
 
     // Unexpected ethertype
     struct Headers *hdrs = (struct Headers *)data;
-    uint16_t ethertype = bpf_ntohs(hdrs->eth.h_proto);
-    if (ethertype != 0xdead) {
-        return XDP_DROP;
-    }
+    // uint16_t ethertype = bpf_ntohs(hdrs->eth.h_proto);
+    // if (ethertype != 0xdead) {
+    //     return XDP_DROP;
+    // }
 
     // Interface parameters
     const u32 num_intfs_key = 0, idx_offset_key = 1;

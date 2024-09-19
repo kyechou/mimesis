@@ -27,8 +27,8 @@ run() {
     local new_project_args=(
         -n
         -d "$depth"
-        -kf      # always enable kernel forking
-        -t 14400 # timeout: 2 hrs
+        -kf # always enable kernel forking
+        # -t 7200 # timeout: 2 hrs
     )
     if [[ "$ksymaddr" -eq 1 ]]; then
         new_project_args+=(-ks)
@@ -51,39 +51,45 @@ main() {
     BUILD_DIR="$PROJECT_DIR/build"
     TARGETS_DIR="$BUILD_DIR/targets"
 
-    local target_programs=(
-        # user-demo-stateless
-        # user-demo-stateful
-        # user-ip-stateless
-        # user-ip-stateful
-        # user-ip-echo
-        # user-l2-echo
-        # user-l2-forward
-        # kernel-demo-stateless # -d 2 -kf -ks: oom killed
-        # kernel-demo-stateful
-        kernel-ip-stateless
-        kernel-ip-stateful
-        # ebpf-demo-stateless
-        # ebpf-demo-stateful
-        # ebpf-ip-stateless
-        # ebpf-ip-stateful
+    local user_programs=(
+        user-demo-stateless
+        user-demo-stateful
+        user-ip-stateless
+        user-ip-stateful
+        user-ip-echo
+        user-l2-echo
+        user-l2-forward
     )
+    for program in "${user_programs[@]}"; do
+        for depth in 1 2 3 4; do
+            ksymaddr=1
+            run "$program" "$depth" "$ksymaddr"
+        done
+    done
 
-    program=kernel-ip-stateful
-    depth=1
-    for ksymaddr in 0 1; do
+    local kernel_programs=(
+        kernel-demo-stateless
+        kernel-demo-stateful
+        kernel-ip-stateless # -d 1 -kf -ks: Task stack overflow. -d 2 -kf: 11 hrs timeout
+        kernel-ip-stateful  # -d 1 -kf -ks: The futex facility returns an unexpected error code. (may try one more time). -d 2 -kf: 9 hrs timeout
+    )
+    for program in "${kernel_programs[@]}"; do
+        depth=1
+        ksymaddr=0
         run "$program" "$depth" "$ksymaddr"
     done
 
-    for program in "${target_programs[@]}"; do
-        depth=2
-        # for depth in 1 2; do
-        ksymaddr=0
-        run "$program" "$depth" "$ksymaddr"
-        # for ksymaddr in 0 1; do
-        #     run "$program" "$depth" "$ksymaddr"
-        # done
-        # done
+    local ebpf_programs=(
+        ebpf-demo-stateless
+        ebpf-demo-stateful
+        ebpf-ip-stateless # -d 2 -kf -ks: 2 hr timeout (may try longer)
+        ebpf-ip-stateful
+    )
+    for program in "${ebpf_programs[@]}"; do
+        for depth in 1 2; do
+            ksymaddr=1
+            run "$program" "$depth" "$ksymaddr"
+        done
     done
 
     msg "Done!"

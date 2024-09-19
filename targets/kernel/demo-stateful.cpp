@@ -57,7 +57,7 @@ int main() {
 
     Headers hdrs;
     uint8_t buffer[ETH_FRAME_LEN];
-    std::vector<bool> port_to_type0_map(intf_fds.size(), false);
+    bool seen_a_type0 = false;
 
     while (1) {
         // Read from the first interface
@@ -85,20 +85,12 @@ int main() {
         }
 
         // Response
-        if (hdrs.demo->type == 0) {
-            // Type-0 packets are always allowed.
-            // Mark the egress port as initialized.
-            port_to_type0_map.at(hdrs.demo->port) = true;
-        } else if (hdrs.demo->type == 1) {
-            // Type-1 packets are only allowed if the egress port has been
-            // initialized.
-            if (!port_to_type0_map.at(hdrs.demo->port)) {
-                // Port not initialized with a type-0 packet yet.
+        if (!seen_a_type0) {
+            if (hdrs.demo->type == 0) {
+                seen_a_type0 = true;
+            } else {
                 continue;
             }
-        } else {
-            warn("Unknown packet type. Ignore the packet.");
-            continue;
         }
 
         info("Sending out the packet");

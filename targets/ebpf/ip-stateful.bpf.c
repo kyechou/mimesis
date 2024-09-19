@@ -6,7 +6,7 @@
 char LICENSE[] SEC("license") = "Dual MIT/GPL";
 
 struct {
-__uint(type, BPF_MAP_TYPE_ARRAY);
+    __uint(type, BPF_MAP_TYPE_ARRAY);
     __uint(max_entries, 20);
     __type(key, u32);
     __type(value, u32);
@@ -69,8 +69,8 @@ SEC("xdp")
 int demo_stateless(struct xdp_md *ctx) {
     char *data = (char *)(long)ctx->data;
     char *data_end = (char *)(long)ctx->data_end;
-    const u32 seen_key=0;
-    const u32 seen_val=1;
+    const u32 seen_key = 0;
+    const u32 seen_val = 1;
     const int ETH_ALEN = 6;
 
     // // Debug
@@ -101,28 +101,28 @@ int demo_stateless(struct xdp_md *ctx) {
     if (!num_intfs || !idx_offset) {
         return XDP_DROP;
     }
-  
-   	u32 *seen_ptr = (u32 *)bpf_map_lookup_elem(&seen, &seen_key);
-   	if (seen_ptr == NULL) {
-   		uint32_t lb = (10ul << 24);
+
+    u32 *seen_ptr = (u32 *)bpf_map_lookup_elem(&seen, &seen_key);
+    if (seen_ptr == NULL) {
+        uint32_t lb = (10ul << 24);
         uint32_t mask = 8;
         if (hdrs->ip.saddr >= lb &&
             hdrs->ip.saddr < lb + (1ul << (32 - mask))) {
             return XDP_DROP;
         }
-   	}
-   	
-   	int eg_intf = dst_ip_matching(hdrs->ip.daddr);
+    }
+
+    int eg_intf = dst_ip_matching(hdrs->ip.daddr);
     if (eg_intf == -1) {
-    	return XDP_DROP;
+        return XDP_DROP;
     } else if (eg_intf == 0) {
-    	bpf_map_update_elem(&seen, &seen_key, &seen_val, BPF_ANY);
+        bpf_map_update_elem(&seen, &seen_key, &seen_val, BPF_ANY);
     }
-    
-    for(int i=0; i<ETH_ALEN ; i++) {
-    	hdrs->eth.h_source[i]=0;
+
+    for (int i = 0; i < ETH_ALEN; i++) {
+        hdrs->eth.h_source[i] = 0;
     }
-    hdrs->eth.h_source[ETH_ALEN-1] = eg_intf;
-    
+    hdrs->eth.h_source[ETH_ALEN - 1] = eg_intf;
+
     return bpf_redirect(eg_intf + *idx_offset, 0);
 }
